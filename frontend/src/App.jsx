@@ -4,7 +4,7 @@ import { Toaster } from 'react-hot-toast';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import Home from './pages/Home';
-import Reset from './pages/Reset'; // <--- Импортируем новую страницу
+import Reset from './pages/Reset'; 
 
 function App() {
   // Проверяем, есть ли токен (вошел ли пользователь)

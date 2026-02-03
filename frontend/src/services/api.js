@@ -34,7 +34,7 @@ export const api = createApi({
     }),
 
     // 3. Сброс пароля - Шаг 1 (Отправка кода)
-    // Добавляем этот блок:
+    
     resetPassword: builder.mutation({
       query: (data) => ({
         url: '/auth/reset-password',
@@ -44,7 +44,7 @@ export const api = createApi({
     }),
 
     // 4. Сброс пароля - Шаг 2 (Смена пароля)
-    // И этот блок:
+   
     resetPasswordStep2: builder.mutation({
       query: (data) => ({
         url: '/auth/reset-password/step2',

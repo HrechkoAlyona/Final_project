@@ -107,7 +107,7 @@ const RegisterForm = () => {
           </form>
         </div>
 
-        {/* НИЖНИЙ БЛОК: Переход на логин (ВОТ ЕГО НЕ ХВАТАЛО) */}
+        {/* НИЖНИЙ БЛОК: Переход на логин  */}
         <div className={s.switchBox}>
           <p>
             <span>Have an account?</span>

@@ -50,7 +50,7 @@ $error-red: #ed4956;
   text-align: center;
   font-size: 14px;
   
-  /* ВАЖНО: Добавляем отступ сверху на всякий случай */
+  /* Добавляем отступ сверху на всякий случай */
   margin-top: 10px; 
   
   /* Убеждаемся, что позиционирование стандартное */
@@ -110,7 +110,7 @@ $error-red: #ed4956;
   width: 100%;
 
   &:hover {
-    /* ИСПРАВЛЕНО: Вместо darken используем color.adjust */
+   
     background-color: color.adjust($link-blue, $lightness: -5%);
   }
   &:disabled {
@@ -198,7 +198,7 @@ $error-red: #ed4956;
     display: block;
     
     &:hover {
-      /* ИСПРАВЛЕНО: Вместо darken используем color.adjust */
+   
       background-color: color.adjust(#fafafa, $lightness: -3%);
     }
 }

@@ -57,7 +57,7 @@ export const ResetForm = () => {
     <div className={p.screenWrapper}>
       <div className={p.formColumn}>
         
-        {/* ВАЖНО: Добавлена обертка div. 
+        {/* обертка div. 
            Она нужна, чтобы игнорировать gap: 10px родителя и склеить блоки.
         */}
         <div style={{ display: 'flex', flexDirection: 'column', width: '100%' }}>

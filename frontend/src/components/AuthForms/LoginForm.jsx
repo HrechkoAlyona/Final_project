@@ -34,7 +34,7 @@ const LoginForm = () => {
   };
 
   return (
-    // Уникальный класс обертки
+    // обертка
     <div className={p.screenWrapper}>
       
       {/* Ряд с контентом */}
