@@ -1,28 +1,24 @@
 const User = require('../models/userModel');
-const generateToken = require('../config/jwt'); // Импортируем из нового места
+const generateToken = require('../config/jwt');
 const bcrypt = require('bcrypt');
 
+// 1. REGISTER
 const registerUser = async (req, res) => {
     try {
         const { username, email, password, fullName } = req.body;
 
-       
-        // 1. Проверка, заполнены ли поля
         if (!username || !email || !password || !fullName) {
-            return res.status(400).json({ message: 'Пожалуйста, заполните все поля' });
+            return res.status(400).json({ message: 'Please fill in all fields' });
         }
 
-        // 2. Проверка, существует ли пользователь
         const userExists = await User.findOne({ email });
         if (userExists) {
-            return res.status(400).json({ message: 'Пользователь с таким email уже существует' });
+            return res.status(400).json({ message: 'User already exists' });
         }
 
-        // 3. Хэширование пароля (шифруем)
         const salt = await bcrypt.genSalt(10);
         const hashedPassword = await bcrypt.hash(password, salt);
 
-        // 4. Создание пользователя в базе
         const user = await User.create({
             username,
             email,
@@ -36,25 +32,18 @@ const registerUser = async (req, res) => {
                 username: user.username,
                 email: user.email,
                 fullName: user.fullName,
-                token: generateToken(user._id), // Отправляем токен сразу после регистрации
+                token: generateToken(user._id),
             });
         }
     } catch (error) {
-        res.status(500).json({ message: 'Ошибка сервера при регистрации', error: error.message });
+        res.status(500).json({ message: 'Registration failed', error: error.message });
     }
 };
 
-
-
-
-// Login
-
+// 2. LOGIN
 const loginUser = async (req, res) => {
     try {
         const { email, password } = req.body;
-
-        // 1. Ищем пользователя по email и просим базу вернуть пароль 
-        // (так как он у нас select: false)
         const user = await User.findOne({ email }).select('+password');
 
         if (user && (await bcrypt.compare(password, user.password))) {
@@ -65,29 +54,108 @@ const loginUser = async (req, res) => {
                 token: generateToken(user._id),
             });
         } else {
-            res.status(401).json({ message: 'Неверный email или пароль' });
+            res.status(401).json({ message: 'Invalid email or password' });
         }
     } catch (error) {
-        res.status(500).json({ message: 'Ошибка сервера', error: error.message });
+        res.status(500).json({ message: 'Server error', error: error.message });
     }
 };
 
-
-// функция, которая просто отдает данные текущего пользователя
-
+// 3. PROFILE
 const getUserProfile = async (req, res) => {
-    // req.user попадет сюда из "охранника" (protect)
     if (req.user) {
         res.json(req.user);
     } else {
-        res.status(404).json({ message: 'Пользователь не найден' });
+        res.status(404).json({ message: 'User not found' });
     }
 };
 
+// 4. REQUEST RESET (Шаг 1)
+const requestPasswordReset = async (req, res) => {
+    try {
+        const { emailOrUsername } = req.body;
 
+        const user = await User.findOne({
+            $or: [{ email: emailOrUsername }, { username: emailOrUsername }]
+        });
 
+        if (!user) {
+            return res.status(404).json({ message: "User not found" });
+        }
 
+        const code = Math.floor(100000 + Math.random() * 900000).toString();
 
+        user.resetPasswordToken = code;
+        user.resetPasswordExpires = Date.now() + 3600000; 
+        await user.save();
 
-module.exports = { registerUser, loginUser, getUserProfile };
+        console.log("========================================");
+        console.log(`RESET CODE FOR ${user.username}: ${code}`);
+        console.log("========================================");
 
+        res.json({ message: "Code sent to email", username: user.username });
+
+    } catch (error) {
+        console.error("Reset Request Error:", error);
+        res.status(500).json({ message: "Server error" });
+    }
+};
+
+// 5. CONFIRM RESET (Шаг 2) — С ДИАГНОСТИКОЙ
+const resetPasswordStep2 = async (req, res) => {
+    try {
+        const { username, code, password } = req.body;
+
+        // --- НАЧАЛО БЛОКА ОТЛАДКИ (DEBUG) ---
+        console.log("------- ДИАГНОСТИКА СБРОСА ПАРОЛЯ -------");
+        console.log("1. Пришло от клиента:", { username, code });
+
+        // Проверяем, что вообще есть в базе у этого пользователя
+        const debugUser = await User.findOne({ username });
+        
+        if (!debugUser) {
+            console.log("2. ОШИБКА: Пользователь с таким username вообще не найден в базе!");
+        } else {
+            console.log("2. Пользователь найден в базе.");
+            console.log("   - Код в базе:", debugUser.resetPasswordToken);
+            console.log("   - Код от клиента:", code);
+            console.log("   - Совпадают ли коды?:", debugUser.resetPasswordToken == code);
+            console.log("   - Время истечения (Expires):", debugUser.resetPasswordExpires);
+            console.log("   - Текущее время:", new Date());
+        }
+        console.log("-----------------------------------------");
+        // --- КОНЕЦ БЛОКА ОТЛАДКИ ---
+
+        const user = await User.findOne({
+            username,
+            resetPasswordToken: code,
+            resetPasswordExpires: { $gt: Date.now() } 
+        });
+
+        if (!user) {
+            return res.status(400).json({ message: "Invalid or expired code" });
+        }
+
+        const salt = await bcrypt.genSalt(10);
+        user.password = await bcrypt.hash(password, salt);
+
+        user.resetPasswordToken = undefined;
+        user.resetPasswordExpires = undefined;
+        
+        await user.save();
+
+        res.json({ message: "Password updated successfully" });
+
+    } catch (error) {
+        console.error("Reset Step 2 Error:", error);
+        res.status(500).json({ message: "Server error" });
+    }
+};
+
+module.exports = { 
+    registerUser, 
+    loginUser, 
+    getUserProfile,
+    requestPasswordReset, 
+    resetPasswordStep2    
+};

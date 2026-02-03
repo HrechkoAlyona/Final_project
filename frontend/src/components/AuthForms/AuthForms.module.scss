@@ -1,0 +1,224 @@
+/* 0. Импорт модуля для работы с цветом (чтобы убрать предупреждения) */
+@use "sass:color";
+
+/* 1. Переменные */
+$bg-color: #fafafa;
+$white: #ffffff;
+$border-color: #dbdbdb;
+$text-main: #262626;
+$text-grey: #8e8e8e;
+$link-blue: #0095f6;
+$link-dark: #00376b;
+$error-red: #ed4956;
+
+/* 2. Карточка формы (верхний блок) */
+.authCard {
+  background-color: $white;
+  border: 1px solid $border-color;
+  width: 100%; 
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 30px 40px;
+  border-radius: 1px;
+
+  .logo {
+    width: 175px;
+    margin: 36px auto 12px auto;
+    cursor: pointer;
+    display: block;
+  }
+
+  .subText {
+    font-size: 17px;
+    font-weight: 600;
+    line-height: 20px;
+    color: $text-grey;
+    text-align: center;
+    margin-bottom: 20px;
+  }
+}
+
+/* 3. НИЖНИЙ БЛОК (SWITCH BOX) */
+.switchBox {
+  background-color: $white;
+  border: 1px solid $border-color;
+  width: 100%; 
+  box-sizing: border-box;
+  padding: 20px;
+  text-align: center;
+  font-size: 14px;
+  
+  /* ВАЖНО: Добавляем отступ сверху на всякий случай */
+  margin-top: 10px; 
+  
+  /* Убеждаемся, что позиционирование стандартное */
+  position: relative; 
+  
+  span {
+    margin-right: 5px;
+    color: $text-main;
+  }
+  a {
+    color: $link-blue;
+    font-weight: 600;
+    text-decoration: none;
+  }
+}
+
+/* 4. Элементы формы (Инпуты) */
+.formStack {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+
+  input {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 9px 8px;
+    background: $bg-color;
+    border: 1px solid $border-color;
+    border-radius: 3px;
+    font-size: 12px;
+    outline: none;
+    color: $text-main;
+
+    &::placeholder {
+      color: $text-grey;
+    }
+
+    &:focus {
+      border: 1px solid #a8a8a8;
+    }
+  }
+}
+
+/* 5. Кнопка отправки */
+.submitBtn {
+  background-color: $link-blue;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 7px;
+  font-weight: 600;
+  font-size: 14px;
+  margin-top: 8px;
+  cursor: pointer;
+  transition: 0.2s;
+  width: 100%;
+
+  &:hover {
+    /* ИСПРАВЛЕНО: Вместо darken используем color.adjust */
+    background-color: color.adjust($link-blue, $lightness: -5%);
+  }
+  &:disabled {
+    opacity: 0.7;
+    cursor: default;
+  }
+}
+
+/* 6. Ошибки и ссылки */
+.errorMsg {
+  color: $error-red;
+  font-size: 11px;
+  text-align: left;
+  margin-bottom: 5px;
+}
+
+.legalInfo {
+  margin-top: 15px;
+  font-size: 12px;
+  color: $text-grey;
+  text-align: center;
+  line-height: 1.4;
+
+  a {
+    color: $link-dark;
+    font-weight: 600;
+    text-decoration: none;
+  }
+}
+
+/* 7. Стили для страницы Сброса (Reset) */
+.resetCard {
+    background-color: $white;
+    border: 1px solid $border-color;
+    width: 100%;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 40px; 
+    border-radius: 1px;
+    position: relative;
+}
+
+.lock {
+  border: 2px solid $text-main;
+  border-radius: 50%;
+  padding: 15px;
+  margin-bottom: 15px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 60px;
+  height: 60px;
+}
+
+.descriptionR {
+  color: $text-grey;
+  font-size: 14px;
+  text-align: center;
+  margin-bottom: 20px;
+  line-height: 1.4;
+}
+
+.registerLinkR {
+  margin-top: 15px;
+  font-size: 14px;
+  font-weight: 600;
+  color: $text-main;
+  text-decoration: none;
+}
+
+.loginLinkR {
+    width: 100%;
+    padding: 12px;
+    background-color: #fafafa;
+    border: 1px solid $border-color;
+    border-top: none; 
+    text-align: center;
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: 600;
+    color: $text-main;
+    box-sizing: border-box;
+    display: block;
+    
+    &:hover {
+      /* ИСПРАВЛЕНО: Вместо darken используем color.adjust */
+      background-color: color.adjust(#fafafa, $lightness: -3%);
+    }
+}
+
+.divider {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  margin: 20px 0;
+  
+  .line {
+    flex: 1;
+    height: 1px;
+    background-color: $border-color;
+  }
+  
+  .orText {
+    margin: 0 15px;
+    font-size: 13px;
+    font-weight: 600;
+    color: $text-grey;
+  }
+}
