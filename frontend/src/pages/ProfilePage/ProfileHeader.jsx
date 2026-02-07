@@ -1,12 +1,12 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useFollow } from '../../hooks/useFollow'; // 🔥 Подключаем хук
+import { useFollow } from '../../hooks/useFollow'; //  Подключаем хук
 import s from './ProfilePage.module.scss'; // Используем те же стили
 
 const ProfileHeader = ({ user, isMyProfile }) => {
   const navigate = useNavigate();
   
-  // 🔥 Хук подписки (работает, только если это чужой профиль)
+  // Хук подписки (работает, только если это чужой профиль)
   const { isFollowing, followersCount, handleFollow } = useFollow(user);
 
   if (!user) return null;
@@ -24,7 +24,7 @@ const ProfileHeader = ({ user, isMyProfile }) => {
         <div className={s.topRow}>
           <h2>{user.username}</h2>
           
-          {/* 🔥 ЛОГИКА КНОПОК */}
+          {/*  ЛОГИКА КНОПОК */}
           {isMyProfile ? (
             <button 
               className={s.editButton}
@@ -55,7 +55,7 @@ const ProfileHeader = ({ user, isMyProfile }) => {
            {/* Используем user.posts.length для постов */}
            <span><strong>{user.posts?.length || 0}</strong> posts</span>
            
-           {/* 🔥 Используем данные из хука для подписчиков (чтобы цифра менялась сразу) */}
+           {/*  Используем данные из хука для подписчиков (чтобы цифра менялась сразу) */}
            <span><strong>{followersCount}</strong> followers</span>
            
            {/* Для подписок берем из user, так как мы не меняем это число кликом тут */}

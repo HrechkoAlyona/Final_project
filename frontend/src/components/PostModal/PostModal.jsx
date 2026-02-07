@@ -20,7 +20,7 @@ const PostModal = ({ post: initialPost, onClose }) => {
   // 2. Вычисляем post (может быть undefined, но это не страшно для JS-логики)
   const post = isSuccess && freshPost ? freshPost : initialPost;
 
-  // 3. 🔥 ВСЕ ХУКИ ДОЛЖНЫ БЫТЬ ЗДЕСЬ (ДО return)
+  // 3. ВСЕ ХУКИ ДОЛЖНЫ БЫТЬ ЗДЕСЬ (ДО return)
   
   const [showOptions, setShowOptions] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
@@ -35,7 +35,7 @@ const PostModal = ({ post: initialPost, onClose }) => {
   const [deletePost, { isLoading: isDeleting }] = useDeletePostMutation();
   const [updatePost, { isLoading: isUpdating }] = useUpdatePostMutation();
 
-  // Наш кастомный хук (он внутри умеет обрабатывать null/undefined, мы это проверяли)
+  // кастомный хук (он внутри умеет обрабатывать null/undefined)
   const { isLiked, likesCount, handleLike } = usePostLike(post);
 
   useEffect(() => {
@@ -54,7 +54,7 @@ const PostModal = ({ post: initialPost, onClose }) => {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, [showEmoji]);
 
-  // 4. 🔥 И ТОЛЬКО ТЕПЕРЬ ПРОВЕРЯЕМ, ЕСТЬ ЛИ ПОСТ
+  // 4. ПРОВЕРЯЕМ, ЕСТЬ ЛИ ПОСТ
   // Если поста нет — выходим, но хуки выше уже "зарегистрированы" React-ом
   if (!post) return null; 
 

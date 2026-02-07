@@ -2,12 +2,12 @@
 
 import React, { useContext } from 'react';
 import { Link } from 'react-router-dom';
-// 🔥 Импортируем твой контекст (проверь, чтобы путь был верным)
+//  Импортируем контекст (проверь, чтобы путь был верным)
 import { NavigationContext } from '../../context/NavigationContext'; 
 import s from './Footer.module.scss';
 
 export const Footer = () => {
-  // 🔥 Используем твои переменные: setActiveTab вместо setNavState
+  //  Используем переменные: setActiveTab 
   const { setActiveTab } = useContext(NavigationContext);
 
   // Вспомогательная функция, чтобы менять активную вкладку

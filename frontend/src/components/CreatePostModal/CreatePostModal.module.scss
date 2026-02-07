@@ -67,8 +67,7 @@
   flex: 1.5; background-color: #fafafa;
   display: flex; justify-content: center; align-items: center;
   
-  // ВАЖНО: position relative, чтобы абсолютный текст был внутри этого блока
-  position: relative; 
+  position: relative; //  чтобы абсолютный текст был внутри этого блока
   border-right: 1px solid #dbdbdb;
 
   &.active { background-color: #fafafa; }
@@ -177,7 +176,7 @@
 .tools {
   padding: 10px 0; 
   display: flex; justify-content: space-between; align-items: center;
-  position: relative; // Чтобы попап смайликов позиционировался относительно тулбара
+  position: relative; 
 }
 
 .emojiBtn {
@@ -202,7 +201,6 @@
 }
 
 // --- СПЕЦИАЛЬНЫЙ КЛАСС: Открытие ВЛЕВО и ВВЕРХ (для описания) ---
-// Это решает проблему перекрытия текста
 .popoverUp {
   top: auto;          // Сбрасываем top
   bottom: 0;          // Выравниваем по низу панели инструментов
@@ -211,7 +209,7 @@
   right: 100%;        // Выталкиваем полностью влево (на картинку)
   margin-right: 15px; // Добавляем отступ от края формы
   
-  // (Опционально) Стрелочка, указывающая вправо
+  //  Стрелочка, указывающая вправо
   &::after {
     content: '';
     position: absolute;
