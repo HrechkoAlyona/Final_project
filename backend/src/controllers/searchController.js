@@ -1,4 +1,4 @@
-
+// backend\src\controllers\searchController.js
 
 const User = require('../models/userModel');
 

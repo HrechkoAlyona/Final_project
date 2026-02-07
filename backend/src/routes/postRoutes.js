@@ -1,15 +1,45 @@
-// backend\src\routes\postRoutes.js
+// backend/src/routes/postRoutes.js
+
 const express = require('express');
 const router = express.Router();
+const multer = require('multer'); 
 
-const { createPost, getPosts, getMyPosts, deletePost, updatePost } = require('../controllers/postController');
+// 1. Импортируем контроллеры постов (добавили getPostById)
+const { 
+    createPost, 
+    getPosts, 
+    getMyPosts, 
+    deletePost, 
+    updatePost,
+    getPostById // 🔥 ИМПОРТ НОВОЙ ФУНКЦИИ
+} = require('../controllers/postController');
+
+// 2. Импортируем контроллер лайков
+const { likePost } = require('../controllers/likeController');
+
 const { protect } = require('../middlewares/authMiddleware');
 
-router.post('/', protect, createPost);
-router.get('/', protect, getPosts); // Теперь поддерживает ?type=...
-router.get('/my', protect, getMyPosts); // Для страницы профиля
-router.put('/:id', protect, updatePost);    // Редактировать (например, PUT /api/posts/ID_ПОСТА)
-router.delete('/:id', protect, deletePost); // Удалить (например, DELETE /api/posts/ID_ПОСТА)
+const upload = multer({ storage: multer.memoryStorage() });
+
+// --- МАРШРУТЫ ---
+
+// Создать пост
+router.post('/', protect, upload.single('image'), createPost);
+
+// Получить ленту
+router.get('/', protect, getPosts); 
+
+// Получить мои посты (ВАЖНО: этот маршрут должен быть ПЕРЕД '/:id')
+router.get('/my', protect, getMyPosts); 
+
+// 🔥 НОВЫЙ МАРШРУТ: Получить один пост по ID
+router.get('/:id', protect, getPostById);
+
+// Обновить и Удалить
+router.put('/:id', protect, updatePost); 
+router.delete('/:id', protect, deletePost); 
+
+// Лайкнуть пост
+router.put('/:id/like', protect, likePost);
 
 module.exports = router;
-

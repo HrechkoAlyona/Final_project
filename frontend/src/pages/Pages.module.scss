@@ -14,24 +14,21 @@
   // Включаем скролл
   overflow-y: auto;
   
-  // Используем column, чтобы псевдо-элемент встал ВНИЗУ
   display: flex;
   flex-direction: column; 
   align-items: center; // Центрируем по горизонтали
   
   // ЕДИНЫЙ отступ сверху для всех страниц
   padding-top: 40px;
-
   padding-bottom: 0; 
 }
 
-
-// Этот невидимый блок принудительно создает место внизу страницы
+// Псевдо-элемент для отступа внизу
 .screenWrapper::after {
   content: "";
   display: block;
-  min-height: 50px; // Размер нижнего отступа
-  flex-shrink: 0;   // Запрещаем сжиматься
+  min-height: 50px;
+  flex-shrink: 0;
   width: 100%;
 }
 
@@ -39,12 +36,11 @@
 .contentRow {
   display: flex;
   justify-content: center;
-  align-items: flex-start; // Выравниваем элементы по верху
+  align-items: flex-start;
   gap: 32px;
   width: 100%;
   max-width: 900px;
   
-  // Убираем все отступы у детей, всё контролирует screenWrapper
   margin: 0; 
   flex-shrink: 0;
   height: fit-content;
@@ -57,7 +53,6 @@
   width: 350px;
   gap: 10px;
   
-  // Убираем все отступы, чтобы не было двойных отступов на странице Login
   margin: 0;
   flex-shrink: 0;
   height: fit-content;
@@ -86,12 +81,11 @@
     height: auto;
     min-height: 100vh;
     padding-top: 10px;
+    padding-bottom: 40px;
     
-   
     &::after {
       display: none;
     }
-    padding-bottom: 40px;
   }
   
   .contentRow, .formColumn {

@@ -1,0 +1,48 @@
+/* frontend/src/components/Layout/Layout.module.scss */
+
+/* frontend/src/components/Layout/Layout.module.scss */
+
+.layoutWrapper {
+  min-height: 100vh;
+  width: 100%;
+  
+  /* 🔥 ГЛАВНОЕ ИЗМЕНЕНИЕ: 
+     Отступ создаем здесь, а не в margin у ребенка.
+     Контент автоматически сдвинется вправо. */
+  padding-left: 245px;
+  box-sizing: border-box; /* Обязательно, чтобы padding не ломал ширину */
+  
+  background-color: #fafafa;
+  
+  /* Важно: display block (по умолчанию), чтобы дети занимали 100% ширины */
+  display: block; 
+}
+
+.mainContent {
+  /* Теперь здесь просто width: 100%, так как отступ уже задан родителем */
+  width: 100%;
+  min-height: 100vh;
+  
+  /* Центрируем профиль внутри */
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  
+
+}
+
+/* --- АДАПТИВ --- */
+
+/* 1. Узкий экран (ноутбук) -> Узкий сайдбар (72px) */
+@media (max-width: 1263px) {
+  .layoutWrapper {
+    padding-left: 72px; /* Уменьшаем отступ */
+  }
+}
+
+/* 2. Мобильный экран -> Сайдбар снизу/скрыт (0px) */
+@media (max-width: 767px) {
+  .layoutWrapper {
+    padding-left: 0;
+  }
+}

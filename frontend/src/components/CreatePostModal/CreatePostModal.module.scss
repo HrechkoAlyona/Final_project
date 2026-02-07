@@ -1,0 +1,253 @@
+/* frontend/src/components/CreatePostModal/CreatePostModal.module.scss */
+
+// Оверлей и кнопка закрытия
+.overlay {
+  position: fixed;
+  top: 0; left: 0; width: 100vw; height: 100vh;
+  background-color: rgba(0, 0, 0, 0.65);
+  z-index: 1000;
+  display: flex; justify-content: center; align-items: center;
+}
+
+.closeBtn {
+  position: absolute; top: 20px; right: 20px;
+  background: none; border: none; color: #fff;
+  cursor: pointer; z-index: 1001;
+  display: flex; align-items: center; justify-content: center;
+  svg { width: 30px; height: 30px; }
+}
+
+// Карточка модального окна
+.modalCard {
+  background-color: #fff;
+  width: 100%; max-width: 1100px;
+  height: 80vh; min-height: 500px; max-height: 800px;
+  border-radius: 12px; overflow: hidden;
+  display: flex; flex-direction: column;
+  position: relative;
+  animation: appear 0.2s ease-out;
+}
+
+@keyframes appear {
+  from { transform: scale(1.05); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+
+// Шапка
+.header {
+  height: 44px; border-bottom: 1px solid #dbdbdb;
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 0 16px; background: #fff; flex-shrink: 0;
+
+  h3 {
+    font-size: 16px; font-weight: 600; text-align: center;
+    flex-grow: 1; margin: 0; color: #262626;
+  }
+}
+
+.navBtn {
+  background: none; border: none; cursor: pointer;
+  font-size: 14px; font-weight: 600; color: #0095f6;
+  &:disabled { opacity: 0.3; cursor: default; }
+  &:hover:not(:disabled) { color: #00376b; }
+}
+
+.backBtn {
+  background: none; border: none; cursor: pointer;
+  font-size: 24px; display: flex; align-items: center; color: #262626;
+}
+
+// Тело окна
+.body {
+  display: flex; flex: 1; overflow: hidden;
+}
+
+// --- ЛЕВАЯ КОЛОНКА (Фото) ---
+.mediaSection {
+  flex: 1.5; background-color: #fafafa;
+  display: flex; justify-content: center; align-items: center;
+  
+  // ВАЖНО: position relative, чтобы абсолютный текст был внутри этого блока
+  position: relative; 
+  border-right: 1px solid #dbdbdb;
+
+  &.active { background-color: #fafafa; }
+
+  img { width: 100%; height: 100%; object-fit: contain; }
+}
+
+// --- ЗАГОЛОВОК ПОВЕРХ КАРТИНКИ ---
+.previewTitleOverlay {
+  position: absolute;
+  bottom: 40px;      /* Отступ снизу */
+  left: 20px;
+  right: 20px;       /* Чтобы текст не вылезал за края */
+  
+  color: #fff;       /* Белый текст */
+  font-size: 28px;   /* Крупный шрифт */
+  font-weight: 700;  /* Жирный */
+  line-height: 1.2;
+  
+  /* Тень текста (чтобы читалось на белой картинке) */
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.8);
+  
+  word-wrap: break-word; /* Перенос длинных слов */
+  pointer-events: none;  /* Чтобы клики проходили сквозь текст */
+  text-align: left;
+}
+
+.uploadPlaceholder {
+  display: flex; flex-direction: column; align-items: center;
+  gap: 15px; padding: 20px; text-align: center;
+}
+
+.selectLabel {
+  background-color: #0095f6; color: white;
+  padding: 8px 16px; border-radius: 8px;
+  font-weight: 600; font-size: 14px; cursor: pointer;
+  &:hover { background-color: #1877f2; }
+}
+
+// --- ПРАВАЯ КОЛОНКА (Форма) ---
+.formSection {
+  flex: 1; min-width: 340px; max-width: 400px;
+  display: flex; flex-direction: column;
+  background: #fff;
+}
+
+// Блок пользователя
+.userInfo {
+  padding: 18px 16px; display: flex; align-items: center; gap: 12px;
+  flex-shrink: 0;
+  
+  img { 
+    width: 28px; height: 28px; 
+    border-radius: 50%; object-fit: cover; 
+    border: 1px solid #efefef;
+  }
+  
+  span { font-weight: 600; font-size: 14px; color: #262626; }
+}
+
+// Группы полей (Разделители)
+.inputGroup {
+  padding: 0 16px;
+  border-bottom: 1px solid #efefef;
+  position: relative;
+  display: flex; flex-direction: column;
+
+  // Последний элемент (описание) растягиваем на оставшееся место
+  &:last-child {
+    border-bottom: none;
+    flex: 1; 
+  }
+}
+
+// Поле ЗАГОЛОВКА
+.titleInput {
+  width: 100%;
+  border: none;
+  outline: none;
+  
+  // Крупный шрифт и отступы
+  font-size: 18px; 
+  font-weight: 600; 
+  padding: 20px 0; 
+  color: #262626;
+
+  &::placeholder {
+    font-weight: 400; // Плейсхолдер тонкий
+    color: #8e8e8e;
+  }
+}
+
+// Поле ОПИСАНИЯ
+.captionInput {
+  width: 100%;
+  flex: 1; // Растягивается
+  min-height: 150px;
+  border: none; resize: none;
+  margin-top: 15px;
+  font-size: 15px; font-family: inherit;
+  outline: none; line-height: 1.5;
+  color: #262626;
+}
+
+// Инструменты (Эмодзи и счетчик)
+.tools {
+  padding: 10px 0; 
+  display: flex; justify-content: space-between; align-items: center;
+  position: relative; // Чтобы попап смайликов позиционировался относительно тулбара
+}
+
+.emojiBtn {
+  cursor: pointer; font-size: 24px; color: #8e8e8e;
+  display: flex; align-items: center;
+  &:hover { color: #262626; }
+}
+
+.counter { font-size: 12px; color: #c7c7c7; }
+
+// --- ВЫПАДАЮЩЕЕ ОКНО СМАЙЛИКОВ (Базовый стиль) ---
+.emojiPickerPopover {
+  position: absolute; 
+  z-index: 20;
+  background-color: #fff; // Белый фон контейнера
+  box-shadow: 0 5px 15px rgba(0,0,0,0.2); 
+  border-radius: 8px;
+  
+  // По умолчанию открываем ВНИЗ (для заголовка)
+  top: 40px; 
+  left: 0;
+}
+
+// --- СПЕЦИАЛЬНЫЙ КЛАСС: Открытие ВЛЕВО и ВВЕРХ (для описания) ---
+// Это решает проблему перекрытия текста
+.popoverUp {
+  top: auto;          // Сбрасываем top
+  bottom: 0;          // Выравниваем по низу панели инструментов
+  
+  left: auto;         // Сбрасываем left
+  right: 100%;        // Выталкиваем полностью влево (на картинку)
+  margin-right: 15px; // Добавляем отступ от края формы
+  
+  // (Опционально) Стрелочка, указывающая вправо
+  &::after {
+    content: '';
+    position: absolute;
+    top: 85%;
+    right: -8px;
+    width: 0; height: 0;
+    border-top: 8px solid transparent;
+    border-bottom: 8px solid transparent;
+    border-left: 8px solid #fff;
+  }
+}
+
+// --- АДАПТИВ ---
+@media (max-width: 850px) {
+  .modalCard { width: 100%; height: 100%; border-radius: 0; }
+  .closeBtn { top: 10px; right: 10px; color: #000; z-index: 2000; }
+  
+  .body { flex-direction: column; overflow-y: auto; }
+  
+  .mediaSection { 
+    flex: none; height: 40vh; 
+    border-right: none; border-bottom: 1px solid #dbdbdb; 
+  }
+  
+  .formSection { 
+    flex: 1; height: auto; min-height: 300px;
+  }
+
+  // На мобильных картинка сверху, поэтому "влево" открывать некуда.
+  // Возвращаем открытие просто "вверх" над кнопкой.
+  .popoverUp {
+    right: 0;
+    left: auto;
+    margin-right: 0;
+    bottom: 45px; // Поднимаем над кнопкой смайла
+    
+    &::after { display: none; } // Скрываем стрелочку
+  }
+}

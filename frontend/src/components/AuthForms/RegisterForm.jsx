@@ -5,7 +5,7 @@ import { Toaster, toast } from 'react-hot-toast';
 import { useRegisterUserMutation } from '../../services/api'; 
 import LogoIchgram from '../../components/logos/LogoIchgram'; 
 import s from './AuthForms.module.scss';
-import p from '../../pages/Pages.module.scss'; // Уникальные стили страницы
+import p from '../../pages/Pages.module.scss'; 
 
 const RegisterForm = () => {
   const navigate = useNavigate();
@@ -26,9 +26,26 @@ const RegisterForm = () => {
         password: data.password,
       };
 
-      await registerUser(userData).unwrap();
-      toast.success('Registration successful! Please log in.');
-      navigate('/login');
+      // Регистрация пользователя
+      const result = await registerUser(userData).unwrap();
+      
+      // Если бэкенд сразу возвращает токен и данные пользователя после регистрации:
+      if (result.token && result._id) {
+        localStorage.setItem('token', result.token);
+        localStorage.setItem('userId', result._id);
+        
+        toast.success('Registration successful! Welcome.');
+
+        // Перенаправляем сразу в созданный профиль
+        navigate(`/profile/${result._id}`);
+        
+        // Перезагрузка для обновления состояния isAuthenticated в App.jsx
+        window.location.reload();
+      } else {
+        // Если бэкенд требует ручного входа после регистрации
+        toast.success('Registration successful! Please log in.');
+        navigate('/login');
+      }
     } catch (err) {
       console.error(err);
       toast.error(err.data?.message || 'Registration failed');
@@ -36,16 +53,11 @@ const RegisterForm = () => {
   };
 
   return (
-    // Обертка экрана
     <div className={p.screenWrapper}>
-      
-      {/* Колонка шириной 350px */}
       <div className={p.formColumn}>
-        
-        {/* ВЕРХНИЙ БЛОК: Форма регистрации */}
         <div className={s.authCard}>
           <div className={s.logo}>
-              <LogoIchgram />
+            <LogoIchgram />
           </div>
           
           <p className={s.subText}>
@@ -53,7 +65,7 @@ const RegisterForm = () => {
           </p>
 
           <form className={s.formStack} onSubmit={handleSubmit(onSubmit)}>
-             <div>
+            <div>
               <input
                 placeholder="Email"
                 type="text"
@@ -107,16 +119,14 @@ const RegisterForm = () => {
           </form>
         </div>
 
-        {/* НИЖНИЙ БЛОК: Переход на логин  */}
         <div className={s.switchBox}>
           <p>
             <span>Have an account?</span>
             <Link to="/login">Log in</Link>
           </p>
         </div>
-
       </div> 
-      <Toaster />
+      <Toaster position="top-center" />
     </div>
   );
 };

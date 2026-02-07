@@ -1,0 +1,1 @@
+export { default as PostDetailsModal } from './PostDetailsModal';

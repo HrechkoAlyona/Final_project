@@ -1,37 +1,47 @@
-// final_project\backend\src\controllers\postController.js
+// backend/src/controllers/postController.js
 
 const Post = require('../models/postModel');
 const User = require('../models/userModel');
 
-// Создать новый пост
+// 1. Создать новый пост
 const createPost = async (req, res) => {
     try {
-        const { image, description } = req.body;
+        const { description, title } = req.body; 
+        
+        if (!req.file) {
+            return res.status(400).json({ message: 'Пожалуйста, добавьте изображение' });
+        }
+
+        // Конвертация изображения
+        const b64 = Buffer.from(req.file.buffer).toString('base64');
+        const image = `data:${req.file.mimetype};base64,${b64}`;
+
         const newPost = await Post.create({
-            user: req.user._id, // ID берем из токена (через protect)
-            image,
-            description
+            user: req.user._id,
+            image: image,
+            title: title || "",       
+            description: description  
         });
+
+        await newPost.populate('user', 'username avatar');
+
         res.status(201).json(newPost);
     } catch (error) {
+        console.error("Server Error:", error);
         res.status(500).json({ message: 'Ошибка при создании поста', error: error.message });
     }
 };
 
-// Получить все посты
-// Получить посты (с фильтрацией)
+// 2. Получить все посты (Лента или Explore)
 const getPosts = async (req, res) => {
     try {
-        const { type } = req.query; // Получаем тип из URL: ?type=feed
+        const { type } = req.query;
         let query = {};
 
-        // Если запрошена лента подписок (Home)
         if (type === 'feed' && req.user) {
             const currentUser = await User.findById(req.user._id);
-            // Показываем посты только тех, на кого подписаны + свои
             query = { user: { $in: [...currentUser.following, req.user._id] } };
         } 
-        // Если type=explore или не указан — query остается {}, и find() вернет все посты
 
         const posts = await Post.find(query)
             .populate('user', 'username fullName avatar')
@@ -39,23 +49,44 @@ const getPosts = async (req, res) => {
 
         res.json(posts);
     } catch (error) {
+        console.error("Ошибка при получении постов:", error);
         res.status(500).json({ message: 'Ошибка при получении постов', error: error.message });
     }
 };
 
-// Получить только мои посты (для страницы профиля)
+// 3. Получить посты текущего пользователя
 const getMyPosts = async (req, res) => {
     try {
-        const posts = await Post.find({ user: req.user._id }).sort({ createdAt: -1 });
+        const posts = await Post.find({ user: req.user._id })
+            .populate('user', 'username fullName avatar')
+            .sort({ createdAt: -1 });
         res.json(posts);
     } catch (error) {
         res.status(500).json({ message: 'Ошибка при получении ваших постов' });
     }
 };
 
+// 4. 🔥 НОВОЕ: Получить ОДИН пост по ID (для модального окна)
+const getPostById = async (req, res) => {
+    try {
+        const post = await Post.findById(req.params.id)
+            .populate('user', 'username avatar') // Данные автора поста
+            .populate({
+                path: 'comments', // Данные комментариев
+                populate: { path: 'user', select: 'username avatar' } // Данные авторов комментариев
+            });
 
+        if (!post) {
+            return res.status(404).json({ message: 'Пост не найден' });
+        }
+        res.json(post);
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'Ошибка получения поста' });
+    }
+};
 
-// Удалить пост
+// 5. Удалить пост
 const deletePost = async (req, res) => {
     try {
         const post = await Post.findById(req.params.id);
@@ -64,7 +95,6 @@ const deletePost = async (req, res) => {
             return res.status(404).json({ message: 'Пост не найден' });
         }
 
-        // Проверка: может ли этот пользователь удалить пост? (только автор)
         if (post.user.toString() !== req.user._id.toString()) {
             return res.status(401).json({ message: 'У вас нет прав на удаление этого поста' });
         }
@@ -76,29 +106,35 @@ const deletePost = async (req, res) => {
     }
 };
 
-// Редактировать описание поста
+// 6. Обновить пост (Заголовок и Описание)
 const updatePost = async (req, res) => {
     try {
-        const { description } = req.body;
+        const { description, title } = req.body;
         const post = await Post.findById(req.params.id);
 
-        if (!post) {
-            return res.status(404).json({ message: 'Пост не найден' });
-        }
-
-        // Проверка авторства
-        if (post.user.toString() !== req.user._id.toString()) {
-            return res.status(401).json({ message: 'У вас нет прав на редактирование этого поста' });
-        }
-
-        post.description = description || post.description;
-        const updatedPost = await post.save();
+        if (!post) return res.status(404).json({ message: 'Пост не найден' });
         
+        if (post.user.toString() !== req.user._id.toString()) {
+            return res.status(401).json({ message: 'Нет прав на редактирование' });
+        }
+
+        if (description !== undefined) post.description = description;
+        if (title !== undefined) post.title = title;
+
+        const updatedPost = await post.save();
+        await updatedPost.populate('user', 'username avatar');
+
         res.json(updatedPost);
     } catch (error) {
         res.status(500).json({ message: 'Ошибка при обновлении поста' });
     }
 };
 
-
-module.exports = { createPost, getPosts, getMyPosts, deletePost, updatePost };
+module.exports = { 
+    createPost, 
+    getPosts, 
+    getMyPosts, 
+    getPostById,
+    deletePost, 
+    updatePost 
+};

@@ -18,14 +18,21 @@ const LoginForm = () => {
     formState: { errors },
   } = useForm({ mode: 'onBlur' });
 
-  const onSubmit = async (data) => {
+const onSubmit = async (data) => {
     try {
       const result = await loginUser(data).unwrap();
       
-      if (result.token) {
+      // Проверяем наличие токена и id пользователя в ответе от сервера
+      if (result.token && result._id) {
         localStorage.setItem('token', result.token);
+        localStorage.setItem('userId', result._id); // Сохраняем ID пользователя
+        
         toast.success('Welcome back!');
-        navigate('/');
+        
+        // Перенаправляем на страницу профиля по ID
+        navigate(`/profile/${result._id}`);
+        
+        // Перезагрузка страницы подхватит isAuthenticated в App.jsx
         window.location.reload(); 
       }
     } catch (err) {

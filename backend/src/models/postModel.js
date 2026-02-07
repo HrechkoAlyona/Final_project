@@ -1,27 +1,42 @@
-//final_project\backend\src\models\postModel.js
+// backend/src/models/postModel.js
 
 const mongoose = require('mongoose');
 
-const postSchema = new mongoose.Schema({
+const postSchema = mongoose.Schema({
     user: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: 'User', // Связываем пост с пользователем
-        required: true
+        required: true,
+        ref: 'User'
     },
     image: {
-        type: String, // Тут будет храниться картинка в Base64 (строка)
-        required: true
+        type: String,
+        required: [true, 'Пожалуйста, добавьте изображение']
     },
+    // --- НОВОЕ ПОЛЕ ---
+    title: {
+        type: String,
+        default: "" // Заголовок не обязателен, может быть пустым
+    },
+    // ------------------
     description: {
         type: String,
-        required: true
+        default: "" 
     },
-    likes: [
-        {
+    likes: [{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User'
+    }],
+    comments: [{
+        user: {
             type: mongoose.Schema.Types.ObjectId,
+            required: true,
             ref: 'User'
-        }
-    ]
-}, { timestamps: true });
+        },
+        text: { type: String, required: true },
+        createdAt: { type: Date, default: Date.now }
+    }]
+}, {
+    timestamps: true
+});
 
 module.exports = mongoose.model('Post', postSchema);

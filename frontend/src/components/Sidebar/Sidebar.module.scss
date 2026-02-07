@@ -1,0 +1,169 @@
+/* frontend/src/components/Sidebar/Sidebar.module.scss */
+
+* {
+  box-sizing: border-box;
+}
+
+/* --- ОСНОВНОЙ САЙДБАР --- */
+.sidebar {
+  width: 245px; /* Широкий на больших экранах */
+  height: 100vh;
+  position: fixed;
+  left: 0;
+  top: 0;
+  padding: 8px 12px 20px;
+  border-right: 1px solid #dbdbdb;
+  display: flex;
+  flex-direction: column;
+  background-color: #fff;
+  
+  /* Сайдбар самый главный */
+  z-index: 1000; 
+
+  /* Адаптивность: узкий на ноутбуках */
+  @media (max-width: 1263px) {
+    width: 72px; 
+    align-items: center;
+  }
+
+  @media (max-width: 767px) {
+    display: none; 
+  }
+}
+
+.logo {
+  padding: 25px 12px;
+  margin-bottom: 10px;
+  
+  @media (max-width: 1263px) {
+    display: none;
+  }
+}
+
+.nav {
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.navItem {
+  display: flex;
+  align-items: center;
+  padding: 12px;
+  gap: 16px;
+  text-decoration: none;
+  color: #000;
+  border-radius: 8px;
+  transition: background-color 0.2s;
+  
+  white-space: nowrap; 
+
+  &:hover {
+    background-color: #f2f2f2;
+  }
+
+  svg {
+    font-size: 24px;
+    min-width: 24px;
+    /* Плавный переход толщины иконки */
+    transition: stroke-width 0.1s ease;
+  }
+
+  span {
+    font-size: 16px;
+    /* Текст скрывается на узких экранах */
+    @media (max-width: 1263px) {
+      display: none;
+    }
+  }
+}
+
+/* 🔥 СТИЛИ ДЛЯ АВАТАРКИ В МЕНЮ */
+.profileAvatar {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%; /* Круглая */
+  object-fit: cover;  /* Чтобы фото не сплющилось */
+}
+
+/* 🔥 СПЕЦИАЛЬНЫЙ КЛАСС ДЛЯ КНОПКИ ПРОФИЛЯ */
+.profileItem {
+  /*  промежуток между Create и Profile */
+  margin-top: 50px;
+}
+
+/* СТИЛИ ДЛЯ АКТИВНОЙ КНОПКИ */
+.active {
+  font-weight: 800; /* Жирный текст */
+
+  /* Делаем SVG иконку жирнее (имитация заливки) */
+  /* Это НЕ повлияет на img (аватарку), что нам и нужно */
+  svg {
+    stroke-width: 25; 
+  }
+}
+
+
+/* --- ВЫЕЗЖАЮЩАЯ ПАНЕЛЬ ПОИСКА --- */
+.searchDrawer {
+  position: fixed;
+  top: 0;
+  
+  /* Отступ равен ширине сайдбара */
+  left: 245px; 
+  
+  height: 100vh;
+  width: 397px;
+  background-color: white;
+  
+  /* Тень справа */
+  box-shadow: 4px 0 24px rgba(0,0,0,0.15);
+  
+  border-top-right-radius: 16px;
+  border-bottom-right-radius: 16px;
+  display: flex;
+  flex-direction: column;
+  
+  /* Слой: НИЖЕ сайдбара, но ВЫШЕ контента */
+  z-index: 10; 
+
+  animation: slideIn 0.3s ease-out;
+
+  /* СИНХРОНИЗАЦИЯ ОТСТУПА */
+  @media (max-width: 1263px) {
+    left: 72px; 
+  }
+
+  @media (max-width: 767px) {
+    left: 0;
+    width: 100%;
+    z-index: 2000; 
+  }
+}
+
+@keyframes slideIn {
+  from { transform: translateX(-100%); opacity: 0; }
+  to { transform: translateX(0); opacity: 1; }
+}
+
+/* --- ВНУТРЕННОСТИ ПОИСКА --- */
+.searchHeader { padding: 24px 16px; h2 { font-size: 24px; font-weight: 600; margin-bottom: 20px; }}
+.searchInputWrapper { background: #efefef; border-radius: 8px; padding: 0 16px; height: 40px; display: flex; align-items: center; position: relative; .searchIcon { color: #8e8e8e; font-size: 18px; margin-right: 12px; } input { background: transparent; border: none; outline: none; font-size: 16px; width: 100%; } .closeBtn { cursor: pointer; color: #c7c7c7; margin-left: auto; display: flex; align-items: center; &:hover { color: #000; }}}
+.divider { height: 1px; background-color: #dbdbdb; margin-top: 10px; }
+.searchResults { flex: 1; overflow-y: auto; padding-top: 10px; }
+.userItem { display: flex; align-items: center; padding: 8px 24px; cursor: pointer; transition: background 0.2s; &:hover { background-color: #fafafa; } img { width: 44px; height: 44px; border-radius: 50%; margin-right: 12px; object-fit: cover; } .userInfo { display: flex; flex-direction: column; .username { font-weight: 600; font-size: 14px; } .fullname { color: #8e8e8e; font-size: 14px; } }}
+.noResults, .loading { padding: 20px; text-align: center; color: #8e8e8e; }
+
+
+/* ПРОЗРАЧНАЯ ПОДЛОЖКА (OVERLAY) */
+.overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: rgba(0,0,0,0.05); 
+  z-index: 5; 
+  cursor: default;
+}

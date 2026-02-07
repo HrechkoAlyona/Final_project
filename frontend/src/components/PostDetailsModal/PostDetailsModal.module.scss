@@ -1,0 +1,245 @@
+// Фон затемнения
+.overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: rgba(0, 0, 0, 0.6);
+  z-index: 1000;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.closeButtonArea {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  color: white;
+  font-size: 30px;
+  cursor: pointer;
+  z-index: 1010;
+}
+
+// Главный контейнер
+.modalContainer {
+  background-color: #fff;
+  max-width: 95vw;
+  max-height: 95vh; // Чуть меньше высоты экрана
+  height: 90vh;     // Фиксируем высоту
+  width: 1100px;
+  display: flex;
+  border-radius: 4px;
+  overflow: hidden;
+
+  @media (max-width: 768px) {
+    flex-direction: column;
+    height: auto;
+    overflow-y: auto;
+  }
+}
+
+// Левая часть (Фото)
+.imageSection {
+  flex: 1.5; // Занимает больше места
+  background-color: #000;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain; // Чтобы фото влезало целиком
+  }
+
+  @media (max-width: 768px) {
+    min-height: 300px;
+  }
+}
+
+// Правая часть (Сайдбар)
+.sidebarSection {
+  flex: 1; // Занимает меньше места
+  display: flex;
+  flex-direction: column;
+  border-left: 1px solid #dbdbdb;
+  background-color: #fff;
+  min-width: 350px;
+  max-width: 500px;
+}
+
+// --- КОМПОНЕНТЫ ВНУТРИ ---
+
+// 1. Шапка (TopBar)
+.topBar {
+  padding: 14px;
+  border-bottom: 1px solid #dbdbdb;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  .authorInfo {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    
+    img {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 1px solid #dbdbdb;
+    }
+
+    .username {
+      font-weight: 600;
+      font-size: 14px;
+      color: #262626;
+      text-decoration: none;
+      
+      &:hover { text-decoration: underline; }
+    }
+
+    .dot { color: #8e8e8e; margin: 0 4px; }
+
+    .followBtn {
+      font-weight: 600;
+      font-size: 14px;
+      color: #0095f6;
+      cursor: pointer;
+      &:hover { color: #00376b; }
+    }
+  }
+
+  .moreBtn {
+    cursor: pointer;
+    font-size: 20px;
+  }
+}
+
+// 2. Зона скролла (Caption + Comments)
+.commentsArea {
+  flex: 1; // Растягивается на всё свободное место
+  overflow-y: auto;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+
+  /* Скроллбар */
+  &::-webkit-scrollbar { width: 4px; }
+  &::-webkit-scrollbar-thumb { background-color: #dbdbdb; border-radius: 4px; }
+}
+
+// Один комментарий
+.commentRow {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+
+  .avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  .commentContent {
+    font-size: 14px;
+    line-height: 1.4;
+
+    .username {
+      font-weight: 600;
+      margin-right: 6px;
+    }
+  }
+
+  .meta {
+    margin-top: 4px;
+    display: flex;
+    gap: 12px;
+    font-size: 12px;
+    color: #8e8e8e;
+    
+    span { cursor: pointer; }
+  }
+
+  .likeHeart {
+    margin-left: auto; // Прижимает лайк к правому краю
+    font-size: 12px;
+    cursor: pointer;
+    color: #8e8e8e;
+  }
+}
+
+// 3. Блок действий (Likes, Date)
+.interactionBar {
+  padding: 12px 16px;
+  border-top: 1px solid #dbdbdb;
+  
+  .iconsRow {
+    display: flex;
+    justify-content: space-between;
+    font-size: 24px;
+    margin-bottom: 8px;
+
+    .leftIcons {
+      display: flex;
+      gap: 16px;
+      svg { cursor: pointer; &:hover { opacity: 0.6; } }
+    }
+  }
+
+  .likesCount {
+    font-weight: 600;
+    font-size: 14px;
+    margin-bottom: 4px;
+  }
+
+  .date {
+    font-size: 10px;
+    color: #8e8e8e;
+    text-transform: uppercase;
+  }
+}
+
+// 4. Форма ввода (AddCommentBox)
+.commentForm {
+  padding: 6px 16px;
+  border-top: 1px solid #dbdbdb;
+  display: flex;
+  align-items: center;
+  min-height: 50px;
+
+  .emojiBtn {
+    font-size: 24px;
+    cursor: pointer;
+    margin-right: 12px;
+    color: #262626;
+  }
+
+  input {
+    flex: 1;
+    border: none;
+    outline: none;
+    font-size: 14px;
+    max-height: 80px;
+  }
+
+  .postBtn {
+    font-weight: 600;
+    color: #0095f6;
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 14px;
+    opacity: 1;
+
+    &:disabled {
+      opacity: 0.3;
+      cursor: default;
+    }
+  }
+}
