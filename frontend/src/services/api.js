@@ -1,5 +1,4 @@
 // frontend/src/services/api.js
-
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
 
 export const api = createApi({
@@ -14,10 +13,9 @@ export const api = createApi({
       return headers;
     },
   }),
-  tagTypes: ['AuthCheck', 'Post', 'User'], 
-  
+  tagTypes: ['AuthCheck', 'Post', 'User', 'Profile'], 
+
   endpoints: (builder) => ({
-    
     // --- АВТОРИЗАЦИЯ ---
     login: builder.mutation({
       query: (credentials) => ({
@@ -25,7 +23,7 @@ export const api = createApi({
         method: 'POST',
         body: credentials,
       }),
-      invalidatesTags: ['AuthCheck'],
+      invalidatesTags: ['AuthCheck', 'User', 'Profile', 'Post'],
     }),
 
     registerUser: builder.mutation({
@@ -53,18 +51,15 @@ export const api = createApi({
     }),
 
     // --- ПОЛЬЗОВАТЕЛИ ---
-    
-    // Получить СВОЙ профиль (важно для истории поиска)
     getMe: builder.query({
       query: () => '/users/profile',
-      // keepUnusedDataFor: 0 гарантирует, что мы всегда получим свежую историю при открытии
       keepUnusedDataFor: 0,
       providesTags: ['User'],
     }),
 
     getUserById: builder.query({
       query: (id) => `users/${id}`,
-      providesTags: (_result, _error, id) => [{ type: 'User', id }],
+      providesTags: (result, error, id) => [{ type: 'Profile', id }],
     }),
 
     updateProfile: builder.mutation({
@@ -78,31 +73,32 @@ export const api = createApi({
 
     followUser: builder.mutation({
       query: (userId) => ({
-        url: `/users/${userId}/follow`,
-        method: 'PUT',
+        url: '/follows', 
+        method: 'POST',  
+        body: { followingId: userId }, 
       }),
-      invalidatesTags: ['User', 'Post'], 
+      invalidatesTags: (result, error, userId) => [
+        'User', 
+        'Post', 
+        { type: 'Profile', id: userId }
+      ], 
     }),
 
-    // --- ПОИСК И ИСТОРИЯ ---
-
-    // 1. Живой поиск
+    // --- ПОИСК ---
     searchUsers: builder.query({
       query: (searchTerm) => `/search?q=${searchTerm}`,
-      keepUnusedDataFor: 5, 
+      keepUnusedDataFor: 5,
     }),
 
-    // 2. Добавить в историю (при клике)
     addToSearchHistory: builder.mutation({
       query: (targetUserId) => ({
         url: '/users/search',
         method: 'PUT',
         body: { targetUserId },
       }),
-      invalidatesTags: ['User'], // Обновит профиль и список Recent
+      invalidatesTags: ['User'],
     }),
 
-    // 3. Удалить одного из истории
     removeFromSearchHistory: builder.mutation({
       query: (targetUserId) => ({
         url: '/users/search/remove',
@@ -112,7 +108,6 @@ export const api = createApi({
       invalidatesTags: ['User'],
     }),
 
-    // 4. Очистить всё
     clearSearchHistory: builder.mutation({
       query: () => ({
         url: '/users/search',
@@ -121,8 +116,16 @@ export const api = createApi({
       invalidatesTags: ['User'],
     }),
 
-
     // --- ПОСТЫ ---
+    getFollowedPosts: builder.query({
+      query: (page = 1) => `/posts/followed?page=${page}`,
+      providesTags: ['Post'],
+    }),
+
+    getExplorePosts: builder.query({
+      query: () => '/posts/explore',
+      providesTags: ['Post'],
+    }),
 
     getPosts: builder.query({
       query: () => '/posts',
@@ -153,26 +156,40 @@ export const api = createApi({
         url: `/posts/${postId}`,
         method: 'DELETE',
       }),
-      invalidatesTags: ['User', 'Post'], 
+      invalidatesTags: ['User', 'Post'],
     }),
 
     updatePost: builder.mutation({
       query: ({ id, content, title }) => ({ 
         url: `/posts/${id}`,
         method: 'PUT',
-        body: { description: content, title: title }, 
+        body: { description: content, title }, 
       }),
-      invalidatesTags: ['Post', 'User'], 
+      invalidatesTags: (result, error, { id }) => [{ type: 'Post', id }], 
     }),
 
-    toggleLike: builder.mutation({
-      query: (postId) => ({
-        url: `/posts/${postId}/like`,
-        method: 'PUT',
-      }),
-      invalidatesTags: ['Post'] 
-    }),
+    // ЛАЙКИ
 
+   toggleLike: builder.mutation({
+  query: (postId) => ({
+    url: `/posts/${postId}/like`,
+    method: 'PUT',
+  }),
+  // Оставляем теги, чтобы после завершения запроса данные в фоне синхронизировались
+  invalidatesTags: (result, error, id) => [{ type: 'Post', id }, 'Post'],
+}),
+
+
+
+    // --- КОММЕНТАРИИ ---
+    addComment: builder.mutation({
+      query: ({ postId, text }) => ({
+        url: `/posts/${postId}/comment`, 
+        method: 'POST',
+        body: { text },
+      }),
+      invalidatesTags: (result, error, { postId }) => [{ type: 'Post', id: postId }, 'Post'],
+    }),
   }),
 });
 
@@ -185,18 +202,19 @@ export const {
   useGetMeQuery, 
   useUpdateProfileMutation,
   useFollowUserMutation,
-  
-  // Хуки поиска
   useSearchUsersQuery, 
   useAddToSearchHistoryMutation, 
   useRemoveFromSearchHistoryMutation, 
   useClearSearchHistoryMutation, 
-  
+  useGetFollowedPostsQuery,
+  useLazyGetFollowedPostsQuery, 
   useGetPostsQuery,
+  useGetExplorePostsQuery,
   useGetMyPostsQuery,
   useGetPostByIdQuery, 
   useCreatePostMutation,
   useDeletePostMutation,
   useUpdatePostMutation,
-  useToggleLikeMutation 
+  useToggleLikeMutation,
+  useAddCommentMutation 
 } = api;

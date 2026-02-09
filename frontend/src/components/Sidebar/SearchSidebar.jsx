@@ -1,3 +1,5 @@
+// frontend\src\components\Sidebar\SearchSidebar.jsx
+
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { AiOutlineClose, AiOutlineSearch } from 'react-icons/ai';
@@ -52,11 +54,12 @@ const SearchSidebar = ({ isOpen, onClose }) => {
 
   return (
     <>
-      {/*1. ПОДЛОЖКА: Клик сюда закрывает поиск */}
+      {/* 1. ПОДЛОЖКА */}
       <div className={s.overlay} onClick={onClose}></div>
 
-      {/* САМА ПАНЕЛЬ ПОИСКА */}
+      {/* 2. ПАНЕЛЬ ПОИСКА */}
       <div className={s.searchDrawer}> 
+        
         <div className={s.searchHeader}>
           <h2>Search</h2>
           <div className={s.searchInputWrapper}>
@@ -78,47 +81,54 @@ const SearchSidebar = ({ isOpen, onClose }) => {
         
         <div className={s.searchResults}>
           
-          {/* РЕЗУЛЬТАТЫ ПОИСКА */}
+          {/* А) РЕЗУЛЬТАТЫ ПОИСКА (Если ввели текст) */}
           {query.length > 0 && (
               <>
                   {isLoading && <div className={s.loading}>Searching...</div>}
+                  
                   {!isLoading && searchResults && searchResults.length === 0 && (
                       <div className={s.noResults}>No results found.</div>
                   )}
+
                   {searchResults?.map((user) => (
                       <div key={user._id} className={s.userItem} onClick={() => handleUserClick(user)}>
                           <img src={user.avatar || "https://cdn-icons-png.flaticon.com/512/149/149071.png"} alt={user.username} />
                           <div className={s.userInfo}>
                               <span className={s.username}>{user.username}</span>
-                              <span className={s.fullname}>{user.fullName}</span>
+                              <span className={s.fullname}>{user.fullName || user.username}</span>
                           </div>
                       </div>
                   ))}
               </>
           )}
 
-          {/* ИСТОРИЯ */}
+          {/* Б) ИСТОРИЯ (Если поле пустое) */}
           {query.length === 0 && (
               <>
-                  <div style={{ padding: '10px 24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                      <span style={{ fontWeight: '600', fontSize: '16px' }}>Recent</span>
+                  <div className={s.recentHeader}>
+                      <span>Recent</span>
                       {me?.search?.length > 0 && (
-                          <span style={{ color: '#0095f6', cursor: 'pointer', fontWeight: '600', fontSize: '14px' }} onClick={handleClearAll}>
+                          <span className={s.clearAllBtn} onClick={handleClearAll}>
                               Clear all
                           </span>
                       )}
                   </div>
 
-                  {(!me?.search || me.search.length === 0) && <div className={s.noResults}>No recent searches.</div>}
+                  {(!me?.search || me.search.length === 0) && (
+                      <div className={s.noResults} style={{ marginTop: 50 }}>No recent searches.</div>
+                  )}
 
                   {me?.search?.map((user) => (
                       <div key={user._id} className={s.userItem} onClick={() => handleUserClick(user)}>
                           <img src={user.avatar || "https://cdn-icons-png.flaticon.com/512/149/149071.png"} alt={user.username} />
+                          
                           <div className={s.userInfo}>
                               <span className={s.username}>{user.username}</span>
-                              <span className={s.fullname}>{user.fullName}</span>
+                              <span className={s.fullname}>{user.fullName || user.username}</span>
                           </div>
-                          <div style={{ marginLeft: 'auto', color: '#8e8e8e', padding: '8px' }} onClick={(e) => handleRemoveOne(e, user._id)}>
+                          
+                          {/* Крестик удаления */}
+                          <div className={s.removeHistoryBtn} onClick={(e) => handleRemoveOne(e, user._id)}>
                               <AiOutlineClose size={14} />
                           </div>
                       </div>

@@ -1,4 +1,4 @@
-/* frontend/src/pages/ProfilePage/ProfilePage.module.scss */
+// frontend\src\pages\ProfilePage\ProfilePage.module.scss
 
 .wrapper {
   width: 100%;
@@ -31,20 +31,7 @@
   box-sizing: border-box;
 }
 
-.avatar {
-  width: 150px;
-  height: 150px;
-  border-radius: 50%;
-  overflow: hidden;
-  flex-shrink: 0;
-  border: 1px solid var(--formStroke);
 
-  img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-  }
-}
 
 .details {
   display: flex;
@@ -67,6 +54,7 @@
   }
 }
 
+/* Кнопка "Редактировать профиль" */
 .editButton {
   border: 1px solid var(--formStroke);
   background-color: transparent;
@@ -82,6 +70,70 @@
     background-color: var(--postLightGrey);
   }
 }
+
+/* === НОВЫЕ СТИЛИ (из inline) === */
+
+/* Кнопка Подписаться / Отписаться */
+.followButton {
+  border: none;
+  background-color: var(--primaryBtn); /* #0095f6 */
+  color: white;
+  padding: 5px 20px;
+  border-radius: 4px;
+  font-weight: 600;
+  font-size: 14px;
+  cursor: pointer;
+  transition: opacity 0.2s;
+
+  &:hover {
+    opacity: 0.8;
+  }
+
+  /* Состояние "Unfollow" (когда уже подписан) */
+  &.unfollow {
+    background-color: var(--postLightGrey); /* #efefef */
+    color: var(--textColor); /* black */
+  }
+}
+
+
+
+.bioSection {
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--textColor);
+  
+  .realName {
+    font-weight: 600;
+    margin-bottom: 4px;
+  }
+}
+
+/* СТИЛЬ ДЛЯ КНОПКИ "... more" */
+.moreLink {
+  color: #8e8e8e; /* Серый цвет, как в Инстаграм */
+  cursor: pointer;
+  
+  &:hover {
+    color: var(--textColor); /* При наведении становится черным (опционально) */
+  }
+}
+
+
+/* Ссылка на веб-сайт */
+.websiteLink {
+  display: block;
+  color: #00376b; /* Темно-синий Instagram */
+  font-weight: 600;
+  text-decoration: none;
+  margin-top: 5px;
+
+  &:hover {
+    text-decoration: underline;
+  }
+}
+
+/* ================================ */
 
 .stats {
   display: flex;
@@ -201,4 +253,31 @@
   .stats {
     display: none;
   }
+}
+
+
+
+
+// Аватар с кольцом
+.avatarWrapper {
+  position: relative;
+  width: 120px;
+  height: 120px;
+}
+
+.avatarWrapper svg {
+  position: absolute;
+  top: -6px;
+  left: -6px;
+  width: 132px;
+  height: 132px;
+}
+
+.avatarImg {
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  object-fit: cover;
+  position: relative;
+  z-index: 2;
 }

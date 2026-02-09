@@ -1,3 +1,5 @@
+// backend\src\routes\followRoutes.js
+
 const express = require('express');
 const router = express.Router();
 const { toggleFollow } = require('../controllers/followController');

@@ -1,0 +1,94 @@
+/* frontend/src/pages/Explore/Explore.module.scss */
+.exploreContainer {
+  max-width: 935px;
+  margin: 0 auto;
+  padding: 30px 20px;
+  width: 100%;
+  box-sizing: border-box;
+
+  @media (max-width: 768px) {
+    padding: 0;
+  }
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr); /* 3 колонки */
+  
+  /* Убрали жесткую высоту 293px, чтобы высота подстраивалась под ширину */
+  grid-auto-rows: minmax(100px, auto); 
+  
+  gap: 4px; /* для тонкой сетки */
+
+  @media (max-width: 768px) {
+    gap: 1px; /* На телефоне делаем совсем тонкую линию */
+  }
+}
+
+.gridItem {
+  position: relative;
+  cursor: pointer;
+  overflow: hidden;
+  background-color: #efefef;
+  
+  /* Делаем элементы квадратными по умолчанию */
+  aspect-ratio: 1 / 1;
+
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+
+  /* --- Сетка Masonry (10n паттерн) --- */
+  
+  /* Высокий справа */
+  &:nth-child(10n + 3) {
+    grid-column: 3;
+    grid-row: span 2;
+    aspect-ratio: auto; /* Сбрасываем квадрат, чтобы он мог растянуться вниз */
+    height: 100%;       /* Занимаем всю высоту двух рядов */
+  }
+
+  /* Высокий слева */
+  &:nth-child(10n + 6) {
+    grid-column: 1;
+    grid-row: span 2;
+    aspect-ratio: auto;
+    height: 100%;
+  }
+
+  &:hover {
+    .overlay {
+      display: flex;
+    }
+  }
+}
+
+.overlay {
+  display: none;
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background-color: rgba(0, 0, 0, 0.3);
+  justify-content: center;
+  align-items: center;
+  gap: 20px;
+  color: #fff;
+  font-weight: 700;
+  font-size: 18px;
+  pointer-events: none;
+
+  .statItem {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    svg { width: 24px; height: 24px; fill: white; }
+  }
+}
+
+.loader, .emptyState {
+  text-align: center;
+  padding: 40px;
+  color: #8e8e8e;
+}

@@ -1,22 +1,23 @@
+// frontend\src\components\Layout\Layout.jsx
 import React, { useState } from 'react';
+import { Outlet } from 'react-router-dom'; 
 import Sidebar from '../Sidebar/Sidebar';
 import CreatePostModal from '../CreatePostModal/CreatePostModal'; 
 import { Footer } from '../Footer/Footer'; 
 import s from './Layout.module.scss';
 
-const Layout = ({ children }) => {
+const Layout = () => { 
   const [isCreateModalOpen, setCreateModalOpen] = useState(false);
 
   return (
     <div className={s.layoutWrapper}>
       <Sidebar onCreateClick={() => setCreateModalOpen(true)} />
       
-      {/* Основной контент страницы */}
       <main className={s.mainContent}>
-         {children}
+          {/* Outlet — это "окно", в котором будут появляться Home, ProfilePage и т.д. */}
+          <Outlet /> 
       </main>
 
-      {/*  2. Вставляем Футер после контента */}
       <Footer />
 
       {isCreateModalOpen && (

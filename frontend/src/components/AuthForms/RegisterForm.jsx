@@ -1,3 +1,5 @@
+// frontend\src\components\AuthForms\RegisterForm.jsx
+
 import React from 'react';
 import { useForm } from 'react-hook-form';
 import { Link, useNavigate } from 'react-router-dom';
@@ -5,7 +7,6 @@ import { Toaster, toast } from 'react-hot-toast';
 import { useRegisterUserMutation } from '../../services/api'; 
 import LogoIchgram from '../../components/logos/LogoIchgram'; 
 import s from './AuthForms.module.scss';
-import p from '../../pages/Pages.module.scss'; 
 
 const RegisterForm = () => {
   const navigate = useNavigate();
@@ -26,108 +27,97 @@ const RegisterForm = () => {
         password: data.password,
       };
 
-      // Регистрация пользователя
       const result = await registerUser(userData).unwrap();
       
-      // Если бэкенд сразу возвращает токен и данные пользователя после регистрации:
       if (result.token && result._id) {
         localStorage.setItem('token', result.token);
         localStorage.setItem('userId', result._id);
-        
-        toast.success('Registration successful! Welcome.');
-
-        // Перенаправляем сразу в созданный профиль
+        toast.success('Registration successful!');
         navigate(`/profile/${result._id}`);
-        
-        // Перезагрузка для обновления состояния isAuthenticated в App.jsx
         window.location.reload();
       } else {
-        // Если бэкенд требует ручного входа после регистрации
         toast.success('Registration successful! Please log in.');
         navigate('/login');
       }
     } catch (err) {
-      console.error(err);
       toast.error(err.data?.message || 'Registration failed');
     }
   };
 
   return (
-    <div className={p.screenWrapper}>
-      <div className={p.formColumn}>
-        <div className={s.authCard}>
-          <div className={s.logo}>
-            <LogoIchgram />
+    <>
+      <div className={s.authCard}>
+        <div className={s.logo}>
+          <LogoIchgram />
+        </div>
+        
+        <p className={s.subText}>
+          Sign up to see photos and videos from your friends.
+        </p>
+
+        <form className={s.formStack} onSubmit={handleSubmit(onSubmit)}>
+          <div>
+            <input
+              placeholder="Email"
+              type="text"
+              {...register('email', { 
+                required: 'Email is required',
+                pattern: { value: /^\S+@\S+$/i, message: 'Invalid email' }
+              })}
+            />
+            {errors.email && <p className={s.errorMsg}>{errors.email.message}</p>}
           </div>
-          
-          <p className={s.subText}>
-            Sign up to see photos and videos from your friends.
-          </p>
 
-          <form className={s.formStack} onSubmit={handleSubmit(onSubmit)}>
-            <div>
-              <input
-                placeholder="Email"
-                type="text"
-                {...register('email', { 
-                  required: 'Email is required',
-                  pattern: { value: /^\S+@\S+$/i, message: 'Invalid email' }
-                })}
-              />
-              {errors.email && <p className={s.errorMsg}>{errors.email.message}</p>}
-            </div>
+          <div>
+            <input
+              placeholder="Full Name"
+              type="text"
+              {...register('fullName', { required: 'Full Name is required' })}
+            />
+            {errors.fullName && <p className={s.errorMsg}>{errors.fullName.message}</p>}
+          </div>
 
-            <div>
-              <input
-                placeholder="Full Name"
-                type="text"
-                {...register('fullName', { required: 'Full Name is required' })}
-              />
-              {errors.fullName && <p className={s.errorMsg}>{errors.fullName.message}</p>}
-            </div>
+          <div>
+            <input
+              placeholder="Username"
+              type="text"
+              {...register('username', { required: 'Username is required' })}
+            />
+            {errors.username && <p className={s.errorMsg}>{errors.username.message}</p>}
+          </div>
 
-            <div>
-              <input
-                placeholder="Username"
-                type="text"
-                {...register('username', { required: 'Username is required' })}
-              />
-              {errors.username && <p className={s.errorMsg}>{errors.username.message}</p>}
-            </div>
+          <div>
+            <input
+              placeholder="Password"
+              type="password"
+              {...register('password', { 
+                required: 'Password is required',
+                minLength: { value: 6, message: 'Min 6 characters' }
+              })}
+            />
+            {errors.password && <p className={s.errorMsg}>{errors.password.message}</p>}
+          </div>
 
-            <div>
-              <input
-                placeholder="Password"
-                type="password"
-                {...register('password', { 
-                  required: 'Password is required',
-                  minLength: { value: 6, message: 'Min 6 characters' }
-                })}
-              />
-              {errors.password && <p className={s.errorMsg}>{errors.password.message}</p>}
-            </div>
+          <div className={s.legalInfo}>
+            <p>
+              By signing up, you agree to our <Link to="/">Terms</Link>, <Link to="/">Privacy Policy</Link> and <Link to="/">Cookie Policy</Link>.
+            </p>
+          </div>
 
-            <div className={s.legalInfo}>
-              <p>
-                By signing up, you agree to our <Link to="/">Terms</Link>, <Link to="/">Privacy Policy</Link> and <Link to="/">Cookie Policy</Link>.
-              </p>
-            </div>
+          <button className={s.submitBtn} type="submit" disabled={isLoading}>
+            {isLoading ? 'Signing up...' : 'Sign up'}
+          </button>
+        </form>
+      </div>
 
-            <button className={s.submitBtn} type="submit" disabled={isLoading}>
-              {isLoading ? 'Signing up...' : 'Sign up'}
-            </button>
-          </form>
-        </div>
-
-        <div className={s.switchBox}>
-          <p>
-            <span>Have an account?</span>
-            <Link to="/login">Log in</Link>
-          </p>
-        </div>
-      </div> 
+      <div className={s.switchBox}>
+        <p>
+          <span>Have an account?</span>
+          <Link to="/login">Log in</Link>
+        </p>
+      </div>
       <Toaster position="top-center" />
-    </div>
+    </>
   );
 };
 

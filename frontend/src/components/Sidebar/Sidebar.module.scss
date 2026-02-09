@@ -6,7 +6,7 @@
 
 /* --- ОСНОВНОЙ САЙДБАР --- */
 .sidebar {
-  width: 245px; /* Широкий на больших экранах */
+  width: 245px; 
   height: 100vh;
   position: fixed;
   left: 0;
@@ -16,30 +16,74 @@
   display: flex;
   flex-direction: column;
   background-color: #fff;
-  
-  /* Сайдбар самый главный */
   z-index: 1000; 
 
-  /* Адаптивность: узкий на ноутбуках */
+  /* Узкий сайдбар на планшете */
   @media (max-width: 1263px) {
     width: 72px; 
     align-items: center;
   }
 
+  /* Скрываем на мобильном (там будет футер) */
   @media (max-width: 767px) {
     display: none; 
   }
 }
 
-.logo {
-  padding: 25px 12px;
-  margin-bottom: 10px;
+/* --- ЛОГОТИП И КНОПКА ВЫХОДА (НОВОЕ) --- */
+.logoContainer {
+  position: relative; /* Важно для позиционирования кнопки выхода */
+  width: fit-content;
+  margin-bottom: 20px;
+  padding: 25px 12px 10px 12px;
+  cursor: pointer;
   
+  /* Скрываем логотип на узких экранах, там только иконки */
   @media (max-width: 1263px) {
-    display: none;
+    display: none; 
   }
 }
 
+.logoIcon {
+  display: block;
+}
+
+/* Всплывающая кнопка Log out */
+.logoutTooltip {
+  position: absolute;
+  top: 60px; /* Сдвигаем вниз от логотипа */
+  left: 12px;
+  
+  background-color: #ffffff;
+  border: 1px solid #dbdbdb;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  border-radius: 8px;
+  
+  padding: 8px 16px;
+  white-space: nowrap;
+  
+  font-weight: 600;
+  font-size: 14px;
+  color: #ed4956; /* Красный цвет */
+  
+  z-index: 2000;
+  cursor: pointer;
+  
+  /* Анимация появления */
+  animation: fadeIn 0.2s ease-in-out;
+
+  &:hover {
+    background-color: #fafafa;
+  }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-5px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+
+/* --- НАВИГАЦИЯ --- */
 .nav {
   flex-grow: 1;
   display: flex;
@@ -56,7 +100,6 @@
   color: #000;
   border-radius: 8px;
   transition: background-color 0.2s;
-  
   white-space: nowrap; 
 
   &:hover {
@@ -66,37 +109,30 @@
   svg {
     font-size: 24px;
     min-width: 24px;
-    /* Плавный переход толщины иконки */
     transition: stroke-width 0.1s ease;
   }
 
   span {
     font-size: 16px;
-    /* Текст скрывается на узких экранах */
     @media (max-width: 1263px) {
       display: none;
     }
   }
 }
 
-/* СТИЛИ ДЛЯ АВАТАРКИ В МЕНЮ */
 .profileAvatar {
   width: 24px;
   height: 24px;
-  border-radius: 50%; /* Круглая */
-  object-fit: cover;  /* Чтобы фото не сплющилось */
+  border-radius: 50%;
+  object-fit: cover;
 }
 
-/*  СПЕЦИАЛЬНЫЙ КЛАСС ДЛЯ КНОПКИ ПРОФИЛЯ */
 .profileItem { 
-  margin-top: 50px; /*  промежуток между Create и Profile */
+  margin-top: 50px; 
 }
 
-/* СТИЛИ ДЛЯ АКТИВНОЙ КНОПКИ */
 .active {
-  font-weight: 800; /* Жирный текст */
-
-  /* Делаем SVG иконку жирнее (имитация заливки) */
+  font-weight: 800; 
   svg {
     stroke-width: 25; 
   }
@@ -107,28 +143,18 @@
 .searchDrawer {
   position: fixed;
   top: 0;
-  
-  /* Отступ равен ширине сайдбара */
   left: 245px; 
-  
   height: 100vh;
   width: 397px;
   background-color: white;
-  
-  /* Тень справа */
   box-shadow: 4px 0 24px rgba(0,0,0,0.15);
-  
   border-top-right-radius: 16px;
   border-bottom-right-radius: 16px;
   display: flex;
   flex-direction: column;
-  
-  /* Слой: НИЖЕ сайдбара, но ВЫШЕ контента */
   z-index: 10; 
-
   animation: slideIn 0.3s ease-out;
 
-  /* СИНХРОНИЗАЦИЯ ОТСТУПА */
   @media (max-width: 1263px) {
     left: 72px; 
   }
@@ -146,12 +172,82 @@
 }
 
 /* --- ВНУТРЕННОСТИ ПОИСКА --- */
-.searchHeader { padding: 24px 16px; h2 { font-size: 24px; font-weight: 600; margin-bottom: 20px; }}
-.searchInputWrapper { background: #efefef; border-radius: 8px; padding: 0 16px; height: 40px; display: flex; align-items: center; position: relative; .searchIcon { color: #8e8e8e; font-size: 18px; margin-right: 12px; } input { background: transparent; border: none; outline: none; font-size: 16px; width: 100%; } .closeBtn { cursor: pointer; color: #c7c7c7; margin-left: auto; display: flex; align-items: center; &:hover { color: #000; }}}
+.searchHeader { 
+  padding: 24px 16px; 
+  h2 { font-size: 24px; font-weight: 600; margin-bottom: 20px; }
+}
+
+.searchInputWrapper { 
+  background: #efefef; 
+  border-radius: 8px; 
+  padding: 0 16px; 
+  height: 40px; 
+  display: flex; 
+  align-items: center; 
+  position: relative; 
+  
+  .searchIcon { color: #8e8e8e; font-size: 18px; margin-right: 12px; } 
+  input { background: transparent; border: none; outline: none; font-size: 16px; width: 100%; } 
+  .closeBtn { cursor: pointer; color: #c7c7c7; margin-left: auto; display: flex; align-items: center; &:hover { color: #000; }}
+}
+
 .divider { height: 1px; background-color: #dbdbdb; margin-top: 10px; }
 .searchResults { flex: 1; overflow-y: auto; padding-top: 10px; }
-.userItem { display: flex; align-items: center; padding: 8px 24px; cursor: pointer; transition: background 0.2s; &:hover { background-color: #fafafa; } img { width: 44px; height: 44px; border-radius: 50%; margin-right: 12px; object-fit: cover; } .userInfo { display: flex; flex-direction: column; .username { font-weight: 600; font-size: 14px; } .fullname { color: #8e8e8e; font-size: 14px; } }}
+
+.userItem { 
+  display: flex; 
+  align-items: center; 
+  padding: 8px 24px; 
+  cursor: pointer; 
+  transition: background 0.2s; 
+  
+  &:hover { background-color: #fafafa; } 
+  
+  img { width: 44px; height: 44px; border-radius: 50%; margin-right: 12px; object-fit: cover; } 
+  
+  .userInfo { 
+    display: flex; flex-direction: column; 
+    .username { font-weight: 600; font-size: 14px; color: #262626; } 
+    .fullname { color: #8e8e8e; font-size: 14px; } 
+  }
+}
+
 .noResults, .loading { padding: 20px; text-align: center; color: #8e8e8e; }
+
+
+/* --- ИСТОРИЯ ПОИСКА --- */
+.recentHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 24px;
+  margin-top: 10px;
+  
+  span:first-child {
+    font-weight: 600;
+    font-size: 16px;
+  }
+}
+
+.clearAllBtn {
+  color: #0095f6;
+  font-weight: 600;
+  font-size: 14px;
+  cursor: pointer;
+  
+  &:hover { color: #00376b; }
+}
+
+.removeHistoryBtn {
+  margin-left: auto;
+  color: #8e8e8e;
+  padding: 8px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  
+  &:hover { color: #262626; }
+}
 
 
 /* ПРОЗРАЧНАЯ ПОДЛОЖКА (OVERLAY) */

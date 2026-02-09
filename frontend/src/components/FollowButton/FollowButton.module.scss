@@ -1,0 +1,43 @@
+// frontend\src\components\FollowButton\FollowButton.module.scss
+.followButton {
+  background: none;
+  border: none;
+  color: #0095f6; // Фирменный синий Instagram
+  font-weight: 600;
+  font-size: 14px;
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  &:hover {
+    color: #00376b;
+  }
+
+  // Состояние "Вы подписаны"
+  &.unfollow {
+    color: #262626; // Черный текст
+    // Если хочешь сделать кнопку серой (как в приложении), 
+    // можешь раскомментировать строки ниже:
+    // background-color: #efefef;
+    // padding: 5px 15px;
+    
+    &:hover {
+      color: #8e8e8e;
+    }
+  }
+
+  // Модификатор размера
+  &.small {
+    font-size: 13px;
+    padding: 0; // В ленте обычно просто текст без отступов
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+}

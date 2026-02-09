@@ -1,4 +1,4 @@
-// backend/src/models/userModel.js
+// backend\src\models\userModel.js
 
 const mongoose = require('mongoose');
 
@@ -26,6 +26,13 @@ const userSchema = new mongoose.Schema({
         type: String,
         required: [true, 'Full name is required']
     },
+
+    website: {
+        type: String,
+        trim: true,
+        default: ''
+    },
+
     avatar: {
         type: String,
         default: 'https://cdn-icons-png.flaticon.com/512/149/149071.png'
@@ -50,7 +57,7 @@ const userSchema = new mongoose.Schema({
         ref: 'User' 
     }],
 
-    //  ИСТОРИЯ ПОИСКА
+    // ИСТОРИЯ ПОИСКА
     search: [{
         type: mongoose.Schema.Types.ObjectId,
         ref: 'User'

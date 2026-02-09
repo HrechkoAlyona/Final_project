@@ -1,72 +1,49 @@
-/* src/index.scss */
-
+// frontend\src\index.scss
 :root {
-  /* === 1. ЦВЕТОВЫЕ ПЕРЕМЕННЫЕ === */
+  /* === ЦВЕТА === */
+  --bg-page: #ffffff;
   --main: #ffffff;
   --primaryBtn: #0095f6;
   --textColor: #000000;
   --darkGrey: #737373;
-  --darkGreyHover: #535252;
   --postLightGrey: #efefef;
   --formStroke: #dbdbdb;
+  --error-red: #ed4956;
   --modalBack: rgba(0, 0, 0, 0.65);
 
-  /* === 2. РАЗМЕРЫ === */
-  --sideBarW: 245px;
-  --footerH: 158px;
-  --footerHR: 60px;
-
-  /*  Единый верхний отступ для страниц */
+  /* === РАЗМЕРЫ === */
+  --sideBarW: 245px;       /* Ширина большого меню */
+  --sideBarSmallW: 72px;   /* Ширина узкого меню */
   --pagePaddingTop: 30px;
 }
 
-/* === 3. ГЛОБАЛЬНЫЕ КЛАССЫ (Утилиты) === */
-
-// Общий контейнер для контента страниц (Профиль, Редактирование и т.д.)
-.main-wrapper {
-  width: 100%;
-  max-width: 935px; 
-  margin: 0 auto;
-  padding: var(--pagePaddingTop) 20px;
-  box-sizing: border-box;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-}
-
-// Базовый стиль текста Roboto (как в твоих макетах)
-.font-roboto {
-  font-family: 'Roboto', -apple-system, BlinkMacSystemFont, sans-serif;
-}
-
-/* === 4. СТАНДАРТНЫЙ СБРОС === */
+/* Сброс и база */
 * {
   margin: 0;
   padding: 0;
-  box-sizing: border-box;
+  box-sizing: border-box; /* Это свойство наследуется всеми элементами */
 }
 
-/* === 5. ГЛОБАЛЬНЫЕ СТИЛИ ТЕЛА === */
 body {
-  margin: 0;
-  padding: 0;
-  width: 100%;
   min-height: 100vh;
-  background-color: #fafafa;
-  
-  // Добавили 'Roboto' в начало стека
-  font-family: 'Roboto', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Oxygen',
-    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
-    sans-serif;
-    
+  background-color: var(--bg-page); /* Используем переменную */
+  color: var(--textColor);
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', Helvetica, Arial, sans-serif;
   -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
 }
 
-/* === 6. ИСПРАВЛЕНИЕ LAYOUT === */
 #root {
   width: 100%;
   height: 100%;
-  margin: 0;
-  padding: 0;
+}
+
+/* Утилиты */
+.main-wrapper {
+  width: 100%;
+  max-width: 935px;
+  margin: 0 auto;
+  padding: var(--pagePaddingTop) 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }

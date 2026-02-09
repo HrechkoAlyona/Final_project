@@ -10,7 +10,6 @@ const connectDB = require('./config/db');
 // Импорт маршрутов
 const authRoutes = require('./routes/authRoutes');
 const postRoutes = require('./routes/postRoutes');
-// const likeRoutes = require('./routes/likeRoutes'); // <--- ЭТА СТРОКА УДАЛЕНА
 const commentRoutes = require('./routes/commentRoutes');
 const userRoutes = require('./routes/userRoutes');
 const followRoutes = require('./routes/followRoutes');
@@ -56,7 +55,7 @@ app.use(express.json());
 
 // Использование маршрутов
 app.use('/api/auth', authRoutes);
-app.use('/api/posts', postRoutes); // лайки здесь
+app.use('/api/posts', postRoutes); 
 app.use('/api/comments', commentRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/follows', followRoutes);

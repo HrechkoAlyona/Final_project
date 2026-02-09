@@ -1,37 +1,75 @@
-const Follow = require('../models/followModel');
+// backend/src/controllers/followController.js
+const User = require('../models/userModel');
 const Notification = require('../models/notificationModel');
+const Follow = require('../models/followModel'); // Импортируем модель связей
 
 const toggleFollow = async (req, res) => {
     try {
-        const { followingId } = req.body; // ID того, на кого хотим подписаться
-        const followerId = req.user._id; // Твой ID (берется из токена)
+        const { followingId } = req.body; // На кого подписываемся
+        const followerId = req.user._id;  // Кто подписывается (мы)
 
-        // Защита: нельзя подписаться на самого себя
         if (followerId.toString() === followingId) {
             return res.status(400).json({ message: 'Нельзя подписаться на самого себя' });
         }
- 
-        // Ищем, есть ли уже такая подписка в базе
-        const existingFollow = await Follow.findOne({ follower: followerId, following: followingId });
 
-        if (existingFollow) {
-            await Follow.findByIdAndDelete(existingFollow._id);
-            res.json({ message: 'Отписка выполнена' });
-        } else {
-            await Follow.create({ follower: followerId, following: followingId });
+        const targetUser = await User.findById(followingId);
+        const me = await User.findById(followerId);
+
+        if (!targetUser || !me) {
+            return res.status(404).json({ message: 'Пользователь не найден' });
+        }
+
+        let action;
+        const isAlreadyFollowing = targetUser.followers.some(id => id.toString() === followerId.toString());
+
+        if (isAlreadyFollowing) {
+            // --- ОТПИСКА ---
+            // 1. Убираем нас из подписчиков цели
+            targetUser.followers.pull(followerId);
+            // 2. Убираем цель из наших подписок (ВАЖНО для фронтенда!)
+            me.following.pull(followingId);
+            // 3. Удаляем запись из таблицы связей
+            await Follow.findOneAndDelete({ follower: followerId, following: followingId });
             
-            // СОЗДАЕМ УВЕДОМЛЕНИЕ
+            action = 'unfollow';
+        } else {
+            // --- ПОДПИСКА ---
+            // 1. Добавляем нас в подписчики цели
+            targetUser.followers.push(followerId);
+            // 2. Добавляем цель в наши подписки
+            me.following.push(followingId);
+            // 3. Создаем запись в таблице связей
+            await Follow.create({ follower: followerId, following: followingId });
+
+            action = 'follow';
+
+            // Создаем уведомление
             await Notification.create({
-                recipient: followingId, // Кому придет (тому, на кого подписались)
-                sender: followerId,    // От кого (кто нажал кнопку)
+                recipient: followingId,
+                sender: followerId,
                 type: 'follow'
             });
-            const io = req.app.get('io');
-            io.to(followingId).emit('newNotification', { message: 'На вас подписались!' });
-
-            res.status(201).json({ message: 'Подписка оформлена' });
         }
+
+        // Сохраняем изменения у обоих
+        await targetUser.save();
+        await me.save();
+
+        // Socket.io уведомление
+        const io = req.app.get('io');
+        if (io) {
+            io.to(followingId).emit('newNotification', { 
+                message: action === 'follow' ? 'На вас подписались!' : 'Отписка',
+                from: me.username
+            });
+        }
+
+        res.json({ 
+            message: action === 'follow' ? 'Подписка оформлена' : 'Отписка выполнена',
+            isFollowed: action === 'follow'
+        });
     } catch (error) {
+        console.error('ToggleFollow Error:', error);
         res.status(500).json({ message: 'Ошибка сервера' });
     }
 };

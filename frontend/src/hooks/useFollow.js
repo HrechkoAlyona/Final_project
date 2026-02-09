@@ -1,64 +1,32 @@
-// frontend/src/hooks/useFollow.js
-
-import { useState, useEffect } from 'react';
-import { useFollowUserMutation } from '../services/api';
+import { useFollowUserMutation, useGetMeQuery } from '../services/api';
 
 export const useFollow = (targetUser) => {
-  const currentUserId = localStorage.getItem('userId');
-  const [followUserApi] = useFollowUserMutation();
+  // 1. Мутация для клика
+  const [followUser, { isLoading }] = useFollowUserMutation();
+  
+  // 2. Получаем данные о ТЕБЕ (getMe)
+  const { data: me } = useGetMeQuery();
 
-  // 1. Инициализация состояния
-  // Проверяем, есть ли наш ID в списке followers целевого юзера
-  const [isFollowing, setIsFollowing] = useState(() => {
-    if (!targetUser || !targetUser.followers) return false;
-    return targetUser.followers.includes(currentUserId);
-  });
+  // 3. ID того, на кого хотим подписаться
+  const targetId = String(targetUser?._id || targetUser);
 
-  const [followersCount, setFollowersCount] = useState(() => {
-    if (!targetUser || !targetUser.followers) return 0;
-    return targetUser.followers.length;
-  });
+  // 4. Логика проверки: есть ли targetId в твоем списке me.following?
+  const isFollowing = me?.following?.some(id => 
+    String(id._id || id) === targetId
+  ) ?? false;
 
-  // 2. Синхронизация с сервером (если пришли новые данные профиля)
-  useEffect(() => {
-    if (targetUser && targetUser.followers) {
-      const serverIsFollowing = targetUser.followers.includes(currentUserId);
-      const serverCount = targetUser.followers.length;
-
-      if (isFollowing !== serverIsFollowing) {
-        setIsFollowing(serverIsFollowing);
-      }
-      if (followersCount !== serverCount) {
-        setFollowersCount(serverCount);
-      }
+  const handleFollow = async (e) => {
+    if (e) {
+      e.preventDefault();
+      e.stopPropagation();
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [targetUser?.followers, currentUserId]);
-
-  const handleFollow = async () => {
-    // Не даем подписаться на самого себя (на всякий случай)
-    if (targetUser._id === currentUserId) return;
-
-    // Оптимистичное обновление
-    const prevIsFollowing = isFollowing;
-    const prevCount = followersCount;
-
-    setIsFollowing(!prevIsFollowing);
-    setFollowersCount(prevIsFollowing ? prevCount - 1 : prevCount + 1);
-
+    if (isLoading) return;
     try {
-      await followUserApi(targetUser._id).unwrap();
-    } catch (error) {
-      console.error("Failed to follow/unfollow:", error);
-      // Откат при ошибке
-      setIsFollowing(prevIsFollowing);
-      setFollowersCount(prevCount);
+      await followUser(targetId).unwrap();
+    } catch (err) {
+      console.error('Follow error:', err);
     }
   };
 
-  return {
-    isFollowing,
-    followersCount,
-    handleFollow
-  };
+  return { isFollowing, handleFollow, isLoading };
 };

@@ -1,0 +1,107 @@
+// frontend\src\pages\Home\Home.module.scss
+
+.pageWrapper {
+  width: 100%;
+  max-width: 935px; /* Ограничиваем ширину контейнера */
+  margin: 0 auto;   /* Центрируем страницу */
+  padding: 30px 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* 🔥 ГЛАВНАЯ СЕТКА ПОСТОВ */
+/* В Home.jsx это <div className={s.feedGrid}> */
+.feedGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr; /* ДВЕ РАВНЫЕ КОЛОНКИ */
+  gap: 28px; /* Расстояние между постами */
+  width: 100%;
+  margin-bottom: 40px;
+
+  /* Адаптив: на телефонах (меньше 768px) делаем 1 колонку */
+  @media (max-width: 768px) {
+    grid-template-columns: 1fr;
+    gap: 15px;
+    max-width: 470px; /* Чтобы посты на телефоне не были гигантскими */
+  }
+}
+
+.gridItem {
+  width: 100%;
+  /* Пост внутри растянется на всю ширину ячейки сетки */
+  display: flex;
+  justify-content: center;
+}
+
+/* --- КНОПКИ И СТАТУСЫ ВНИЗУ --- */
+.statusContainer {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding-bottom: 50px;
+}
+
+.loadMoreBtn {
+  background-color: #0095f6;
+  color: white;
+  border: none;
+  padding: 8px 20px;
+  border-radius: 4px;
+  font-weight: 600;
+  cursor: pointer;
+  font-size: 14px;
+  transition: background 0.2s;
+
+  &:hover {
+    background-color: #1877f2;
+  }
+}
+
+.loader, .loaderSmall {
+  color: #8e8e8e;
+  font-weight: 500;
+  margin: 20px 0;
+}
+
+.allCaughtUp {
+  text-align: center;
+  color: #262626;
+  border-top: 1px solid #dbdbdb;
+  padding-top: 30px;
+  width: 100%;
+  max-width: 400px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-top: 20px;
+
+  .checkIcon {
+    font-size: 48px;
+    color: #0095f6; /* Или радужный градиент */
+    margin-bottom: 12px;
+  }
+
+  h2 {
+    font-size: 20px;
+    font-weight: 600;
+    margin-bottom: 8px;
+  }
+
+  p {
+    color: #8e8e8e;
+    font-size: 14px;
+  }
+}
+
+.emptyState {
+  text-align: center;
+  margin-top: 40px;
+  color: #8e8e8e;
+  
+  h2 {
+    color: #262626;
+    margin-bottom: 10px;
+  }
+}

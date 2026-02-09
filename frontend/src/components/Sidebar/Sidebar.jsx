@@ -1,3 +1,5 @@
+// frontend\src\components\Sidebar\Sidebar.jsx
+
 import React, { useState } from 'react';
 import { NavLink } from 'react-router-dom';
 import { 
@@ -9,18 +11,18 @@ import {
   AiOutlinePlusSquare 
 } from 'react-icons/ai';
 
-import LogoIchgram from '../logos/LogoIchgram';
+// ✅ ИМПОРТИРУЕМ НАШ НОВЫЙ КОМПОНЕНТ
+import LogoLogout from './LogoLogout'; 
+
 import SearchSidebar from './SearchSidebar'; 
-import { useGetMeQuery } from '../../services/api'; //   хук для получения данных
+import { useAuth } from '../../hooks/useAuth';
 import s from './Sidebar.module.scss';
 
 const Sidebar = ({ onCreateClick }) => {
-  const userId = localStorage.getItem('userId');
+  const { userId, me } = useAuth();
   const [isSearchOpen, setIsSearchOpen] = useState(false);
 
-  // Получаем данные текущего пользователя (чтобы взять аватарку)
-  const { data: currentUser } = useGetMeQuery();
-  const userAvatar = currentUser?.avatar || "https://cdn-icons-png.flaticon.com/512/149/149071.png";
+  const userAvatar = me?.avatar || "https://cdn-icons-png.flaticon.com/512/149/149071.png";
 
   const handleNavClick = (label, action) => {
     if (label === 'Search') {
@@ -38,30 +40,25 @@ const Sidebar = ({ onCreateClick }) => {
     { path: '/messages', icon: <AiOutlineMessage />, label: 'Messages' },
     { path: '/notifications', icon: <AiOutlineHeart />, label: 'Notifications' },
     { icon: <AiOutlinePlusSquare />, label: 'Create', action: onCreateClick },
-    
-    
     { path: `/profile/${userId}`, label: 'Profile' }, 
   ];
 
   return (
     <>
       <aside className={s.sidebar}>
-        <div className={s.logo}>
-          <LogoIchgram width="103" />
-        </div>
+        
+        {/* 🔥 ЗАМЕНЯЕМ СТАРЫЙ ЛОГОТИП НА КОМПОНЕНТ С ВЫХОДОМ */}
+        <LogoLogout />
 
         <nav className={s.nav}>
           {navItems.map((item) => {
             const isProfile = item.label === 'Profile';
-
-            // Определяем контент иконки: Картинка для профиля ИЛИ SVG для остальных
             const IconContent = isProfile ? (
-               <img src={userAvatar} alt="profile" className={s.profileAvatar} />
+              <img src={userAvatar} alt="profile" className={s.profileAvatar} />
             ) : (
-               item.icon
+              item.icon
             );
             
-            // ВАРИАНТ 1: Кнопка-действие (Search или Create)
             if (!item.path) {
               const isActiveBtn = item.label === 'Search' && isSearchOpen;
               return (
@@ -77,14 +74,12 @@ const Sidebar = ({ onCreateClick }) => {
               );
             }
 
-            // ВАРИАНТ 2: Обычная ссылка (Home, Explore, Profile...)
             return (
               <NavLink 
                 key={item.label} 
                 to={item.path} 
                 onClick={() => handleNavClick(item.label)} 
                 className={({ isActive }) => 
-                  //  Добавляем класс s.profileItem специально для профиля (для отступа)
                   `${s.navItem} ${isActive ? s.active : ''} ${isProfile ? s.profileItem : ''}`
                 }
               >

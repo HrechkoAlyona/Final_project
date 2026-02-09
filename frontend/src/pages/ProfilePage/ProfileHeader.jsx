@@ -1,30 +1,40 @@
-import React from 'react';
+// frontend\src\pages\ProfilePage\ProfileHeader.jsx
+// frontend/src/pages/ProfilePage/ProfileHeader.jsx
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useFollow } from '../../hooks/useFollow'; //  Подключаем хук
-import s from './ProfilePage.module.scss'; // Используем те же стили
+import Ring from '../../components/logos/Ring';
+import FollowButton from '../../components/FollowButton/FollowButton';
+import s from './ProfilePage.module.scss';
 
 const ProfileHeader = ({ user, isMyProfile }) => {
   const navigate = useNavigate();
-  
-  // Хук подписки (работает, только если это чужой профиль)
-  const { isFollowing, followersCount, handleFollow } = useFollow(user);
+  const [isExpanded, setIsExpanded] = useState(false);
+  const MAX_LENGTH = 107;
 
   if (!user) return null;
 
+  const bioText = user.bio || '';
+  const shouldTruncate = bioText.length > MAX_LENGTH && !isExpanded;
+  const textToDisplay = shouldTruncate ? bioText.slice(0, MAX_LENGTH) : bioText;
+
+  const getFullUrl = (url) => (!url ? '' : url.startsWith('http') ? url : `https://${url}`);
+
   return (
     <header className={s.header}>
-      <div className={s.avatar}>
+      {/* Аватар с кольцом */}
+      <div className={s.avatarWrapper}>
+        <Ring />
         <img 
           src={user.avatar || "https://cdn-icons-png.flaticon.com/512/149/149071.png"} 
           alt="avatar" 
+          className={s.avatarImg}
         />
       </div>
-      
+
       <div className={s.details}>
         <div className={s.topRow}>
           <h2>{user.username}</h2>
-          
-          {/*  ЛОГИКА КНОПОК */}
+
           {isMyProfile ? (
             <button 
               className={s.editButton}
@@ -33,38 +43,43 @@ const ProfileHeader = ({ user, isMyProfile }) => {
               Edit profile
             </button>
           ) : (
-            <button 
-              className={`${s.followButton} ${isFollowing ? s.unfollow : ''}`}
-              onClick={handleFollow}
-              style={{
-                 backgroundColor: isFollowing ? '#efefef' : '#0095f6',
-                 color: isFollowing ? 'black' : 'white',
-                 border: 'none',
-                 padding: '5px 20px',
-                 borderRadius: '4px',
-                 fontWeight: '600',
-                 cursor: 'pointer'
-              }}
-            >
-              {isFollowing ? 'Unfollow' : 'Follow'}
-            </button>
+            <FollowButton targetUser={user} size="medium" />
           )}
         </div>
 
         <div className={s.stats}>
-           {/* Используем user.posts.length для постов */}
-           <span><strong>{user.posts?.length || 0}</strong> posts</span>
-           
-           {/*  Используем данные из хука для подписчиков (чтобы цифра менялась сразу) */}
-           <span><strong>{followersCount}</strong> followers</span>
-           
-           {/* Для подписок берем из user, так как мы не меняем это число кликом тут */}
-           <span><strong>{user.followingCount || 0}</strong> following</span>
+          <span><strong>{user.posts?.length || 0}</strong> posts</span>
+          <span><strong>{user.followersCount || 0}</strong> followers</span>
+          <span><strong>{user.followingCount || 0}</strong> following</span>
         </div>
 
         <div className={s.bioSection}>
-          <div className={s.realName}>{user.fullName}</div>
-          <div>{user.bio}</div>
+          <div style={{ whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}>
+            {textToDisplay}
+            {shouldTruncate && (
+              <>
+                ... 
+                <span 
+                  className={s.moreLink} 
+                  onClick={() => setIsExpanded(true)}
+                  style={{ color: '#8e8e8e', cursor: 'pointer', marginLeft: '5px' }}
+                >
+                  more
+                </span>
+              </>
+            )}
+          </div>
+
+          {user.website && (
+            <a 
+              href={getFullUrl(user.website)} 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className={s.websiteLink}
+            >
+              {user.website}
+            </a>
+          )}
         </div>
       </div>
     </header>

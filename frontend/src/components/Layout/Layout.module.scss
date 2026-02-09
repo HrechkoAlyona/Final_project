@@ -2,39 +2,26 @@
 
 .layoutWrapper {
   min-height: 100vh;
-  width: 100%;
-  
-  /* Отступ создаем здесь - Контент автоматически сдвинется вправо. */
-  padding-left: 245px;
-  box-sizing: border-box; /*  чтобы padding не ломал ширину */
-  
-  background-color: #fafafa;
-  
-  /* Важно: display block (по умолчанию), чтобы дети занимали 100% ширины */
-  display: block; 
+  padding-left: var(--sideBarW); 
 }
 
 .mainContent {
-  /* здесь просто width: 100%, так как отступ уже задан родителем */
-  width: 100%;
-  min-height: 100vh;
-  
-  /* Центрируем профиль внутри */
   display: flex;
   justify-content: center;
   align-items: flex-start;
+  min-height: 100vh;
 }
 
 /* --- АДАПТИВ --- */
 
-/* 1. Узкий экран (ноутбук) -> Узкий сайдбар (72px) */
+/* 1. Ноутбук/Планшет -> Узкий сайдбар */
 @media (max-width: 1263px) {
   .layoutWrapper {
-    padding-left: 72px; /* Уменьшаем отступ */
+    padding-left: var(--sideBarSmallW); /* 72px из переменных */
   }
 }
 
-/* 2. Мобильный экран -> Сайдбар снизу/скрыт (0px) */
+/* 2. Мобильные -> Сайдбара нет (он снизу) */
 @media (max-width: 767px) {
   .layoutWrapper {
     padding-left: 0;

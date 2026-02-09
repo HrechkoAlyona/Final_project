@@ -3,6 +3,7 @@
 const User = require('../models/userModel');
 const Post = require('../models/postModel'); 
 
+// Вспомогательная функция для формирования красивого ответа
 const formatUserResponse = (user) => {
     return {
         _id: user._id,
@@ -11,6 +12,9 @@ const formatUserResponse = (user) => {
         fullName: user.fullName || "",
         bio: user.bio || "",
         avatar: user.avatar || "",
+        website: user.website || "", 
+  followers: user.followers || [], 
+    following: user.following || [],
         followersCount: user.followers ? user.followers.length : 0,
         followingCount: user.following ? user.following.length : 0
     };
@@ -19,14 +23,13 @@ const formatUserResponse = (user) => {
 // 1. Получить профиль текущего пользователя
 const getUserProfile = async (req, res) => {
     try {
-        //  Добавляем populate для поля search, чтобы сразу получить аватарки и имена
         const user = await User.findById(req.user._id)
             .populate('search', 'username fullName avatar'); 
 
         if (user) {
             const response = {
                 ...formatUserResponse(user),
-                search: user.search || [] // Отправляем историю поиска на фронт
+                search: user.search || [] 
             };
             res.json(response);
         } else {
@@ -43,9 +46,32 @@ const updateUserProfile = async (req, res) => {
         const user = await User.findById(req.user._id);
         
         if (user) {
-            user.fullName = req.body.fullName || user.fullName;
-            user.bio = req.body.bio || user.bio;
-            user.avatar = req.body.avatar || user.avatar;
+            // Обновляем поля, если они пришли в запросе
+            
+            // USERNAME
+            if (req.body.username) {
+                user.username = req.body.username;
+            }
+
+            // WEBSITE (проверка на undefined позволяет передать пустую строку и стереть сайт)
+            if (req.body.website !== undefined) {
+                user.website = req.body.website;
+            }
+
+            // BIO
+            if (req.body.bio !== undefined) {
+                user.bio = req.body.bio;
+            }
+
+            // FULL NAME
+            if (req.body.fullName) {
+                user.fullName = req.body.fullName;
+            }
+
+            // AVATAR
+            if (req.body.avatar) {
+                user.avatar = req.body.avatar;
+            }
 
             const updatedUser = await user.save();
             res.json(formatUserResponse(updatedUser));
@@ -53,6 +79,10 @@ const updateUserProfile = async (req, res) => {
             res.status(404).json({ message: 'Пользователь не найден' });
         }
     } catch (error) {
+        // Если такой username уже занят
+        if (error.code === 11000) {
+            return res.status(400).json({ message: 'Это имя пользователя уже занято' });
+        }
         res.status(500).json({ message: 'Ошибка при обновлении профиля' });
     }
 };
@@ -121,7 +151,7 @@ const followUser = async (req, res) => {
     }
 };
 
-//  5. Добавить в историю поиска
+// 5. Добавить в историю поиска
 const addToSearchHistory = async (req, res) => {
     try {
         const { targetUserId } = req.body;
@@ -129,7 +159,7 @@ const addToSearchHistory = async (req, res) => {
 
         if (!currentUser) return res.status(404).json({ message: 'User not found' });
 
-        // Удаляем дубликаты (чтобы поднять пользователя вверх списка)
+        // Удаляем дубликаты
         currentUser.search = currentUser.search.filter(id => id.toString() !== targetUserId);
         
         // Добавляем в начало
@@ -148,7 +178,7 @@ const addToSearchHistory = async (req, res) => {
     }
 };
 
-//  6. Удалить одного из истории
+// 6. Удалить одного из истории
 const removeFromSearchHistory = async (req, res) => {
     try {
         const { targetUserId } = req.body;
@@ -163,7 +193,7 @@ const removeFromSearchHistory = async (req, res) => {
     }
 };
 
-//  7. Очистить всю историю
+// 7. Очистить всю историю
 const clearSearchHistory = async (req, res) => {
     try {
         const currentUser = await User.findById(req.user._id);
@@ -180,7 +210,6 @@ module.exports = {
     updateUserProfile, 
     getUserById,
     followUser,
-    
     addToSearchHistory,
     removeFromSearchHistory,
     clearSearchHistory

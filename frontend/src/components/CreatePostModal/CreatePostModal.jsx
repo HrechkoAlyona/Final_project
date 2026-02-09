@@ -1,10 +1,11 @@
 // frontend/src/components/CreatePostModal/CreatePostModal.jsx
 
-import React, { useRef, useState, useEffect } from 'react';
+import React, { useRef, useEffect } from 'react';
 import EmojiPicker from 'emoji-picker-react';
 import { AiOutlineClose, AiOutlineArrowLeft, AiOutlineSmile } from 'react-icons/ai';
 import { BiCloudUpload } from "react-icons/bi";
 import { useCreatePostForm } from '../../hooks/useCreatePostForm';
+import { useGetMeQuery } from '../../services/api'; 
 import s from './CreatePostModal.module.scss';
 
 const CreatePostModal = ({ onClose }) => {
@@ -28,7 +29,11 @@ const CreatePostModal = ({ onClose }) => {
   const fileInputRef = useRef(null);
   const emojiPickerRef = useRef(null);
 
-  // Закрытие смайлов по клику вне
+  //  2. Используем готовый хук вместо ручного fetch
+  // Он сам возьмет данные из кэша или сделает запрос
+  const { data: user } = useGetMeQuery();
+
+  // Закрытие смайлов по клику вне (этот код можно вынести в хук useClickOutside, но пока оставим тут)
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (showEmoji) {
@@ -45,39 +50,13 @@ const CreatePostModal = ({ onClose }) => {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, [showEmoji, setShowEmoji]);
 
-  const [userData, setUserData] = useState(() => {
-    const localUsername = localStorage.getItem('username');
-    const localAvatar = localStorage.getItem('avatar');
-    return { username: localUsername || "User", avatar: localAvatar || null };
-  });
-
-  useEffect(() => {
-    const fetchUserData = async () => {
-      if (userData.username !== "User") return;
-      const token = localStorage.getItem('token');
-      if (!token) return;
-      try {
-        const payload = token.split('.')[1];
-        const decoded = JSON.parse(atob(payload));
-        const userId = decoded.id; 
-        const response = await fetch(`http://localhost:5000/api/users/${userId}`, {
-          headers: { 'Authorization': `Bearer ${token}` }
-        });
-        if (response.ok) {
-          const user = await response.json();
-          setUserData({ 
-            username: user.username || "User", 
-            avatar: user.avatar || null 
-          });
-        }
-      } catch (error) { console.error(error); }
-    };
-    fetchUserData();
-  }, [userData.username]);
-
   const handleSectionClick = () => {
     if (!preview) fileInputRef.current?.click();
   };
+
+  // Дефолтная аватарка
+  const userAvatar = user?.avatar || "https://cdn-icons-png.flaticon.com/512/149/149071.png";
+  const userName = user?.username || "User";
 
   return (
     <div className={s.overlay} onClick={onClose}>
@@ -118,8 +97,8 @@ const CreatePostModal = ({ onClose }) => {
           {/* RIGHT COLUMN */}
           <div className={s.formSection}>
             <div className={s.userInfo}>
-                <img src={userData.avatar || "https://cdn-icons-png.flaticon.com/512/149/149071.png"} alt="avatar" onError={(e) => e.target.src = "https://cdn-icons-png.flaticon.com/512/149/149071.png"}/>
-                <span>{userData.username}</span>
+                <img src={userAvatar} alt="avatar" />
+                <span>{userName}</span>
             </div>
 
             {/* --- 1. ЗАГОЛОВОК --- */}
@@ -128,7 +107,7 @@ const CreatePostModal = ({ onClose }) => {
                     type="text" 
                     placeholder="Add a headline..." 
                     className={s.titleInput}
-                    {...register('title', { maxLength: 50 })}
+                    {...register('title', { maxLength: 100 })}
                     autoComplete="off"
                     onFocus={() => {
                         setActiveField('title');
@@ -140,14 +119,11 @@ const CreatePostModal = ({ onClose }) => {
                   <div className={s.tools}>
                       <div 
                         className={s.emojiBtn} 
-                        onClick={(e) => {
-                           e.stopPropagation(); 
-                           setShowEmoji(!showEmoji);
-                        }}
+                        onClick={(e) => { e.stopPropagation(); setShowEmoji(!showEmoji); }}
                       >
                           <AiOutlineSmile />
                       </div>
-                      <span className={s.counter}>{titleValue?.length || 0}/50</span>
+                      <span className={s.counter}>{titleValue?.length || 0}/100</span>
                       
                       {showEmoji && (
                           <div className={s.emojiPickerPopover} ref={emojiPickerRef}>
@@ -177,20 +153,14 @@ const CreatePostModal = ({ onClose }) => {
                   <div className={s.tools}>
                       <div 
                         className={s.emojiBtn} 
-                        onClick={(e) => {
-                          e.stopPropagation(); 
-                          setShowEmoji(!showEmoji);
-                        }}
+                        onClick={(e) => { e.stopPropagation(); setShowEmoji(!showEmoji); }}
                       >
                         <AiOutlineSmile />
                       </div>
                       <span className={s.counter}>{captionValue?.length || 0}/2,200</span>
                       
                       {showEmoji && (
-                          <div 
-                            className={`${s.emojiPickerPopover} ${s.popoverUp}`} 
-                            ref={emojiPickerRef}
-                          >
+                          <div className={`${s.emojiPickerPopover} ${s.popoverUp}`} ref={emojiPickerRef}>
                               <EmojiPicker 
                                 onEmojiClick={(data) => onEmojiClick(data, 'content')} 
                                 width={300} height={350} searchDisabled 

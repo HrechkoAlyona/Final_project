@@ -122,12 +122,28 @@
   overflow: visible; // Позволяет окну смайлов выходить влево
 }
 
+
+
+
 .commentItem {
   display: flex; gap: 12px;
   img { width: 32px; height: 32px; border-radius: 50%; object-fit: cover; flex-shrink: 0; }
+  
   .commentContent {
     font-size: 14px;
-    .commentUsername { font-weight: 600; margin-right: 5px; }
+    
+    .commentUsername { 
+      font-weight: 600; 
+      margin-right: 5px;
+      color: #262626;
+      text-decoration: none;
+      cursor: pointer;
+      
+      &:hover {
+        text-decoration: underline;
+      }
+    }
+    
     .commentText { color: #262626; line-height: 1.4; }
     .commentTime { display: block; margin-top: 4px; font-size: 12px; color: #8e8e8e; }
   }
