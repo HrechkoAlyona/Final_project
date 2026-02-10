@@ -1,5 +1,4 @@
 // backend/src/controllers/userController.js
-
 const User = require('../models/userModel');
 const Post = require('../models/postModel'); 
 
@@ -13,8 +12,8 @@ const formatUserResponse = (user) => {
         bio: user.bio || "",
         avatar: user.avatar || "",
         website: user.website || "", 
-  followers: user.followers || [], 
-    following: user.following || [],
+        followers: user.followers || [], 
+        following: user.following || [],
         followersCount: user.followers ? user.followers.length : 0,
         followingCount: user.following ? user.following.length : 0
     };
@@ -47,31 +46,11 @@ const updateUserProfile = async (req, res) => {
         
         if (user) {
             // Обновляем поля, если они пришли в запросе
-            
-            // USERNAME
-            if (req.body.username) {
-                user.username = req.body.username;
-            }
-
-            // WEBSITE (проверка на undefined позволяет передать пустую строку и стереть сайт)
-            if (req.body.website !== undefined) {
-                user.website = req.body.website;
-            }
-
-            // BIO
-            if (req.body.bio !== undefined) {
-                user.bio = req.body.bio;
-            }
-
-            // FULL NAME
-            if (req.body.fullName) {
-                user.fullName = req.body.fullName;
-            }
-
-            // AVATAR
-            if (req.body.avatar) {
-                user.avatar = req.body.avatar;
-            }
+            if (req.body.username) user.username = req.body.username;
+            if (req.body.website !== undefined) user.website = req.body.website;
+            if (req.body.bio !== undefined) user.bio = req.body.bio;
+            if (req.body.fullName) user.fullName = req.body.fullName;
+            if (req.body.avatar) user.avatar = req.body.avatar;
 
             const updatedUser = await user.save();
             res.json(formatUserResponse(updatedUser));
@@ -79,7 +58,6 @@ const updateUserProfile = async (req, res) => {
             res.status(404).json({ message: 'Пользователь не найден' });
         }
     } catch (error) {
-        // Если такой username уже занят
         if (error.code === 11000) {
             return res.status(400).json({ message: 'Это имя пользователя уже занято' });
         }
@@ -104,8 +82,7 @@ const getUserById = async (req, res) => {
             ...formatUserResponse(user),
             posts: posts,
             postsCount: posts.length,
-            followersCount: user.followers ? user.followers.length : 0,
-            followingCount: user.following ? user.following.length : 0,
+            // Проверка, подписан ли текущий пользователь на этого
             isFollowing: req.user ? user.followers.includes(req.user._id) : false
         };
 
@@ -117,9 +94,11 @@ const getUserById = async (req, res) => {
 };
 
 // 4. Подписаться / Отписаться (Toggle Follow)
+
 const followUser = async (req, res) => {
     try {
-        const targetUserId = req.params.id; 
+        // Если ID передается в body (как в api.js: followUser -> body: { followingId })
+        const targetUserId = req.body.followingId || req.params.id; 
         const currentUserId = req.user._id; 
 
         if (targetUserId === currentUserId.toString()) {
@@ -136,10 +115,12 @@ const followUser = async (req, res) => {
         const isFollowing = targetUser.followers.includes(currentUserId);
 
         if (isFollowing) {
+            // Отписаться
             await targetUser.updateOne({ $pull: { followers: currentUserId } });
             await currentUser.updateOne({ $pull: { following: targetUserId } });
             res.json({ message: 'User unfollowed', isFollowing: false });
         } else {
+            // Подписаться
             await targetUser.updateOne({ $push: { followers: currentUserId } });
             await currentUser.updateOne({ $push: { following: targetUserId } });
             res.json({ message: 'User followed', isFollowing: true });
@@ -159,13 +140,10 @@ const addToSearchHistory = async (req, res) => {
 
         if (!currentUser) return res.status(404).json({ message: 'User not found' });
 
-        // Удаляем дубликаты
+        // Удаляем дубликаты и добавляем в начало
         currentUser.search = currentUser.search.filter(id => id.toString() !== targetUserId);
-        
-        // Добавляем в начало
         currentUser.search.unshift(targetUserId);
 
-        // Храним только последние 10
         if (currentUser.search.length > 10) {
             currentUser.search.pop();
         }
@@ -178,7 +156,7 @@ const addToSearchHistory = async (req, res) => {
     }
 };
 
-// 6. Удалить одного из истории
+// 6. Удалить из истории
 const removeFromSearchHistory = async (req, res) => {
     try {
         const { targetUserId } = req.body;
@@ -193,7 +171,7 @@ const removeFromSearchHistory = async (req, res) => {
     }
 };
 
-// 7. Очистить всю историю
+// 7. Очистить историю
 const clearSearchHistory = async (req, res) => {
     try {
         const currentUser = await User.findById(req.user._id);
@@ -205,6 +183,40 @@ const clearSearchHistory = async (req, res) => {
     }
 };
 
+// Получить список ПОДПИСЧИКОВ (для модалки)
+const getUserFollowers = async (req, res) => {
+    try {
+        const user = await User.findById(req.params.id)
+            .populate('followers', 'username fullName avatar'); // Берем только нужные поля
+
+        if (!user) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+
+        res.json(user.followers);
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'Server Error' });
+    }
+};
+
+// Получить список ПОДПИСОК (для модалки)
+const getUserFollowing = async (req, res) => {
+    try {
+        const user = await User.findById(req.params.id)
+            .populate('following', 'username fullName avatar'); 
+
+        if (!user) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+
+        res.json(user.following);
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'Server Error' });
+    }
+};
+
 module.exports = { 
     getUserProfile, 
     updateUserProfile, 
@@ -212,5 +224,7 @@ module.exports = {
     followUser,
     addToSearchHistory,
     removeFromSearchHistory,
-    clearSearchHistory
+    clearSearchHistory,
+    getUserFollowers, 
+    getUserFollowing
 };

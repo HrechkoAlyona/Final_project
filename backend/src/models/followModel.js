@@ -1,4 +1,3 @@
-
 // backend\src\models\followModel.js
 
 const mongoose = require('mongoose');

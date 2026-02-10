@@ -1,13 +1,10 @@
 // frontend\src\pages\ProfilePage\ProfilePage.module.scss
-
 .wrapper {
   width: 100%;
   max-width: 935px;
   display: flex;
   flex-direction: column;
   align-items: center;
-  
-  /* Синхронизируем отступ с другими страницами */
   padding: var(--pagePaddingTop) 20px;
   box-sizing: border-box;
   margin: 0 auto;
@@ -20,6 +17,7 @@
   gap: 44px;
 }
 
+// === ШАПКА ПРОФИЛЯ ===
 .header {
   display: flex;
   gap: 80px;
@@ -31,8 +29,36 @@
   box-sizing: border-box;
 }
 
+// Аватар
+.avatarWrapper {
+  position: relative;
+  width: 150px;
+  height: 150px;
+  flex-shrink: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 
+  svg {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 168px;
+    height: 168px;
+  }
+}
 
+.avatarImg {
+  width: 150px;
+  height: 150px;
+  border-radius: 50%;
+  object-fit: cover;
+  position: relative;
+  z-index: 2;
+}
+
+// Детали профиля
 .details {
   display: flex;
   flex-direction: column;
@@ -41,100 +67,46 @@
   max-width: 600px;
 }
 
+// Верхняя строка (Ник + Кнопки)
 .topRow {
   display: flex;
   align-items: center;
+  flex-wrap: wrap;
   gap: 20px;
 
   h2 {
-    font-size: 28px;
-    font-weight: 300;
+    font-size: 20px;
+    font-weight: 400;
     color: var(--textColor);
-    margin: 0;
+    margin: 0 10px 0 0;
   }
-}
 
-/* Кнопка "Редактировать профиль" */
-.editButton {
-  border: 1px solid var(--formStroke);
-  background-color: transparent;
-  border-radius: 4px;
-  padding: 5px 9px;
-  font-size: 14px;
-  font-weight: 600;
-  color: var(--textColor);
-  cursor: pointer;
-  transition: background 0.2s;
-
-  &:hover {
+  // Общий стиль для серых кнопок (Edit, Message)
+  .editButton, 
+  .actionsRow .messageButton {
     background-color: var(--postLightGrey);
-  }
-}
-
-/* === НОВЫЕ СТИЛИ (из inline) === */
-
-/* Кнопка Подписаться / Отписаться */
-.followButton {
-  border: none;
-  background-color: var(--primaryBtn); /* #0095f6 */
-  color: white;
-  padding: 5px 20px;
-  border-radius: 4px;
-  font-weight: 600;
-  font-size: 14px;
-  cursor: pointer;
-  transition: opacity 0.2s;
-
-  &:hover {
-    opacity: 0.8;
-  }
-
-  /* Состояние "Unfollow" (когда уже подписан) */
-  &.unfollow {
-    background-color: var(--postLightGrey); /* #efefef */
-    color: var(--textColor); /* black */
-  }
-}
-
-
-
-.bioSection {
-  font-size: 14px;
-  line-height: 1.5;
-  color: var(--textColor);
-  
-  .realName {
+    color: var(--textColor);
+    border: 1px solid transparent; // Чтобы размер не скакал, если добавим рамку
+    border-radius: 8px;
+    padding: 7px 16px;
     font-weight: 600;
-    margin-bottom: 4px;
+    font-size: 14px;
+    cursor: pointer;
+    transition: background 0.2s;
+    
+    &:hover { 
+      background-color: var(--formStroke); 
+    }
+  }
+
+  .actionsRow {
+      display: flex;
+      align-items: center;
+      gap: 8px;
   }
 }
 
-/* СТИЛЬ ДЛЯ КНОПКИ "... more" */
-.moreLink {
-  color: #8e8e8e; /* Серый цвет, как в Инстаграм */
-  cursor: pointer;
-  
-  &:hover {
-    color: var(--textColor); /* При наведении становится черным (опционально) */
-  }
-}
-
-
-/* Ссылка на веб-сайт */
-.websiteLink {
-  display: block;
-  color: #00376b; /* Темно-синий Instagram */
-  font-weight: 600;
-  text-decoration: none;
-  margin-top: 5px;
-
-  &:hover {
-    text-decoration: underline;
-  }
-}
-
-/* ================================ */
-
+// Статистика
 .stats {
   display: flex;
   gap: 40px;
@@ -149,17 +121,30 @@
   }
 }
 
+// Биография
 .bioSection {
   font-size: 14px;
   line-height: 1.5;
   color: var(--textColor);
   
-  .realName {
+  .moreLink {
+    color: var(--darkGrey);
+    cursor: pointer;
     font-weight: 600;
-    margin-bottom: 4px;
+  }
+
+  .websiteLink {
+    display: block;
+    color: #00376b; 
+    font-weight: 600;
+    text-decoration: none;
+    margin-top: 5px;
+
+    &:hover { text-decoration: underline; }
   }
 }
 
+// === ГАЛЕРЕЯ ===
 .gallery {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
@@ -184,9 +169,7 @@
     transition: opacity 0.2s;
   }
 
-  &:hover {
-    opacity: 0.85;
-  }
+  &:hover { opacity: 0.85; }
 }
 
 .gridTitleOverlay {
@@ -197,7 +180,6 @@
   color: #fff;
   font-weight: 700;
   font-size: 16px;
-  line-height: 1.2;
   text-shadow: 0 1px 4px rgba(0,0,0,0.8);
   white-space: nowrap;
   overflow: hidden;
@@ -219,11 +201,12 @@
   }
 }
 
+// === MEDIA ===
 @media (max-width: 768px) {
   .wrapper {
     padding: 0;
     max-width: 100%;
-    background-color: var(--main);
+    background-color: var(--bg-page);
   }
 
   .header {
@@ -231,17 +214,23 @@
     gap: 16px;
   }
 
-  .avatar {
+  .avatarWrapper {
+    width: 80px;
+    height: 80px;
+
+    svg { width: 90px; height: 90px; }
+  }
+
+  .avatarImg {
     width: 77px;
     height: 77px;
   }
 
-  .details {
-    width: calc(100% - 100px);
-  }
+  .details { width: calc(100% - 100px); }
   
-  .topRow h2 {
-    font-size: 20px;
+  .topRow {
+      gap: 10px;
+      h2 { font-size: 20px; }
   }
 
   .gallery {
@@ -250,34 +239,5 @@
     border-top: none;
   }
   
-  .stats {
-    display: none;
-  }
-}
-
-
-
-
-// Аватар с кольцом
-.avatarWrapper {
-  position: relative;
-  width: 120px;
-  height: 120px;
-}
-
-.avatarWrapper svg {
-  position: absolute;
-  top: -6px;
-  left: -6px;
-  width: 132px;
-  height: 132px;
-}
-
-.avatarImg {
-  width: 120px;
-  height: 120px;
-  border-radius: 50%;
-  object-fit: cover;
-  position: relative;
-  z-index: 2;
+  .stats { display: none; }
 }

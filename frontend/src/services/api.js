@@ -1,5 +1,15 @@
-// frontend/src/services/api.js
+// frontend\src\services\api.js
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
+import { io } from 'socket.io-client'; // 1. Добавили импорт Socket.io
+
+// 2. Добавили функцию getSocket 
+let socket;
+export function getSocket() {
+  if (!socket) {
+    socket = io('http://localhost:5005'); 
+  }
+  return socket;
+}
 
 export const api = createApi({
   reducerPath: 'api',
@@ -13,7 +23,8 @@ export const api = createApi({
       return headers;
     },
   }),
-  tagTypes: ['AuthCheck', 'Post', 'User', 'Profile'], 
+  
+  tagTypes: ['AuthCheck', 'Post', 'User', 'Profile', 'Message', 'Conversation'], 
 
   endpoints: (builder) => ({
     // --- АВТОРИЗАЦИЯ ---
@@ -82,6 +93,18 @@ export const api = createApi({
         'Post', 
         { type: 'Profile', id: userId }
       ], 
+    }),
+
+    // Получить список подписчиков (полные объекты)
+    getFollowers: builder.query({
+      query: (userId) => `/users/${userId}/followers`,
+      providesTags: ['Followers'],
+    }),
+
+    // Получить список подписок (полные объекты)
+    getFollowing: builder.query({
+      query: (userId) => `/users/${userId}/following`,
+      providesTags: ['Following'],
     }),
 
     // --- ПОИСК ---
@@ -169,17 +192,13 @@ export const api = createApi({
     }),
 
     // ЛАЙКИ
-
-   toggleLike: builder.mutation({
-  query: (postId) => ({
-    url: `/posts/${postId}/like`,
-    method: 'PUT',
-  }),
-  // Оставляем теги, чтобы после завершения запроса данные в фоне синхронизировались
-  invalidatesTags: (result, error, id) => [{ type: 'Post', id }, 'Post'],
-}),
-
-
+    toggleLike: builder.mutation({
+      query: (postId) => ({
+        url: `/posts/${postId}/like`,
+        method: 'PUT',
+      }),
+      invalidatesTags: (result, error, id) => [{ type: 'Post', id }, 'Post'],
+    }),
 
     // --- КОММЕНТАРИИ ---
     addComment: builder.mutation({
@@ -196,12 +215,14 @@ export const api = createApi({
 export const { 
   useLoginMutation, 
   useRegisterUserMutation,
-  useResetPasswordMutation,     
+  useResetPasswordMutation,      
   useResetPasswordStep2Mutation,
   useGetUserByIdQuery,
   useGetMeQuery, 
   useUpdateProfileMutation,
   useFollowUserMutation,
+  useGetFollowersQuery,
+  useGetFollowingQuery,
   useSearchUsersQuery, 
   useAddToSearchHistoryMutation, 
   useRemoveFromSearchHistoryMutation, 
@@ -216,5 +237,6 @@ export const {
   useDeletePostMutation,
   useUpdatePostMutation,
   useToggleLikeMutation,
-  useAddCommentMutation 
+  useAddCommentMutation,
+ 
 } = api;

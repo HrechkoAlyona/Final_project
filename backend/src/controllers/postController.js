@@ -15,7 +15,9 @@ const createPost = async (req, res) => {
             user: req.user._id,
             image,
             title: title || "", 
-            description: description || ""
+            description: description || "",
+            comments: [], // Инициализируем пустой массив
+            likes: []
         });
 
         await newPost.populate('user', 'username avatar followers following');
@@ -34,7 +36,7 @@ const createPost = async (req, res) => {
     }
 };
 
-// 2. Получить посты (Лента) + ПАГИНАЦИЯ
+// 2. Получить посты
 const getPosts = async (req, res) => {
     try {
         const { page = 1, limit = 4 } = req.query;
@@ -48,7 +50,7 @@ const getPosts = async (req, res) => {
 
         let posts = await Post.find(query)
             .populate('user', 'username fullName avatar followers following')
-            .populate('comments.user', 'username avatar')
+            .populate('comments.user', 'username avatar') // Подгружаем авторов комментариев
             .sort({ createdAt: -1 })
             .limit(Number(limit))
             .skip((page - 1) * limit);
@@ -73,7 +75,7 @@ const getPosts = async (req, res) => {
     }
 };
 
-// 3. EXPLORE (Все посты, кроме моих)
+// 3. EXPLORE
 const getExplorePosts = async (req, res) => {
     try {
         let posts = await Post.find({ user: { $ne: req.user._id } })
@@ -102,7 +104,7 @@ const getExplorePosts = async (req, res) => {
     }
 };
 
-// 4. Получить один пост по ID
+// 4. Получить один пост
 const getPostById = async (req, res) => {
     try {
         const post = await Post.findById(req.params.id)
@@ -125,11 +127,12 @@ const getPostById = async (req, res) => {
     }
 };
 
-// 5. Получить мои посты
+// 5. Мои посты
 const getMyPosts = async (req, res) => {
     try {
         let posts = await Post.find({ user: req.user._id })
             .populate('user', 'username fullName avatar followers following')
+            .populate('comments.user', 'username avatar')
             .sort({ createdAt: -1 });
 
         const userId = req.user._id.toString();
@@ -198,7 +201,7 @@ const updatePost = async (req, res) => {
     }
 };
 
-// 8. Поставить/убрать лайк (Toggle Like)
+// 8. Лайк
 const toggleLike = async (req, res) => {
     try {
         const post = await Post.findById(req.params.id);
@@ -215,7 +218,6 @@ const toggleLike = async (req, res) => {
 
         await post.save();
 
-        // Populate данных, чтобы фронтенд получил полную структуру объекта
         const updatedPost = await Post.findById(post._id)
             .populate('user', 'username avatar followers following')
             .populate('comments.user', 'username avatar');
@@ -236,6 +238,35 @@ const toggleLike = async (req, res) => {
     }
 };
 
+//  9. ДОБАВИТЬ КОММЕНТАРИЙ (НОВАЯ ФУНКЦИЯ) 
+const addComment = async (req, res) => {
+    try {
+        const { text } = req.body;
+        if (!text) return res.status(400).json({ message: 'Комментарий не может быть пустым' });
+
+        const post = await Post.findById(req.params.id);
+        if (!post) return res.status(404).json({ message: 'Пост не найден' });
+
+        const newComment = {
+            user: req.user._id,
+            text,
+            createdAt: new Date()
+        };
+
+        post.comments.push(newComment);
+        await post.save();
+
+        // Возвращаем обновленный список комментариев с аватарками
+        const updatedPost = await Post.findById(req.params.id)
+            .populate('comments.user', 'username avatar');
+
+        res.status(201).json(updatedPost.comments);
+    } catch (error) {
+        console.error('AddComment Error:', error);
+        res.status(500).json({ message: 'Ошибка добавления комментария' });
+    }
+};
+
 module.exports = { 
     createPost, 
     getPosts, 
@@ -244,5 +275,6 @@ module.exports = {
     getPostById, 
     deletePost, 
     updatePost,
-    toggleLike
+    toggleLike,
+    addComment 
 };

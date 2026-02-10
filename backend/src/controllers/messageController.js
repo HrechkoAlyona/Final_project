@@ -1,45 +1,114 @@
+// backend\src\controllers\messageController.js
 const Message = require('../models/messageModel');
+const User = require('../models/userModel');
 
-// 1. Отправить сообщение
+// 1. ОТПРАВИТЬ СООБЩЕНИЕ
 const sendMessage = async (req, res) => {
     try {
-        const { recipientId, text } = req.body;
-        const io = req.app.get('io'); 
+        const { text, recipientId } = req.body;
+        const senderId = req.user._id;
 
-        const newMessage = await Message.create({
-            sender: req.user._id,
-            recipient: recipientId,
+        if (!text || !recipientId) {
+            return res.status(400).json({ message: "Нет текста или получателя" });
+        }
+
+        let message = await Message.create({
+            sender: senderId,
+            receiver: recipientId,
             text
         });
 
-        // Отправляем через Socket.io получателю
-        io.to(recipientId).emit('newMessage', newMessage);
+        await message.populate('sender', 'username avatar');
+        await message.populate('receiver', 'username avatar');
 
-        res.status(201).json(newMessage);
+        // Socket.io 
+        const io = req.app.get('io');
+        if (io) {
+         
+            // 1. Отправляем получателю (чтобы он увидел сразу)
+            io.to(recipientId).emit('newMessage', message);
+            
+            // 2. Отправляем себе (чтобы у нас тоже появилось сразу)
+            io.to(senderId).emit('newMessage', message);
+        }
+
+        res.status(201).json(message);
     } catch (error) {
-        res.status(500).json({ message: 'Ошибка отправки' });
+        console.error("Send Message Error:", error);
+        res.status(500).json({ message: "Ошибка отправки" });
     }
 };
 
-// 2. Получить историю переписки (ЭТОГО НЕ ХВАТАЛО)
+// 2. ПОЛУЧИТЬ ПЕРЕПИСКУ (С конкретным юзером)
 const getMessages = async (req, res) => {
     try {
-        const { userId } = req.params; // ID собеседника
-        const myId = req.user._id;     // Мой ID из токена
+        const { id: userToChatId } = req.params;
+        const myId = req.user._id;
 
-        // Ищем сообщения между мной и этим пользователем
         const messages = await Message.find({
             $or: [
-                { sender: myId, recipient: userId },
-                { sender: userId, recipient: myId }
+                { sender: myId, receiver: userToChatId },
+                { sender: userToChatId, receiver: myId }
             ]
-        }).sort({ createdAt: 1 }); // Сортируем от старых к новым
+        })
+        .sort({ createdAt: 1 })
+        .populate('sender', 'username avatar');
 
         res.json(messages);
     } catch (error) {
-        res.status(500).json({ message: 'Ошибка получения сообщений' });
+        console.error("Get Messages Error:", error);
+        res.status(500).json({ message: "Ошибка получения переписки" });
     }
 };
 
-// Теперь оба метода экспортируются корректно
-module.exports = { sendMessage, getMessages };
+//  3. ПОЛУЧИТЬ СПИСОК ДИАЛОГОВ (Conversations) 
+const getConversations = async (req, res) => {
+    try {
+        const currentUserId = req.user._id;
+        const messages = await Message.find({
+            $or: [{ sender: currentUserId }, { receiver: currentUserId }]
+        })
+        .sort({ createdAt: -1 }) // Сначала новые
+        .populate('sender', 'username avatar')
+        .populate('receiver', 'username avatar');
+
+        const conversationsMap = new Map();
+
+        messages.forEach(msg => {
+            if (!msg.sender || !msg.receiver) {
+                return; 
+            }
+
+            // Кто собеседник?
+            const isSender = msg.sender._id.toString() === currentUserId.toString();
+            const otherUser = isSender ? msg.receiver : msg.sender;
+
+            // Еще одна проверка на всякий случай
+            if (!otherUser || !otherUser._id) {
+                return;
+            }
+
+            const otherUserId = otherUser._id.toString();
+
+            // Если этого собеседника еще нет в карте, добавляем его
+            if (!conversationsMap.has(otherUserId)) {
+                conversationsMap.set(otherUserId, {
+                    _id: otherUser._id,
+                    username: otherUser.username,
+                    avatar: otherUser.avatar,
+                    lastMessage: msg.text,
+                    isSender: isSender
+                });
+            }
+        });
+
+        const conversations = Array.from(conversationsMap.values());
+        res.json(conversations);
+
+    } catch (error) {
+        console.error("Get Conversations Error:", error);
+        res.status(500).json({ message: "Ошибка загрузки диалогов" });
+    }
+};
+
+module.exports = { sendMessage, getMessages, getConversations };

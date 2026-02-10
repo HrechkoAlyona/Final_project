@@ -1,33 +1,35 @@
-// проверка токена в заголовках запроса. 
-// Если токен правильный, то пропускает к данным, если нет, то говорит «Доступ запрещен»
+// backend\src\middlewares\authMiddleware.js
 
 const jwt = require('jsonwebtoken');
 const User = require('../models/userModel');
 
 const protect = async (req, res, next) => {
-    let token;
+  let token;
 
-    // Проверяем, есть ли токен в заголовках (Authorization: Bearer ТОКЕН)
-    if (req.headers.authorization && req.headers.authorization.startsWith('Bearer')) {
-        try {
-            // Отрезаем слово "Bearer " и берем сам токен
-            token = req.headers.authorization.split(' ')[1];
+  if (
+    req.headers.authorization &&
+    req.headers.authorization.startsWith('Bearer')
+  ) {
+    try {
+      // Получаем токен из заголовка
+      token = req.headers.authorization.split(' ')[1];
 
-            // Декодируем токен
-            const decoded = jwt.verify(token, process.env.JWT_SECRET);
+      // Декодируем
+      const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
-            // Находим пользователя в базе по ID из токена и добавляем его в объект запроса (req.user)
-            req.user = await User.findById(decoded.id).select('-password');
+      // Получаем юзера (без пароля)
+      req.user = await User.findById(decoded.id).select('-password');
 
-            next(); // Пропускаем дальше к контроллеру
-        } catch (error) {
-            res.status(401).json({ message: 'Не авторизован, токен не подходит' });
-        }
+      return next(); // return, чтобы выйти из функции
+    } catch (error) {
+      console.error(error);
+      return res.status(401).json({ message: 'Not authorized, token failed' });
     }
+  }
 
-    if (!token) {
-        res.status(401).json({ message: 'Не авторизован, токена нет' });
-    }
+  if (!token) {
+    return res.status(401).json({ message: 'Not authorized, no token' });
+  }
 };
 
 module.exports = { protect };
