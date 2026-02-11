@@ -1,22 +1,31 @@
-// frontend\src\components\PostModal\PostActions.jsx
-
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react'; 
 import { AiOutlineHeart, AiFillHeart, AiOutlineMessage } from 'react-icons/ai';
 import { FiSend } from 'react-icons/fi';
 import { BsBookmark, BsEmojiSmile } from 'react-icons/bs';
 import EmojiPicker, { EmojiStyle } from 'emoji-picker-react';
 import toast from 'react-hot-toast';
 import { useAddCommentMutation } from '../../services/api';
-import { usePostActions } from '../../hooks/usePostActions'; // Используем наш общий хук
+import { usePostActions } from '../../hooks/usePostActions'; 
 import s from './PostModal.module.scss';
+import { formatDate } from '../../utils/dateUtils';
 
 const PostActions = ({ post }) => {
   const [commentText, setCommentText] = useState("");
   const [showEmoji, setShowEmoji] = useState(false);
   const [addComment, { isLoading: isCommenting }] = useAddCommentMutation();
   
-  // Хук действий (лайки)
+  const emojiRef = useRef(null);
   const { isLiked, likesCount, handleLike } = usePostActions(post);
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (emojiRef.current && !emojiRef.current.contains(event.target)) {
+        setShowEmoji(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
 
   const handlePostComment = async (e) => {
     e.preventDefault();
@@ -44,18 +53,30 @@ const PostActions = ({ post }) => {
       </div>
 
       <div className={s.likesCount}>{likesCount} likes</div>
-      <div className={s.postDate}>{new Date(post.createdAt).toLocaleDateString()}</div>
+      
+      {/* --- formatDate --- */}
+      <div className={s.postDate}>{formatDate(post.createdAt)}</div>
       
       <form className={s.addCommentBox} onSubmit={handlePostComment}>
-        <div className={s.emojiBtn} onClick={() => setShowEmoji(!showEmoji)}>
-           <BsEmojiSmile size={24} color="#8e8e8e" />
-        </div>
-        
-        {showEmoji && (
-            <div className={`${s.emojiPickerPopover} ${s.popoverUp}`} style={{left: '0'}}>
-                <EmojiPicker onEmojiClick={(e) => setCommentText(prev => prev + e.emoji)} emojiStyle={EmojiStyle.NATIVE} width={300} height={350} />
+        <div ref={emojiRef} style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
+            <div className={s.emojiBtn} onClick={() => setShowEmoji(!showEmoji)}>
+               <BsEmojiSmile size={24} color="#8e8e8e" />
             </div>
-        )}
+            
+           {showEmoji && (
+                <div className={s.emojiPickerPopover}>
+                    <EmojiPicker 
+                        onEmojiClick={(e) => setCommentText(prev => prev + e.emoji)} 
+                        emojiStyle={EmojiStyle.NATIVE} 
+                        width={280} 
+                        height={300} 
+                        searchDisabled={true}
+                        skinTonesDisabled={true}
+                        previewConfig={{ showPreview: false }}
+                    />
+                </div>
+            )}
+        </div>
 
         <input 
           type="text" 

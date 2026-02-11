@@ -1,6 +1,6 @@
 // frontend\src\pages\EditProfile\EditProfile.jsx
 
-import React, { useEffect } from 'react'; // 1. Добавляем useEffect
+import React, { useEffect } from 'react';
 import { useForm, useWatch } from 'react-hook-form';
 import { toast } from 'react-hot-toast';
 import { useGetUserByIdQuery, useUpdateProfileMutation } from '../../services/api';
@@ -9,14 +9,14 @@ import s from './EditProfile.module.scss';
 const EditProfile = () => {
   const userId = localStorage.getItem('userId');
   
-  // Получаем данные. refetchOnMountOrArgChange гарантирует, что мы видим свежие данные
+  // 1. Получаем данные пользователя
   const { data: user, isLoading } = useGetUserByIdQuery(userId, {
     refetchOnMountOrArgChange: true, 
   });
   
   const [updateProfile, { isLoading: isUpdating }] = useUpdateProfileMutation();
 
-  // 2. Достаем reset из useForm
+  // 2. Настраиваем форму
   const { register, handleSubmit, setValue, control, reset } = useForm({
     defaultValues: {
       username: '',
@@ -26,7 +26,16 @@ const EditProfile = () => {
     }
   });
 
-  // 3. ГЛАВНОЕ ИСПРАВЛЕНИЕ: Синхронизируем форму с данными, когда они пришли
+  // 3. Следим за изменениями полей (Аватарка и Био)
+  // Это заставит компонент перерисоваться, когда меняется фото или текст
+  const watchedValues = useWatch({
+    control,
+    name: ["avatar", "bio"],
+  });
+  const avatarPreview = watchedValues[0];
+  const bioValue = watchedValues[1] || "";
+
+  // 4. Синхронизируем форму с данными с сервера
   useEffect(() => {
     if (user) {
       reset({
@@ -38,49 +47,47 @@ const EditProfile = () => {
     }
   }, [user, reset]);
 
-  const avatarPreview = useWatch({
-    control,
-    name: "avatar",
-  });
-
+  // 5. Обработка загрузки картинки (Base64)
   const handleImageChange = (e) => {
     const file = e.target.files[0];
     if (file) {
       const reader = new FileReader();
       reader.onloadend = () => {
-        setValue('avatar', reader.result);
+        // Устанавливаем Base64 строку в поле формы
+        setValue('avatar', reader.result, { shouldDirty: true });
       };
       reader.readAsDataURL(file);
     }
   };
 
-  if (isLoading) return <div className={s.loader}>Loading...</div>;
-
   const onSubmit = async (data) => {
     try {
       await updateProfile({
         ...data,
-        _id: userId // На всякий случай передаем ID, если бэкенд его ждет в теле
+        _id: userId 
       }).unwrap();
       
       toast.success('Profile updated!');
     } catch (err) {
       console.error("Ошибка при обновлении:", err);
-      const errorMessage = err.data?.message || 'Update failed';
+      // Пытаемся достать сообщение об ошибке (например, "Entity too large")
+      const errorMessage = err.data?.message || err.error || 'Update failed';
       toast.error(errorMessage);
     }
   };
+
+  if (isLoading) return <div className={s.pageWrapper}>Loading...</div>;
 
   return (
     <div className={s.pageWrapper}>
       <div className={s.container}>
         <h1 className={s.mainTitle}>Edit profile</h1>
 
+        {/* КАРТОЧКА С АВАТАРКОЙ */}
         <div className={s.avatarCard}>
           <div className={s.avatarInfo}>
             <img 
-              // Логика: Сначала то, что в форме (если загрузили новое), иначе то, что пришло с сервера
-              src={avatarPreview || user?.avatar || "https://via.placeholder.com/150"} 
+              src={avatarPreview || user?.avatar || "https://cdn-icons-png.flaticon.com/512/149/149071.png"} 
               alt="avatar" 
               className={s.avatarImg}
             />
@@ -95,11 +102,11 @@ const EditProfile = () => {
           </label>
         </div>
 
+        {/* ФОРМА */}
         <form onSubmit={handleSubmit(onSubmit)} className={s.form}>
           
           <div className={s.inputGroup}>
             <label>Username</label>
-            {/* defaultValue больше не нужен, так как работает reset */}
             <input {...register('username')} placeholder="Username" />
           </div>
 
@@ -120,8 +127,8 @@ const EditProfile = () => {
                 placeholder="Write something about yourself..."
               />
               <span className={s.charCount}>
-                {/* Следим за длиной введенного текста, а не старых данных */}
-                {(control._formValues.bio || "").length} / 150
+                {/* 🔥 Теперь счетчик работает плавно */}
+                {bioValue.length} / 150
               </span>
             </div>
           </div>

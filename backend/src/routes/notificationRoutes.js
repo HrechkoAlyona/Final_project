@@ -1,9 +1,16 @@
+// backend\src\routes\notificationRoutes.js
 const express = require('express');
 const router = express.Router();
-const { getNotifications, markAsRead } = require('../controllers/notificationController');
 const { protect } = require('../middlewares/authMiddleware');
+const { 
+    getNotifications, 
+    markNotificationsAsRead 
+} = require('../controllers/notificationController');
 
+// Получить список уведомлений
 router.get('/', protect, getNotifications);
-router.put('/read', protect, markAsRead);
+
+// Пометить все как прочитанные
+router.put('/read', protect, markNotificationsAsRead);
 
 module.exports = router;

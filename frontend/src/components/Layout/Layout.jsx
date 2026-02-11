@@ -11,10 +11,12 @@ const Layout = () => {
 
   return (
     <div className={s.layoutWrapper}>
-      <Sidebar onCreateClick={() => setCreateModalOpen(true)} />
+      <Sidebar 
+        onCreateClick={() => setCreateModalOpen(true)} 
+        isCreateOpen={isCreateModalOpen} 
+      />
       
       <main className={s.mainContent}>
-          {/* Outlet — это "окно", в котором будут появляться Home, ProfilePage и т.д. */}
           <Outlet /> 
       </main>
 

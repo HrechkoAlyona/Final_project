@@ -1,40 +1,38 @@
-import React, { useState, useRef } from 'react';
-import EmojiPicker, { EmojiStyle } from 'emoji-picker-react';
-import { AiOutlineSmile } from 'react-icons/ai';
+// frontend\src\components\PostModal\PostImage.jsx
+import React from 'react';
+import { AiOutlineCloudUpload } from 'react-icons/ai'; 
 import s from './PostModal.module.scss';
 
-const PostImage = ({ post, isEditing, editTitle, setEditTitle }) => {
-  const [showEmoji, setShowEmoji] = useState(false);
-  const emojiRef = useRef(null);
+const PostImage = ({ post, isEditing, editTitle, setEditTitle, previewUrl, onFileChange }) => {
 
-  const onEmojiClick = (emojiData) => {
-    setEditTitle(prev => prev + emojiData.emoji);
-  };
+  // Определяем, какую картинку показывать: превью (если выбрали новую) или старую с сервера
+  const currentImage = previewUrl || post.image || post.imageUrl;
 
   return (
     <div className={s.mediaSection}>
-      <img src={post.image || post.imageUrl} alt="Post" />
+      <img src={currentImage} alt="Post" />
       
+      {/* КНОПКА ЗАГРУЗКИ (Только при редактировании) */}
+      {isEditing && (
+        <label className={s.uploadOverlay}>
+            <AiOutlineCloudUpload size={40} />
+            <span>Change Photo</span>
+            <input type="file" onChange={onFileChange} accept="image/*" hidden />
+        </label>
+      )}
+
+      {/* Заголовок (Title) */}
       {(post.title || isEditing) && (
         <div className={s.imageOverlayTitle}>
           {isEditing ? (
             <div className={s.editTitleWrapper}>
-              <input 
-                type="text" value={editTitle}
+              <textarea 
+                value={editTitle}
                 onChange={(e) => setEditTitle(e.target.value)}
                 className={s.overlayInput}
                 placeholder="Edit title..."
+                rows={4} 
               />
-              <div className={`${s.tools} ${s.overlayTools}`}>
-                <div className={s.emojiBtn} onClick={() => setShowEmoji(!showEmoji)}>
-                   <AiOutlineSmile />
-                </div>
-                {showEmoji && (
-                   <div className={s.emojiPickerPopover} ref={emojiRef}>
-                      <EmojiPicker onEmojiClick={onEmojiClick} emojiStyle={EmojiStyle.NATIVE} width={300} height={350} />
-                   </div>
-                )}
-              </div>
             </div>
           ) : (
             <span>{post.title}</span>

@@ -1,6 +1,6 @@
 // frontend\src\App.jsx
-
-import React from 'react';
+import React, { useEffect } from 'react'; // Добавь useEffect
+import { getSocket } from './services/api'; // Импортируй getSocket
 import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
 
@@ -11,6 +11,7 @@ import Reset from './pages/Auth/Reset';
 import Home from './pages/Home/Home';
 import ProfilePage from './pages/ProfilePage/ProfilePage'; 
 import EditProfile from './pages/EditProfile/EditProfile';
+import PostPage from './pages/PostPage/PostPage'; // ✅ Импорт есть
 import Explore from './pages/Explore/Explore'; 
 import NotFound from './pages/NotFound/NotFound';
 import MessagesPage from './pages/Messages/MessagesPage'; 
@@ -24,14 +25,27 @@ import { useAuth } from './hooks/useAuth';
 import { useChatSocket } from './hooks/useChatSocket'; 
 
 function App() {
-  const { isLoading } = useAuth();
+  const { userId, isLoading } = useAuth(); // Достань userId из хука
   const location = useLocation();
   const background = location.state?.backgroundLocation;
 
-  // Это подключит сокеты, как только приложение загрузится
   useChatSocket();
 
-  if (isLoading) return null; 
+  useEffect(() => {
+    if (userId) {
+      const socket = getSocket();
+      
+      // Говорим серверу: "Я онлайн, добавь мой сокет в комнату с моим ID"
+      socket.emit('join', userId);
+
+      // На случай обрыва связи переподключаемся
+      socket.on('connect', () => {
+        socket.emit('join', userId);
+      });
+    }
+  }, [userId]);
+
+  if (isLoading) return null;
 
   const isAuthenticated = !!localStorage.getItem('token');
 
@@ -54,6 +68,9 @@ function App() {
             <Route path="/profile/:id" element={<ProfilePage />} />
             <Route path="/edit-profile" element={<EditProfile />} />
             <Route path="/explore" element={<Explore />} />
+
+            {/* 🔥 ВОТ ЭТУ СТРОКУ ТЫ ЗАБЫЛА ДОБАВИТЬ В СПИСОК: */}
+            <Route path="/post/:id" element={<PostPage />} />
 
             {/* Маршруты сообщений */}
             <Route path="/direct" element={<Navigate to="/direct/inbox" replace />} />

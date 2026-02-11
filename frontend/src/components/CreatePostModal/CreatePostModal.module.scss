@@ -3,7 +3,10 @@
 // Оверлей и кнопка закрытия
 .overlay {
   position: fixed;
-  top: 0; left: 0; width: 100vw; height: 100vh;
+  top: 0; 
+  right: 0; 
+  bottom: 0;
+  left: var(--sideBarW); 
   background-color: rgba(0, 0, 0, 0.65);
   z-index: 1000;
   display: flex; justify-content: center; align-items: center;
@@ -67,7 +70,7 @@
   flex: 1.5; background-color: #fafafa;
   display: flex; justify-content: center; align-items: center;
   
-  position: relative; //  чтобы абсолютный текст был внутри этого блока
+  position: relative; 
   border-right: 1px solid #dbdbdb;
 
   &.active { background-color: #fafafa; }
@@ -78,20 +81,19 @@
 // --- ЗАГОЛОВОК ПОВЕРХ КАРТИНКИ ---
 .previewTitleOverlay {
   position: absolute;
-  bottom: 40px;      /* Отступ снизу */
+  bottom: 40px; 
   left: 20px;
-  right: 20px;       /* Чтобы текст не вылезал за края */
+  right: 20px; 
   
-  color: #fff;       /* Белый текст */
-  font-size: 28px;   /* Крупный шрифт */
-  font-weight: 700;  /* Жирный */
+  color: #fff; 
+  font-size: 28px; 
+  font-weight: 700; 
   line-height: 1.2;
   
-  /* Тень текста (чтобы читалось на белой картинке) */
   text-shadow: 0 2px 8px rgba(0, 0, 0, 0.8);
   
-  word-wrap: break-word; /* Перенос длинных слов */
-  pointer-events: none;  /* Чтобы клики проходили сквозь текст */
+  word-wrap: break-word; 
+  pointer-events: none; 
   text-align: left;
 }
 
@@ -128,42 +130,38 @@
   span { font-weight: 600; font-size: 14px; color: #262626; }
 }
 
-// Группы полей (Разделители)
+// Группы полей
 .inputGroup {
   padding: 0 16px;
   border-bottom: 1px solid #efefef;
   position: relative;
   display: flex; flex-direction: column;
 
-  // Последний элемент (описание) растягиваем на оставшееся место
   &:last-child {
     border-bottom: none;
     flex: 1; 
   }
 }
 
-// Поле ЗАГОЛОВКА
 .titleInput {
   width: 100%;
   border: none;
   outline: none;
   
-  // Крупный шрифт и отступы
   font-size: 18px; 
   font-weight: 600; 
   padding: 20px 0; 
   color: #262626;
 
   &::placeholder {
-    font-weight: 400; // Плейсхолдер тонкий
+    font-weight: 400; 
     color: #8e8e8e;
   }
 }
 
-// Поле ОПИСАНИЯ
 .captionInput {
   width: 100%;
-  flex: 1; // Растягивается
+  flex: 1; 
   min-height: 150px;
   border: none; resize: none;
   margin-top: 15px;
@@ -172,7 +170,6 @@
   color: #262626;
 }
 
-// Инструменты (Эмодзи и счетчик)
 .tools {
   padding: 10px 0; 
   display: flex; justify-content: space-between; align-items: center;
@@ -191,9 +188,9 @@
 .emojiPickerPopover {
   position: absolute; 
   z-index: 20;
-  background-color: #fff; // Белый фон контейнера
   box-shadow: 0 5px 15px rgba(0,0,0,0.2); 
   border-radius: 8px;
+  overflow: hidden; 
   
   // По умолчанию открываем ВНИЗ (для заголовка)
   top: 40px; 
@@ -202,14 +199,13 @@
 
 // --- СПЕЦИАЛЬНЫЙ КЛАСС: Открытие ВЛЕВО и ВВЕРХ (для описания) ---
 .popoverUp {
-  top: auto;          // Сбрасываем top
-  bottom: 0;          // Выравниваем по низу панели инструментов
+  top: auto;          
+  bottom: 0;          
   
-  left: auto;         // Сбрасываем left
-  right: 100%;        // Выталкиваем полностью влево (на картинку)
-  margin-right: 15px; // Добавляем отступ от края формы
+  left: auto;         
+  right: 100%;        
+  margin-right: 15px; 
   
-  //  Стрелочка, указывающая вправо
   &::after {
     content: '';
     position: absolute;
@@ -222,7 +218,13 @@
   }
 }
 
-// --- АДАПТИВ ---
+// --- АДАПТИВ (Исправлена вложенность) ---
+@media (max-width: 1024px) {
+  .overlay {
+    left: var(--sideBarSmallW);
+  }
+}
+
 @media (max-width: 850px) {
   .modalCard { width: 100%; height: 100%; border-radius: 0; }
   .closeBtn { top: 10px; right: 10px; color: #000; z-index: 2000; }
@@ -238,14 +240,18 @@
     flex: 1; height: auto; min-height: 300px;
   }
 
-  // На мобильных картинка сверху, поэтому "влево" открывать некуда.
-  // Возвращаем открытие просто "вверх" над кнопкой.
   .popoverUp {
     right: 0;
     left: auto;
     margin-right: 0;
-    bottom: 45px; // Поднимаем над кнопкой смайла
+    bottom: 45px; 
     
-    &::after { display: none; } // Скрываем стрелочку
+    &::after { display: none; }
+  }
+}
+
+@media (max-width: 768px) {
+  .overlay {
+    left: 0; 
   }
 }

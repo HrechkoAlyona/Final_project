@@ -31,7 +31,7 @@ router.get('/my', protect, getMyPosts);
 
 // Операции с ID
 router.get('/:id', protect, getPostById);
-router.put('/:id', protect, updatePost); 
+router.put('/:id', protect, upload.single('image'), updatePost); 
 router.delete('/:id', protect, deletePost); 
 
 // Лайк

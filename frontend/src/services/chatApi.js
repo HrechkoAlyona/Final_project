@@ -1,6 +1,5 @@
 // frontend\src\services\chatApi.js
 
-
 import { api, getSocket } from './api';
 
 export const chatApi = api.injectEndpoints({
@@ -17,18 +16,29 @@ export const chatApi = api.injectEndpoints({
 
           const listener = (newMessage) => {
             updateCachedData((draft) => {
-               const senderId = typeof newMessage.sender === 'object' ? newMessage.sender._id : newMessage.sender;
-               const receiverId = typeof newMessage.receiver === 'object' ? newMessage.receiver._id : newMessage.receiver;
-               
-               // Ищем диалог
-               const conversation = draft.find(c => c._id === senderId || c._id === receiverId);
+              const senderId = typeof newMessage.sender === 'object' ? newMessage.sender._id : newMessage.sender;
+              const receiverId = typeof newMessage.receiver === 'object' ? newMessage.receiver._id : newMessage.receiver;
+              const currentUserId = localStorage.getItem('userId');
 
-               if (conversation) {
-                 // Обновляем текст
-                 conversation.lastMessage = newMessage.text;
-    
-                 draft.sort((a) => (a._id === conversation._id ? -1 : 1));
-               }
+              // Ищем нужный диалог в списке
+              const conversation = draft.find(c => c._id === senderId || c._id === receiverId);
+
+              if (conversation) {
+                // Обновляем последнее сообщение
+                conversation.lastMessage = newMessage.text;
+                
+                // 🔥 ЛОГИКА СЧЕТЧИКА: если сообщение пришло нам, +1
+                if (String(senderId) !== String(currentUserId)) {
+                  conversation.unreadCount = (conversation.unreadCount || 0) + 1;
+                }
+
+                // Перемещаем диалог в начало списка
+                const index = draft.indexOf(conversation);
+                if (index > -1) {
+                  draft.splice(index, 1);
+                  draft.unshift(conversation);
+                }
+              }
             });
           };
 
@@ -37,7 +47,7 @@ export const chatApi = api.injectEndpoints({
           await cacheEntryRemoved;
           socket.off('newMessage', listener);
         } catch {
-           // ignore
+          // ignore
         }
       }
     }),
@@ -75,7 +85,7 @@ export const chatApi = api.injectEndpoints({
           await cacheEntryRemoved;
           socket.off('newMessage', listener);
         } catch {
-           // ignore
+          // ignore
         }
       },
     }),

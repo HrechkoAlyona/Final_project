@@ -16,8 +16,6 @@ const Home = () => {
 
   useEffect(() => {
     if (newPosts && newPosts.length > 0) {
-      // setTimeout делает обновление асинхронным.
-      // Это полностью убирает ошибку "Calling setState synchronously..."
       const timer = setTimeout(() => {
         setAllPosts(prev => {
           const existingIds = new Set(prev.map(p => p._id));
@@ -29,7 +27,6 @@ const Home = () => {
         });
       }, 0);
 
-      // Чистим таймер, если компонент размонтируется
       return () => clearTimeout(timer);
     }
   }, [newPosts]);

@@ -2,29 +2,24 @@
 import React, { useState } from 'react'; 
 import { useLocation } from 'react-router-dom';
 import s from './Messages.module.scss';
-
-// Импорт иконки
 import { AiOutlineEdit } from 'react-icons/ai'; 
 
-// Импорты API
+// API
 import { useGetMeQuery, useSearchUsersQuery } from '../../services/api'; 
 import { useGetMyConversationsQuery } from '../../services/chatApi'; 
 
+// Components
 import ChatWindow from './ChatWindow'; 
+
+// Utils
+import { formatShortTime } from '../../utils/dateUtils'; 
 
 const MessagesPage = () => {
   const { data: conversations = [], isLoading: isChatsLoading } = useGetMyConversationsQuery();
   const { data: myUser } = useGetMeQuery();
-
-  // Хуки роутера
   const location = useLocation();
 
-  // Мы берем пользователя сразу из location.state при создании переменной.
-  // Если location.state.userToChat есть — берем его, иначе null.
   const [selectedUser, setSelectedUser] = useState(location.state?.userToChat || null);
-
-  // --- useEffect с setSelectedUser БОЛЬШЕ НЕ НУЖЕН ---
-
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   
@@ -47,7 +42,6 @@ const MessagesPage = () => {
       <div className={s.conversationsList}>
         <div className={s.header}>
           <span>{myUser?.username || "Messages"}</span>
-          
           <div 
              className={s.newChatIcon} 
              onClick={() => setIsModalOpen(true)}
@@ -77,9 +71,18 @@ const MessagesPage = () => {
               />
               <div className={s.info}>
                 <span className={s.username}>{chat.username}</span>
-                <span className={s.lastMessage}>
-                   {chat.isSender && "You: "} {chat.lastMessage}
-                </span>
+                
+                {/* Строка с сообщением и временем */}
+                <div className={s.messageRow}>
+                   <span className={s.lastMessage}>
+                      {chat.isSender && "You: "} {chat.lastMessage}
+                   </span>
+                   {/* Точка и время */}
+                   <span className={s.timeDot}>·</span>
+                   <span className={s.timeVal}>
+                      {formatShortTime(chat.updatedAt || chat.createdAt)}
+                   </span>
+                </div>
               </div>
             </div>
           ))}

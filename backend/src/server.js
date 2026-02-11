@@ -20,12 +20,18 @@ const app = express();
 const server = http.createServer(app);
 
 connectDB(); // Подключение к БД
-// Мидлвары
+
+// --- МИДЛВАРЫ ---
 app.use(cors());
-app.use(express.json());
+
+//  Увеличиваем лимит до 50MB для загрузки картинок
+app.use(express.json({ limit: '50mb' })); 
+app.use(express.urlencoded({ limit: '50mb', extended: true }));
+
 // Инициализация Socket.io
 const io = initializeSocket(server);
-app.set('io', io); // Чтобы использовать io в контроллерах (на всякий случай)
+app.set('io', io); // Чтобы использовать io в контроллерах
+
 // Использование маршрутов
 app.use('/api/auth', authRoutes);
 app.use('/api/posts', postRoutes); 
@@ -34,7 +40,6 @@ app.use('/api/users', userRoutes);
 app.use('/api/follows', followRoutes);
 app.use('/api/search', searchRoutes);
 app.use('/api/notifications', notificationRoutes); 
-
 app.use('/api/messages', messageRoutes); 
 
 const PORT = process.env.PORT || 5005;

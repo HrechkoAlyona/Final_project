@@ -1,5 +1,3 @@
-// frontend/src/components/CreatePostModal/CreatePostModal.jsx
-
 import React, { useRef, useEffect } from 'react';
 import EmojiPicker from 'emoji-picker-react';
 import { AiOutlineClose, AiOutlineArrowLeft, AiOutlineSmile } from 'react-icons/ai';
@@ -29,11 +27,9 @@ const CreatePostModal = ({ onClose }) => {
   const fileInputRef = useRef(null);
   const emojiPickerRef = useRef(null);
 
-  //  2. Используем готовый хук вместо ручного fetch
-  // Он сам возьмет данные из кэша или сделает запрос
   const { data: user } = useGetMeQuery();
 
-  // Закрытие смайлов по клику вне (этот код можно вынести в хук useClickOutside, но пока оставим тут)
+  // Закрытие смайлов по клику вне
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (showEmoji) {
@@ -54,7 +50,6 @@ const CreatePostModal = ({ onClose }) => {
     if (!preview) fileInputRef.current?.click();
   };
 
-  // Дефолтная аватарка
   const userAvatar = user?.avatar || "https://cdn-icons-png.flaticon.com/512/149/149071.png";
   const userName = user?.username || "User";
 
@@ -129,7 +124,12 @@ const CreatePostModal = ({ onClose }) => {
                           <div className={s.emojiPickerPopover} ref={emojiPickerRef}>
                               <EmojiPicker 
                                 onEmojiClick={(data) => onEmojiClick(data, 'title')} 
-                                width={300} height={350} searchDisabled 
+                                searchDisabled={true}
+                                skinTonesDisabled={true}
+                                previewConfig={{ showPreview: false }}
+                                width={280} 
+                                height={300} 
+                                emojiStyle="native"
                               />
                           </div>
                       )}
@@ -163,14 +163,18 @@ const CreatePostModal = ({ onClose }) => {
                           <div className={`${s.emojiPickerPopover} ${s.popoverUp}`} ref={emojiPickerRef}>
                               <EmojiPicker 
                                 onEmojiClick={(data) => onEmojiClick(data, 'content')} 
-                                width={300} height={350} searchDisabled 
+                                searchDisabled={true}
+                                skinTonesDisabled={true}
+                                previewConfig={{ showPreview: false }}
+                                width={280} 
+                                height={300} 
+                                emojiStyle="native"
                               />
                           </div>
                       )}
                   </div>
                 )}
             </div>
-
           </div>
         </div>
       </div>

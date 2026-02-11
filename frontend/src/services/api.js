@@ -1,8 +1,8 @@
 // frontend\src\services\api.js
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
-import { io } from 'socket.io-client'; // 1. Добавили импорт Socket.io
+import { io } from 'socket.io-client'; 
 
-// 2. Добавили функцию getSocket 
+// Функция получения сокета
 let socket;
 export function getSocket() {
   if (!socket) {
@@ -24,7 +24,7 @@ export const api = createApi({
     },
   }),
   
-  tagTypes: ['AuthCheck', 'Post', 'User', 'Profile', 'Message', 'Conversation'], 
+  tagTypes: ['AuthCheck', 'Post', 'User', 'Profile', 'Message', 'Conversation', 'Notification'], 
 
   endpoints: (builder) => ({
     // --- АВТОРИЗАЦИЯ ---
@@ -95,13 +95,11 @@ export const api = createApi({
       ], 
     }),
 
-    // Получить список подписчиков (полные объекты)
     getFollowers: builder.query({
       query: (userId) => `/users/${userId}/followers`,
       providesTags: ['Followers'],
     }),
 
-    // Получить список подписок (полные объекты)
     getFollowing: builder.query({
       query: (userId) => `/users/${userId}/following`,
       providesTags: ['Following'],
@@ -139,32 +137,49 @@ export const api = createApi({
       invalidatesTags: ['User'],
     }),
 
-    // --- ПОСТЫ ---
+// --- ПОСТЫ ---
+    
+    // Получение постов подписок
     getFollowedPosts: builder.query({
       query: (page = 1) => `/posts/followed?page=${page}`,
       providesTags: ['Post'],
     }),
 
+    // Рекомендации (Explore)
     getExplorePosts: builder.query({
       query: () => '/posts/explore',
       providesTags: ['Post'],
     }),
 
+    // Умный поиск постов (умеет фильтровать по userId для блока "More posts")
     getPosts: builder.query({
-      query: () => '/posts',
+      query: (params) => {
+        // params может быть объектом: { userId: '...', page: 1, limit: 10 }
+        const userId = params?.userId;
+        const page = params?.page || 1;
+        const limit = params?.limit || 10;
+
+        let url = `/posts?page=${page}&limit=${limit}`;
+        if (userId) url += `&userId=${userId}`;
+        
+        return url;
+      },
       providesTags: ['Post'],
     }),
 
+    // Посты текущего пользователя
     getMyPosts: builder.query({
       query: () => '/posts/my',
       providesTags: ['Post'],
     }),
 
+    // Получение одного поста по ID
     getPostById: builder.query({
       query: (postId) => `/posts/${postId}`,
       providesTags: (result, error, id) => [{ type: 'Post', id }],
     }),
 
+    // Создание поста
     createPost: builder.mutation({
       query: (postData) => ({
         url: '/posts',
@@ -174,6 +189,7 @@ export const api = createApi({
       invalidatesTags: ['Post', 'User'],
     }),
 
+    // Удаление поста
     deletePost: builder.mutation({
       query: (postId) => ({
         url: `/posts/${postId}`,
@@ -182,16 +198,17 @@ export const api = createApi({
       invalidatesTags: ['User', 'Post'],
     }),
 
+    // Обновление поста (поддерживает FormData для смены картинки)
     updatePost: builder.mutation({
-      query: ({ id, content, title }) => ({ 
+      query: ({ id, body }) => ({ 
         url: `/posts/${id}`,
         method: 'PUT',
-        body: { description: content, title }, 
+        body: body, 
       }),
-      invalidatesTags: (result, error, { id }) => [{ type: 'Post', id }], 
+      invalidatesTags: (result, error, { id }) => [{ type: 'Post', id }, 'Post'], 
     }),
 
-    // ЛАЙКИ
+// --- ЛАЙКИ И КОММЕНТАРИИ ---
     toggleLike: builder.mutation({
       query: (postId) => ({
         url: `/posts/${postId}/like`,
@@ -200,15 +217,40 @@ export const api = createApi({
       invalidatesTags: (result, error, id) => [{ type: 'Post', id }, 'Post'],
     }),
 
-    // --- КОММЕНТАРИИ ---
     addComment: builder.mutation({
       query: ({ postId, text }) => ({
-        url: `/posts/${postId}/comment`, 
+        url: `/comments`,  
         method: 'POST',
-        body: { text },
+        body: { postId, text }, // Передаем postId в теле запроса
       }),
       invalidatesTags: (result, error, { postId }) => [{ type: 'Post', id: postId }, 'Post'],
     }),
+
+    //  ЭНДПОИНТ ДЛЯ ЛАЙКА КОММЕНТАРИЯ
+    toggleCommentLike: builder.mutation({
+      query: (commentId) => ({
+        // Убедись, что путь совпадает с тем, что мы сделаем на бэкенде!
+        url: `/comments/${commentId}/like`, 
+        method: 'PUT',
+      }),
+      // Инвалидируем посты, чтобы комменты внутри них обновились и показали новое сердечко
+      invalidatesTags: ['Post'], 
+    }),
+
+    // --- УВЕДОМЛЕНИЯ (НОВОЕ) ---
+    getNotifications: builder.query({
+      query: () => '/notifications',
+      providesTags: ['Notification'], 
+    }),
+
+    markNotificationsRead: builder.mutation({
+      query: () => ({
+        url: '/notifications/read',
+        method: 'PUT',
+      }),
+      invalidatesTags: ['Notification'],
+    }),
+
   }),
 });
 
@@ -238,5 +280,7 @@ export const {
   useUpdatePostMutation,
   useToggleLikeMutation,
   useAddCommentMutation,
- 
+  useToggleCommentLikeMutation,
+  useGetNotificationsQuery,
+  useMarkNotificationsReadMutation
 } = api;

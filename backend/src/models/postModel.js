@@ -1,5 +1,4 @@
 // backend/src/models/postModel.js
-
 const mongoose = require('mongoose');
 
 const postSchema = mongoose.Schema({
@@ -12,12 +11,10 @@ const postSchema = mongoose.Schema({
         type: String,
         required: [true, 'Пожалуйста, добавьте изображение']
     },
-    // --- НОВОЕ ПОЛЕ ---
     title: {
         type: String,
-        default: "" // Заголовок не обязателен, может быть пустым
+        default: ""
     },
-    // ------------------
     description: {
         type: String,
         default: "" 
@@ -26,13 +23,18 @@ const postSchema = mongoose.Schema({
         type: mongoose.Schema.Types.ObjectId,
         ref: 'User'
     }],
-    comments: [{
+   comments: [{
         user: {
             type: mongoose.Schema.Types.ObjectId,
             required: true,
             ref: 'User'
         },
         text: { type: String, required: true },
+        likes: [{
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'User',
+            default: []
+        }],
         createdAt: { type: Date, default: Date.now }
     }]
 }, {

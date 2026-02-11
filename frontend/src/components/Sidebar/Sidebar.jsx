@@ -1,118 +1,164 @@
-// frontend\src\components\Sidebar\Sidebar.jsx
-
+// frontend/src/components/Sidebar/Sidebar.jsx
 import React, { useState } from 'react';
-import { NavLink, useLocation } from 'react-router-dom'; 
-import { 
-  AiFillHome, 
-  AiOutlineSearch, 
-  AiOutlineCompass, 
-  AiOutlineHeart, 
-  AiOutlinePlusSquare 
-} from 'react-icons/ai';
+import { NavLink, useLocation } from 'react-router-dom';
+import {
+  PiHouse, PiHouseFill,
+  PiMagnifyingGlass, PiMagnifyingGlassFill, 
+  PiCompass, PiCompassFill,
+  PiMessengerLogo, PiMessengerLogoFill,     
+  PiHeart, PiHeartFill,
+  PiPlusSquare, PiPlusSquareFill            
+} from 'react-icons/pi';
 
-//  Импортируем иконки мессенджера 
-import { RiMessengerLine, RiMessengerFill } from "react-icons/ri"; 
-
-import LogoLogout from './LogoLogout'; 
-import SearchSidebar from './SearchSidebar'; 
+import LogoMenu from './LogoMenu';
+import SearchSidebar from '../SearchSidebar/SearchSidebar';
+import Notifications from '../Notifications/Notifications';
 import { useAuth } from '../../hooks/useAuth';
+import { useGetNotificationsQuery, useMarkNotificationsReadMutation } from '../../services/notificationsApi';
+import { useGetMyConversationsQuery } from '../../services/chatApi';
+
 import s from './Sidebar.module.scss';
 
-const Sidebar = ({ onCreateClick }) => {
+const Sidebar = ({ onCreateClick, isCreateOpen }) => {
   const { userId, me } = useAuth();
   const [isSearchOpen, setIsSearchOpen] = useState(false);
-  
-  const location = useLocation(); //  Получаем текущий путь, чтобы знать, активен ли чат
+  const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
+
+  const location = useLocation();
+
+  // --- API ---
+  const { data: notifications = [] } = useGetNotificationsQuery();
+  const { data: conversations = [] } = useGetMyConversationsQuery();
+  const [markAsRead] = useMarkNotificationsReadMutation();
+
+  // --- COUNTERS ---
+  const unreadNotifsCount = notifications.filter(n => !n.isRead).length;
+  const unreadMessagesCount = conversations.reduce((acc, conv) => acc + (conv.unreadCount || 0), 0);
 
   const userAvatar = me?.avatar || "https://cdn-icons-png.flaticon.com/512/149/149071.png";
 
   const handleNavClick = (label, action) => {
     if (label === 'Search') {
-      setIsSearchOpen(!isSearchOpen); 
+      setIsSearchOpen(prev => !prev);
+      setIsNotificationsOpen(false);
+    } else if (label === 'Notifications') {
+      const nextState = !isNotificationsOpen;
+      setIsNotificationsOpen(nextState);
+      setIsSearchOpen(false);
+
+      if (nextState) markAsRead();
     } else {
       setIsSearchOpen(false);
+      setIsNotificationsOpen(false);
       if (action) action();
     }
   };
 
-  // Проверяем, находимся ли мы в разделе сообщений (начинается с /direct)
   const isMessagesActive = location.pathname.startsWith('/direct');
 
   const navItems = [
-    { path: '/', icon: <AiFillHome />, label: 'Home' },
-    { icon: <AiOutlineSearch />, label: 'Search' },
-    { path: '/explore', icon: <AiOutlineCompass />, label: 'Explore' },
-    
-    //  ПУНКТ СООБЩЕНИЙ
-    { 
-      path: '/direct/inbox', // Правильный путь
-      // Если мы в сообщениях — показываем закрашенную иконку, иначе контурную
-      icon: isMessagesActive ? <RiMessengerFill size={26} /> : <RiMessengerLine size={26} />, 
-      label: 'Messages' 
+    {
+      path: '/',
+      label: 'Home',
+      getIcon: active => active ? <PiHouseFill size={26} /> : <PiHouse size={26} />,
     },
-
-    { path: '/notifications', icon: <AiOutlineHeart />, label: 'Notifications' },
-    { icon: <AiOutlinePlusSquare />, label: 'Create', action: onCreateClick },
-    { path: `/profile/${userId}`, label: 'Profile' }, 
+    { 
+      label: 'Search', 
+      getIcon: active => active ? <PiMagnifyingGlassFill size={26} /> : <PiMagnifyingGlass size={26} /> 
+    },
+    { 
+      path: '/explore', 
+      label: 'Explore', 
+      getIcon: active => active ? <PiCompassFill size={26} /> : <PiCompass size={26} /> 
+    },
+    {
+      path: '/direct/inbox',
+      label: 'Messages',
+      getIcon: active => active ? <PiMessengerLogoFill size={26} /> : <PiMessengerLogo size={26} />,
+      badge: unreadMessagesCount,
+    },
+    {
+      label: 'Notifications',
+      getIcon: active => active ? <PiHeartFill size={26} /> : <PiHeart size={26} />,
+      badge: unreadNotifsCount,
+    },
+    { 
+      label: 'Create', 
+      action: onCreateClick,
+      getIcon: active => active ? <PiPlusSquareFill size={26} /> : <PiPlusSquare size={26} /> 
+    },
+    { path: `/profile/${userId}`, label: 'Profile' },
   ];
 
   return (
     <>
       <aside className={s.sidebar}>
-        
-        <LogoLogout />
-
+        <LogoMenu />
         <nav className={s.nav}>
-          {navItems.map((item) => {
+          {navItems.map(item => {
             const isProfile = item.label === 'Profile';
-            
-            // Определяем иконку
-            const IconContent = isProfile ? (
-              <img src={userAvatar} alt="profile" className={s.profileAvatar} />
-            ) : (
-              item.icon
+
+            const renderIcon = (isActive = false) => (
+              <div className={s.iconWrapper}>
+                {isProfile
+                  ? <img src={userAvatar} alt="profile" className={s.profileAvatar} />
+                  : item.getIcon
+                    ? item.getIcon(isActive)
+                    : item.icon
+                }
+                {item.badge > 0 && (
+                  <div className={s.counterBadge}>
+                    {item.badge > 9 ? '9+' : item.badge}
+                  </div>
+                )}
+              </div>
             );
-            
-            // Для кнопок без пути (Search, Create)
+
             if (!item.path) {
-              const isActiveBtn = item.label === 'Search' && isSearchOpen;
+              const isActiveBtn =
+                (item.label === 'Search' && isSearchOpen) ||
+                (item.label === 'Notifications' && isNotificationsOpen) ||
+                (item.label === 'Create' && isCreateOpen);
+
               return (
-                <div 
-                  key={item.label} 
-                  className={`${s.navItem} ${isActiveBtn ? s.active : ''}`}
-                  onClick={() => handleNavClick(item.label, item.action)} 
-                  style={{ cursor: 'pointer' }}
+                <div
+                  key={item.label}
+                  className={`${s.navItem} ${isActiveBtn ? s.activeItem : ''}`}
+                  onClick={() => handleNavClick(item.label, item.action)}
                 >
-                  {IconContent}
-                  <span>{item.label}</span>
+                  {renderIcon(isActiveBtn)}
+                  <span className={isActiveBtn ? s.activeItem : ''}>{item.label}</span>
                 </div>
               );
             }
 
-            // Для ссылок (NavLink)
             return (
-              <NavLink 
-                key={item.label} 
-                to={item.path} 
-                onClick={() => handleNavClick(item.label)} 
-                className={({ isActive }) => 
-                  // Если это Messages, мы используем свою проверку isMessagesActive, 
-                  // иначе стандартную isActive от NavLink
-                  `${s.navItem} ${(isActive || (item.label === 'Messages' && isMessagesActive)) ? s.active : ''} ${isProfile ? s.profileItem : ''}`
-                }
+              <NavLink
+                key={item.label}
+                to={item.path}
+                end={item.path === '/'}
+                className={({ isActive }) => {
+                  const activeState = isActive || (item.label === 'Messages' && isMessagesActive);
+                  return `${s.navItem} ${activeState ? s.activeItem : ''} ${isProfile ? s.profileItem : ''}`;
+                }}
               >
-                {IconContent}
-                <span>{item.label}</span>
+                {({ isActive }) => {
+                  const activeState = isActive || (item.label === 'Messages' && isMessagesActive);
+                  return (
+                    <>
+                      {renderIcon(activeState)}
+                      <span className={activeState ? s.activeItem : ''}>{item.label}</span>
+                    </>
+                  );
+                }}
               </NavLink>
             );
           })}
         </nav>
       </aside>
 
-      <SearchSidebar 
-        isOpen={isSearchOpen} 
-        onClose={() => setIsSearchOpen(false)} 
-      />
+      <SearchSidebar isOpen={isSearchOpen} onClose={() => setIsSearchOpen(false)} />
+      <Notifications isOpen={isNotificationsOpen} onClose={() => setIsNotificationsOpen(false)} />
     </>
   );
 };

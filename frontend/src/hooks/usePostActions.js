@@ -12,7 +12,6 @@ export const usePostActions = (post) => {
 
   if (!post) return {};
 
-  // 🔥 ИСПРАВЛЕНИЕ: Используем .some() и приведение к String
   const alreadyLiked = post.likes?.some(id => String(id) === String(userId));
 
   const isLiked = optimisticLike !== null 

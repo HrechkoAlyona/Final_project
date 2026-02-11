@@ -8,7 +8,6 @@ export const useGetHomePage = () => {
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
 
-  // 🔥 Исправлено: удалили неиспользуемую переменную isUserLoading
   const { data: user } = useGetMeQuery(); 
   const [fetchFollowedPosts, { isLoading, isFetching, error }] = useLazyGetFollowedPostsQuery();
 

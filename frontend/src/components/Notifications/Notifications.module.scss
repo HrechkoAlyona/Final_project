@@ -1,0 +1,157 @@
+/* frontend/src/components/Notifications/Notifications.module.scss */
+/* --- КОНТЕЙНЕР (ВЫЕЗЖАЮЩАЯ ПАНЕЛЬ) --- */
+.drawerContainer {
+    position: fixed;
+    top: 0;
+    left: 245px; /* Ширина большого сайдбара */
+    height: 100vh;
+    width: 397px;
+    background-color: white;
+    box-shadow: 4px 0 24px rgba(0,0,0,0.15);
+    border-top-right-radius: 16px;
+    border-bottom-right-radius: 16px;
+    display: flex;
+    flex-direction: column;
+    z-index: 10;
+    animation: slideIn 0.3s ease-out;
+    border-right: 1px solid #dbdbdb;
+
+    /* Адаптивность */
+    @media (max-width: 1263px) {
+        left: 72px; 
+    }
+
+    @media (max-width: 767px) {
+        left: 0;
+        width: 100%;
+        z-index: 2000; 
+    }
+}
+
+@keyframes slideIn {
+    from { transform: translateX(-100%); opacity: 0; }
+    to { transform: translateX(0); opacity: 1; }
+}
+
+/* --- ЗАГОЛОВОК --- */
+.header {
+    padding: 24px 16px;
+    border-bottom: 1px solid #dbdbdb;
+    
+    h2 {
+        font-size: 24px;
+        font-weight: 700;
+        margin: 0;
+    }
+}
+
+/* --- СПИСОК --- */
+.list {
+    flex: 1;
+    overflow-y: auto;
+    padding: 0;
+}
+
+.empty, .loading {
+    padding: 20px;
+    text-align: center;
+    color: #737373;
+    margin-top: 20px;
+}
+
+/* --- ЭЛЕМЕНТ УВЕДОМЛЕНИЯ --- */
+.item {
+    display: flex;
+    align-items: center; /* Центрируем по вертикали */
+    padding: 12px 16px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+
+    &:hover { background-color: #fafafa; }
+}
+
+/* 1. АВАТАРКА (Круглая) */
+.avatarWrapper {
+    margin-right: 14px;
+    flex-shrink: 0; /* Чтобы аватарка не сплющивалась */
+}
+
+.avatar {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    object-fit: cover; /* Чтобы фото не искажалось */
+    border: 1px solid #dbdbdb;
+}
+
+/* 2. ТЕКСТ */
+.content {
+    flex: 1;
+    font-size: 14px;
+    line-height: 18px;
+    margin-right: 12px;
+}
+
+.username {
+    font-weight: 600;
+    color: #000;
+    margin-right: 4px;
+}
+
+.text {
+    color: #000;
+}
+
+.time {
+    color: #737373;
+    font-size: 12px;
+    margin-top: 4px;
+}
+
+/* 3. ПРАВАЯ ЧАСТЬ (Кнопка или МИНИАТЮРА ПОСТА) */
+.action {
+    margin-left: auto; /* Прижимаем к правому краю */
+    flex-shrink: 0;    /* Запрещаем сжиматься */
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+}
+
+
+/*  ДЛЯ МИНИАТЮРЫ */
+.postThumb {
+    width: 44px;
+    height: 44px;
+    object-fit: cover; /* Чтобы картинка не сплющивалась */
+    display: block;
+    
+    border: 1px solid #dbdbdb; 
+    border-radius: 4px; /* Закругленные края  */
+    
+    cursor: pointer; /* Курсор в виде руки (кликабельно) */
+    
+    transition: opacity 0.2s; /* Эффект при наведении */
+    &:hover {
+        opacity: 0.8;
+    }
+}
+
+/* Синяя точка "непрочитано" */
+.unreadDot {
+    width: 8px;
+    height: 8px;
+    background-color: #0095f6; /* Инстаграмный синий */
+    border-radius: 50%;
+    margin-right: 12px;
+    flex-shrink: 0;
+}
+
+/* Добавим плавности появлению элементов */
+.item {
+    animation: fadeInItem 0.3s ease-in-out;
+}
+
+@keyframes fadeInItem {
+    from { opacity: 0; transform: translateY(5px); }
+    to { opacity: 1; transform: translateY(0); }
+}

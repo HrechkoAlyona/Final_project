@@ -1,11 +1,10 @@
 // frontend/src/components/PostModal/PostModal.jsx
-import React, { useState } from 'react';
+import React, { useState } from 'react'; 
 import { AiOutlineClose } from 'react-icons/ai';
 import toast from 'react-hot-toast';
 import { useDeletePostMutation, useUpdatePostMutation, useGetPostByIdQuery } from '../../services/api';
 import s from './PostModal.module.scss';
 
-// Подключаем наши кирпичики
 import PostImage from './PostImage';
 import PostHeader from './PostHeader';
 import PostComments from './PostComments';
@@ -13,17 +12,19 @@ import PostActions from './PostActions';
 import PostOptions from './PostOptions';
 
 const PostModal = ({ post: initialPost, onClose }) => {
-  // 1. Получаем свежие данные
   const { data: freshPost, isSuccess } = useGetPostByIdQuery(initialPost?._id, { skip: !initialPost?._id });
   const post = isSuccess && freshPost ? freshPost : initialPost;
 
-  // 2. Глобальные стейты модалки
   const [showOptions, setShowOptions] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   
-  // Стейт для редактирования
+  // Стейты для редактирования
   const [editContent, setEditContent] = useState("");
   const [editTitle, setEditTitle] = useState("");
+  
+  //  ДЛЯ КАРТИНКИ
+  const [selectedFile, setSelectedFile] = useState(null);
+  const [previewUrl, setPreviewUrl] = useState(null);
 
   const [deletePost, { isLoading: isDeleting }] = useDeletePostMutation();
   const [updatePost, { isLoading: isUpdating }] = useUpdatePostMutation();
@@ -31,27 +32,49 @@ const PostModal = ({ post: initialPost, onClose }) => {
   if (!post) return null;
 
   const currentUserId = localStorage.getItem('userId');
-  // Логика автора
   const authorData = (post.author && typeof post.author === 'object') ? post.author 
-                   : (post.user && typeof post.user === 'object') ? post.user : null;
+                    : (post.user && typeof post.user === 'object') ? post.user : null;
   const authorId = authorData?._id || post.user || post.author;
   const isMyPost = String(currentUserId) === String(authorId);
 
-  // --- ФУНКЦИИ УПРАВЛЕНИЯ ---
+  // --- ФУНКЦИИ ---
 
   const handleEditMode = () => {
     setEditContent(post.description || post.content || "");
     setEditTitle(post.title || "");
+    setPreviewUrl(null); // Сбрасываем превью при входе в режим
+    setSelectedFile(null);
     setIsEditing(true);
     setShowOptions(false);
   };
 
+  //  Обработчик выбора файла
+  const handleFileChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setSelectedFile(file);
+      setPreviewUrl(URL.createObjectURL(file));
+    }
+  };
+
   const handleSaveEdit = async () => {
     try {
-      await updatePost({ id: post._id, content: editContent, title: editTitle }).unwrap();
+      //  Используем FormData, чтобы можно было отправить картинку
+      const formData = new FormData();
+      formData.append('description', editContent);
+      formData.append('title', editTitle);
+      
+      if (selectedFile) {
+        formData.append('image', selectedFile);
+      }
+
+      // Отправляем body: formData
+      await updatePost({ id: post._id, body: formData }).unwrap();
+      
       toast.success("Post updated!");
       setIsEditing(false);
-    } catch {
+    } catch (error) {
+      console.error(error);
       toast.error("Failed to update post");
     }
   };
@@ -74,25 +97,25 @@ const PostModal = ({ post: initialPost, onClose }) => {
 
       <div className={s.modalCard} onClick={(e) => e.stopPropagation()}>
         
-        {/* ЛЕВАЯ ЧАСТЬ: Картинка + Заголовок */}
+        {/* ЛЕВАЯ ЧАСТЬ: Передаем новые пропсы в PostImage */}
         <PostImage 
           post={post} 
           isEditing={isEditing} 
           editTitle={editTitle} 
-          setEditTitle={setEditTitle} 
+          setEditTitle={setEditTitle}
+          //  Передаем функции для картинки
+          previewUrl={previewUrl}
+          onFileChange={handleFileChange}
         />
 
-        {/* ПРАВАЯ ЧАСТЬ: Весь контент */}
         <div className={s.contentSection}>
-          
           <PostHeader 
             authorData={authorData}
             isEditing={isEditing}
             isUpdating={isUpdating}
-            onCancel={() => setIsEditing(false)}
+            onCancel={() => { setIsEditing(false); setPreviewUrl(null); }}
             onSave={handleSaveEdit}
             onShowOptions={() => setShowOptions(true)}
-            // 🔥 Передаем onClose вниз
             onClose={onClose}
           />
 
@@ -102,18 +125,15 @@ const PostModal = ({ post: initialPost, onClose }) => {
             isEditing={isEditing}
             editContent={editContent}
             setEditContent={setEditContent}
-            // 🔥 Передаем onClose вниз
-            onClose={onClose}
+            onClose={onClose} 
           />
 
-          {/* Лайки и форма комментария (скрываем при редактировании) */}
           {!isEditing && (
             <PostActions post={post} />
           )}
         </div>
       </div>
 
-      {/* Всплывающее меню */}
       {showOptions && (
         <PostOptions 
           isMyPost={isMyPost}

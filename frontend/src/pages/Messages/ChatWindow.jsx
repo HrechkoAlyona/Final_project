@@ -1,16 +1,14 @@
-// frontend\src\pages\Messages\ChatWindow.jsx
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useGetChatHistoryQuery, useSendMessageMutation } from '../../services/chatApi';
 import s from './Messages.module.scss';
-import { format } from 'date-fns'; 
+import MessageInput from './MessageInput'; 
 
 const ChatWindow = ({ targetUser, myUser }) => {
   const navigate = useNavigate();
   const { data: messages = [], isLoading } = useGetChatHistoryQuery(targetUser._id);
-  const [sendMessage, { isLoading: isSending }] = useSendMessageMutation();
+  const [sendMessage] = useSendMessageMutation();
   
-  const [text, setText] = useState('');
   const messagesEndRef = useRef(null);
 
   const scrollToBottom = () => {
@@ -21,26 +19,19 @@ const ChatWindow = ({ targetUser, myUser }) => {
     scrollToBottom();
   }, [messages]);
 
-  const handleSend = async (e) => {
-    e.preventDefault();
-    if (!text.trim()) return;
-
+  const handleSend = async (messageText) => {
     try {
       await sendMessage({ 
           recipientId: targetUser._id, 
-          text: text 
+          text: messageText 
       }).unwrap();
-      
-      setText('');
     } catch (error) {
       console.error('Failed to send:', error);
     }
   };
 
   const goToProfile = (userId) => {
-    if (userId) {
-        navigate(`/profile/${userId}`);
-    }
+    if (userId) navigate(`/profile/${userId}`);
   };
 
   if (isLoading) return <div className={s.chatArea}>Loading chat...</div>;
@@ -48,10 +39,7 @@ const ChatWindow = ({ targetUser, myUser }) => {
   return (
     <>
       <header className={s.chatHeader}>
-        <div 
-            className={s.headerUserInfo} 
-            onClick={() => goToProfile(targetUser._id)} 
-        >
+        <div className={s.headerUserInfo} onClick={() => goToProfile(targetUser._id)}>
             <img 
               src={targetUser.avatar || "https://cdn-icons-png.flaticon.com/512/149/149071.png"} 
               className={s.headerAvatar} 
@@ -62,7 +50,6 @@ const ChatWindow = ({ targetUser, myUser }) => {
       </header>
 
       <div className={s.messagesList}>
-        
         <div className={s.profileSummary}>
            <img 
                src={targetUser.avatar || "https://cdn-icons-png.flaticon.com/512/149/149071.png"} 
@@ -74,11 +61,7 @@ const ChatWindow = ({ targetUser, myUser }) => {
                {targetUser.username}
            </div>
            <div className={s.subText}>{targetUser.fullName || targetUser.username} · Instagram</div>
-           
-           <button 
-               className={s.viewProfileBtn} 
-               onClick={() => goToProfile(targetUser._id)} 
-           >
+           <button className={s.viewProfileBtn} onClick={() => goToProfile(targetUser._id)}>
                View profile
            </button>
         </div>
@@ -89,9 +72,7 @@ const ChatWindow = ({ targetUser, myUser }) => {
           const isMe = String(senderId) === String(myId);
           
           return (
-            <div key={index} className={`${s.messageBubble} ${isMe ? s.own : s.incoming}`}>
-              
-              {/* Аватарка СОБЕСЕДНИКА (Слева) */}
+            <div key={msg._id || index} className={`${s.messageBubble} ${isMe ? s.own : s.incoming}`}>
               {!isMe && (
                 <img 
                   src={targetUser.avatar || "https://cdn-icons-png.flaticon.com/512/149/149071.png"} 
@@ -100,25 +81,13 @@ const ChatWindow = ({ targetUser, myUser }) => {
                   onClick={() => goToProfile(targetUser._id)} 
                 />
               )}
-              
-              {/* Текст + Время */}
               <div className={s.bubble}>
                 {msg.text}
                 <div className={s.time}>
-                  {msg.createdAt && format(new Date(msg.createdAt), 'HH:mm')}
+                  {/* Форматируем время в HH:MM без сторонних библиотек */}
+                  {msg.createdAt && new Date(msg.createdAt).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
                 </div>
               </div>
-
-              {/* МОЯ Аватарка (Справа) */}
-              {isMe && (
-                <img 
-                  src={myUser?.avatar || "https://cdn-icons-png.flaticon.com/512/149/149071.png"} 
-                  className={s.bubbleAvatar} 
-                  alt="me"
-                  onClick={() => goToProfile(myId)} 
-                />
-              )}
-
             </div>
           );
         })}
@@ -126,20 +95,7 @@ const ChatWindow = ({ targetUser, myUser }) => {
       </div>
 
       <div className={s.inputArea}>
-        <form onSubmit={handleSend} className={s.inputWrapper}>
-          <input 
-            type="text" 
-            placeholder="Message..." 
-            value={text}
-            onChange={(e) => setText(e.target.value)}
-            disabled={isSending}
-          />
-          {text.trim() && (
-              <button type="submit" disabled={isSending}>
-                Send
-              </button>
-          )}
-        </form>
+        <MessageInput onSendMessage={handleSend} />
       </div>
     </>
   );

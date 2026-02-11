@@ -17,7 +17,13 @@ const commentSchema = new mongoose.Schema({
         type: String,
         required: [true, 'Напишите текст комментария'],
         trim: true
-    }
+    },
+    // Массив лайков для комментария
+    likes: [{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User',
+        default: []
+    }]
 }, { timestamps: true });
 
 module.exports = mongoose.model('Comment', commentSchema);

@@ -1,5 +1,4 @@
 // frontend\src\components\Sidebar\SearchSidebar.jsx
-
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { AiOutlineClose, AiOutlineSearch } from 'react-icons/ai';
@@ -10,14 +9,30 @@ import {
   useClearSearchHistoryMutation,
   useRemoveFromSearchHistoryMutation
 } from '../../services/api';
-import s from './Sidebar.module.scss'; 
+import s from './SearchSidebar.module.scss';
+
+const UserListItem = ({ user, onClick, onRemove }) => (
+  <div className={s.userItem} onClick={() => onClick(user)}>
+    <img src={user.avatar || "https://cdn-icons-png.flaticon.com/512/149/149071.png"} alt={user.username} />
+    <div className={s.userInfo}>
+      <span className={s.username}>{user.username}</span>
+      <span className={s.fullname}>{user.fullName || user.username}</span>
+    </div>
+    
+    {onRemove && (
+      <div className={s.removeHistoryBtn} onClick={(e) => onRemove(e, user._id)}>
+        <AiOutlineClose size={14} />
+      </div>
+    )}
+  </div>
+);
 
 const SearchSidebar = ({ isOpen, onClose }) => {
   const [query, setQuery] = useState('');
   const navigate = useNavigate();
-  const myId = localStorage.getItem('userId');
 
   const { data: me } = useGetMeQuery();
+  const myId = me?._id; 
 
   const { data: searchResults, isLoading } = useSearchUsersQuery(query, {
     skip: query.length < 1, 
@@ -28,8 +43,6 @@ const SearchSidebar = ({ isOpen, onClose }) => {
   const [removeFromHistory] = useRemoveFromSearchHistoryMutation();
 
   if (!isOpen) return null;
-
-  // --- ОБРАБОТЧИКИ ---
 
   const handleUserClick = async (user) => {
     navigate(`/profile/${user._id}`);
@@ -52,14 +65,12 @@ const SearchSidebar = ({ isOpen, onClose }) => {
       await removeFromHistory(userId);
   };
 
+  const isQueryEmpty = query.length === 0;
+
   return (
     <>
-      {/* 1. ПОДЛОЖКА */}
       <div className={s.overlay} onClick={onClose}></div>
-
-      {/* 2. ПАНЕЛЬ ПОИСКА */}
       <div className={s.searchDrawer}> 
-        
         <div className={s.searchHeader}>
           <h2>Search</h2>
           <div className={s.searchInputWrapper}>
@@ -71,39 +82,34 @@ const SearchSidebar = ({ isOpen, onClose }) => {
                onChange={(e) => setQuery(e.target.value)}
                autoFocus
              />
-             <div className={s.closeBtn} onClick={() => { setQuery(''); }}>
-               <AiOutlineClose />
-             </div>
+             {query && (
+               <div className={s.closeBtn} onClick={() => setQuery('')}>
+                 <AiOutlineClose />
+               </div>
+             )}
           </div>
         </div>
 
         <div className={s.divider}></div>
         
         <div className={s.searchResults}>
-          
-          {/* А) РЕЗУЛЬТАТЫ ПОИСКА (Если ввели текст) */}
-          {query.length > 0 && (
+          {!isQueryEmpty && (
               <>
                   {isLoading && <div className={s.loading}>Searching...</div>}
-                  
-                  {!isLoading && searchResults && searchResults.length === 0 && (
+                  {!isLoading && searchResults?.length === 0 && (
                       <div className={s.noResults}>No results found.</div>
                   )}
-
                   {searchResults?.map((user) => (
-                      <div key={user._id} className={s.userItem} onClick={() => handleUserClick(user)}>
-                          <img src={user.avatar || "https://cdn-icons-png.flaticon.com/512/149/149071.png"} alt={user.username} />
-                          <div className={s.userInfo}>
-                              <span className={s.username}>{user.username}</span>
-                              <span className={s.fullname}>{user.fullName || user.username}</span>
-                          </div>
-                      </div>
+                      <UserListItem 
+                        key={user._id} 
+                        user={user} 
+                        onClick={handleUserClick} 
+                      />
                   ))}
               </>
           )}
 
-          {/* Б) ИСТОРИЯ (Если поле пустое) */}
-          {query.length === 0 && (
+          {isQueryEmpty && (
               <>
                   <div className={s.recentHeader}>
                       <span>Recent</span>
@@ -113,25 +119,16 @@ const SearchSidebar = ({ isOpen, onClose }) => {
                           </span>
                       )}
                   </div>
-
                   {(!me?.search || me.search.length === 0) && (
                       <div className={s.noResults} style={{ marginTop: 50 }}>No recent searches.</div>
                   )}
-
                   {me?.search?.map((user) => (
-                      <div key={user._id} className={s.userItem} onClick={() => handleUserClick(user)}>
-                          <img src={user.avatar || "https://cdn-icons-png.flaticon.com/512/149/149071.png"} alt={user.username} />
-                          
-                          <div className={s.userInfo}>
-                              <span className={s.username}>{user.username}</span>
-                              <span className={s.fullname}>{user.fullName || user.username}</span>
-                          </div>
-                          
-                          {/* Крестик удаления */}
-                          <div className={s.removeHistoryBtn} onClick={(e) => handleRemoveOne(e, user._id)}>
-                              <AiOutlineClose size={14} />
-                          </div>
-                      </div>
+                      <UserListItem 
+                        key={user._id} 
+                        user={user} 
+                        onClick={handleUserClick} 
+                        onRemove={handleRemoveOne} 
+                      />
                   ))}
               </>
           )}
