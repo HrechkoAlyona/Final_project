@@ -4,29 +4,60 @@ const User = require('../models/userModel');
 const bcrypt = require('bcryptjs'); 
 const jwt = require('jsonwebtoken');
 
-// Генерация токена
+// Вспомогательная функция для генерации токена
 const generateToken = (id) => {
   return jwt.sign({ id }, process.env.JWT_SECRET, {
     expiresIn: '30d',
   });
 };
 
+// Вспомогательная функция для валидации формата Email
+const validateEmail = (email) => {
+  return String(email)
+    .toLowerCase()
+    .match(/^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/);
+};
+
 // 1. РЕГИСТРАЦИЯ
 const registerUser = async (req, res) => {
     try {
-        const { username, email, password, fullName } = req.body;
+        let { username, email, password, fullName } = req.body;
+
+        // Валидация наличия полей
         if (!username || !email || !password || !fullName) {
-            return res.status(400).json({ message: 'Заполните все поля' });
+            return res.status(400).json({ message: 'Пожалуйста, заполните все поля' });
         }
-        const userExists = await User.findOne({ email });
+
+        // Валидация длины пароля
+        if (password.length < 6) {
+            return res.status(400).json({ message: 'Пароль должен быть не менее 6 символов' });
+        }
+
+        // Валидация формата почты
+        if (!validateEmail(email)) {
+            return res.status(400).json({ message: 'Введите корректный адрес электронной почты' });
+        }
+
+        // Очистка данных (санитайзинг)
+        email = email.toLowerCase().trim();
+        username = username.trim();
+
+        // Проверка существования (Email или Username)
+        const userExists = await User.findOne({ $or: [{ email }, { username }] });
         if (userExists) {
-            return res.status(400).json({ message: 'Пользователь уже существует' });
+            return res.status(409).json({ message: 'Пользователь с таким email или именем уже существует' });
         }
+
+        // Хеширование пароля
         const salt = await bcrypt.genSalt(10);
         const hashedPassword = await bcrypt.hash(password, salt);
 
+        // Создание пользователя
         const user = await User.create({
-            username, email, password: hashedPassword, fullName
+            username, 
+            email, 
+            password: hashedPassword, 
+            fullName
         });
 
         res.status(201).json({
@@ -36,7 +67,8 @@ const registerUser = async (req, res) => {
             token: generateToken(user._id),
         });
     } catch (error) {
-        res.status(500).json({ message: 'Ошибка регистрации' });
+        console.error("🔴 Registration Error:", error);
+        res.status(500).json({ message: 'Ошибка сервера при регистрации' });
     }
 };
 
@@ -44,17 +76,24 @@ const registerUser = async (req, res) => {
 const loginUser = async (req, res) => {
   try {
     const { email, username, password } = req.body;
-    const identifier = email || username; // Берем что дали
+    const identifier = (email || username || '').toLowerCase().trim();
 
     if (!identifier || !password) {
-      return res.status(400).json({ message: 'Заполните логин и пароль' });
+      return res.status(400).json({ message: 'Введите логин и пароль' });
     }
 
+    // Поиск пользователя (включая скрытое поле password)
     const user = await User.findOne({
       $or: [{ email: identifier }, { username: identifier }]
     }).select('+password');
 
-    if (!user || !(await bcrypt.compare(password, user.password))) {
+    if (!user) {
+      return res.status(401).json({ message: 'Неверный логин или пароль' });
+    }
+
+    // Сравнение хешей паролей
+    const isMatch = await bcrypt.compare(password, user.password);
+    if (!isMatch) {
       return res.status(401).json({ message: 'Неверный логин или пароль' });
     }
 
@@ -66,26 +105,16 @@ const loginUser = async (req, res) => {
       token: generateToken(user._id),
     });
   } catch (error) {
-    console.error("Login Error:", error);
-    res.status(500).json({ message: 'Ошибка сервера' });
+    console.error("🔴 Login Error:", error);
+    res.status(500).json({ message: 'Ошибка сервера при авторизации' });
   }
 };
 
-// 3. ПРОФИЛЬ
-const getUserProfile = async (req, res) => {
-    if (req.user) res.json(req.user);
-    else res.status(404).json({ message: 'Пользователь не найден' });
-};
-
-// 4. СБРОС ПАРОЛЯ 
+// 3. ЗАПРОС СБРОСА ПАРОЛЯ (ШАГ 1)
 const requestPasswordReset = async (req, res) => {
     try {
-        console.log("Запрос на сброс пароля:", req.body);
-        
-        // Фронтенд может прислать 'email', 'username' или 'emailOrUsername'
-        // Мы проверяем ВСЁ
         const { email, username, emailOrUsername } = req.body;
-        const search = email || username || emailOrUsername;
+        const search = (email || username || emailOrUsername || '').toLowerCase().trim();
 
         if (!search) {
              return res.status(400).json({ message: "Введите email или имя пользователя" });
@@ -96,78 +125,67 @@ const requestPasswordReset = async (req, res) => {
         });
 
         if (!user) {
-            console.log("Юзер не найден:", search);
             return res.status(404).json({ message: "Пользователь не найден" });
         }
 
-        // Генерируем код
+        // Генерация кода (6 цифр)
         const code = Math.floor(100000 + Math.random() * 900000).toString();
         user.resetPasswordToken = code;
-        user.resetPasswordExpires = Date.now() + 3600000; 
+        user.resetPasswordExpires = Date.now() + 3600000; // 1 час
         await user.save();
 
-        // ВЫВОД В ТЕРМИНАЛ
         console.log("\n========================================");
-        console.log(`🔑 КОД ДЛЯ ${user.username}: ${code}`);
+        console.log(`🔑 КОД ДЛЯ СБРОСА (${user.username}): ${code}`);
         console.log("========================================\n");
 
-        res.json({ message: "Код отправлен (см. консоль сервера)" });
-
+        res.json({ message: "Код для сброса отправлен" });
     } catch (error) {
-        console.error("Reset Error:", error);
+        console.error("🔴 Reset Request Error:", error);
         res.status(500).json({ message: "Ошибка сервера" });
     }
 };
-// 5. СМЕНА ПАРОЛЯ (ИСПРАВЛЕННАЯ ВЕРСИЯ)
+
+// 4. СМЕНА ПАРОЛЯ (ШАГ 2)
 const resetPasswordStep2 = async (req, res) => {
     try {
-        console.log("\n--- НАЧАЛО ШАГА 2 (СМЕНА ПАРОЛЯ) ---");
-        // frontend шлет поле 'username', но там может быть и email
         const { username, code, password } = req.body; 
 
-        console.log("📥 Полученные данные:", { username, code, password });
-
-        // 1. Проверка
         if (!username || !code || !password) {
             return res.status(400).json({ message: "Заполните все поля" });
         }
 
-        // 2. Поиск пользователя 
-        // Мы ищем пользователя, у которого (Username = введенному ИЛИ Email = введенному)
-        // И при этом совпадает код, и код не истек.
+        const identifier = username.toLowerCase().trim();
+
         const user = await User.findOne({
-            $or: [{ email: username }, { username: username }], 
+            $or: [{ email: identifier }, { username: identifier }], 
             resetPasswordToken: code,
             resetPasswordExpires: { $gt: Date.now() } 
         });
 
         if (!user) {
-            console.log("❌ ОШИБКА: Пользователь не найден или код неверный.");
-            return res.status(400).json({ message: "Неверный код или он истек" });
+            return res.status(400).json({ message: "Неверный код или срок его действия истек" });
         }
 
-        console.log(`✅ Пользователь найден: ${user.username}. Меняем пароль...`);
-
-        // 3. Хешируем и сохраняем
+        // Хеширование нового пароля
         const salt = await bcrypt.genSalt(10);
         user.password = await bcrypt.hash(password, salt);
+        
+        // Очистка полей сброса
         user.resetPasswordToken = undefined;
         user.resetPasswordExpires = undefined;
         
         await user.save();
 
-        console.log("🎉 ПАРОЛЬ УСПЕШНО ИЗМЕНЕН!");
-        console.log("------------------------------------\n");
-
         res.json({ message: "Пароль успешно изменен" });
-
     } catch (error) {
-        console.error("🔥 Step 2 Error:", error);
+        console.error("🔴 Reset Step 2 Error:", error);
         res.status(500).json({ message: "Ошибка сервера" });
     }
 };
 
 module.exports = { 
-    registerUser, loginUser, getUserProfile, 
-    requestPasswordReset, resetPasswordStep2    
+    registerUser, 
+    loginUser, 
+    requestPasswordReset, 
+    resetPasswordStep2    
 };

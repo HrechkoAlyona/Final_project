@@ -1,6 +1,6 @@
 const User = require('../models/userModel');
-const Post = require('../models/postModel'); 
-const Notification = require('../models/notificationModel'); 
+const Post = require('../models/postModel');
+const Notification = require('../models/notificationModel');
 
 // Вспомогательная функция для формирования чистого ответа
 const formatUserResponse = (user) => {
@@ -11,8 +11,8 @@ const formatUserResponse = (user) => {
         fullName: user.fullName || "",
         bio: user.bio || "",
         avatar: user.avatar || "",
-        website: user.website || "", 
-        followers: user.followers || [], 
+        website: user.website || "",
+        followers: user.followers || [],
         following: user.following || [],
         followersCount: user.followers ? user.followers.length : 0,
         followingCount: user.following ? user.following.length : 0
@@ -23,12 +23,12 @@ const formatUserResponse = (user) => {
 const getUserProfile = async (req, res) => {
     try {
         const user = await User.findById(req.user._id)
-            .populate('search', 'username fullName avatar'); 
+            .populate('search', 'username fullName avatar');
 
         if (user) {
             const response = {
                 ...formatUserResponse(user),
-                search: user.search || [] 
+                search: user.search || []
             };
             res.json(response);
         } else {
@@ -43,7 +43,7 @@ const getUserProfile = async (req, res) => {
 const updateUserProfile = async (req, res) => {
     try {
         const user = await User.findById(req.user._id);
-        
+
         if (user) {
             if (req.body.username) user.username = req.body.username;
             if (req.body.website !== undefined) user.website = req.body.website;
@@ -68,14 +68,14 @@ const updateUserProfile = async (req, res) => {
 const getUserById = async (req, res) => {
     try {
         const user = await User.findById(req.params.id).select('-password');
-        
+
         if (!user) {
             return res.status(404).json({ message: 'Пользователь не найден' });
         }
 
         const posts = await Post.find({ user: user._id })
             .sort({ createdAt: -1 })
-            .populate('user', 'username avatar'); 
+            .populate('user', 'username avatar');
 
         const userProfile = {
             ...formatUserResponse(user),
@@ -95,8 +95,8 @@ const getUserById = async (req, res) => {
 // 4. Подписаться / Отписаться (С УВЕДОМЛЕНИЕМ)
 const followUser = async (req, res) => {
     try {
-        const targetUserId = req.body.followingId || req.params.id; 
-        const currentUserId = req.user._id; 
+        const targetUserId = req.body.followingId || req.params.id;
+        const currentUserId = req.user._id;
 
         if (targetUserId === currentUserId.toString()) {
             return res.status(400).json({ message: 'Вы не можете подписаться на самого себя' });
@@ -121,7 +121,7 @@ const followUser = async (req, res) => {
             await targetUser.updateOne({ $push: { followers: currentUserId } });
             await currentUser.updateOne({ $push: { following: targetUserId } });
 
-            // 🔥 СОЗДАЕМ УВЕДОМЛЕНИЕ 🔥
+            //  СОЗДАЕМ УВЕДОМЛЕНИЕ 
             try {
                 // Проверка на дубликат (чтобы не спамить при переподписке)
                 const existingNotif = await Notification.findOne({
@@ -134,7 +134,7 @@ const followUser = async (req, res) => {
                     const notification = await Notification.create({
                         recipient: targetUserId,
                         sender: currentUserId,
-                        type: 'follow', // Тип 'follow'
+                        type: 'follow', 
                         message: 'started following you.',
                         isRead: false
                     });
@@ -161,7 +161,7 @@ const followUser = async (req, res) => {
     }
 };
 
-// --- ИСТОРИЯ ПОИСКА ---
+// ИСТОРИЯ ПОИСКА 
 const addToSearchHistory = async (req, res) => {
     try {
         const { targetUserId } = req.body;
@@ -202,12 +202,12 @@ const clearSearchHistory = async (req, res) => {
     }
 };
 
-// --- СПИСКИ ДЛЯ МОДАЛЬНОГО ОКНА ---
+// СПИСКИ ДЛЯ МОДАЛЬНОГО ОКНА
 
 const getUserFollowers = async (req, res) => {
     try {
         const user = await User.findById(req.params.id)
-            .populate('followers', 'username fullName avatar followers'); 
+            .populate('followers', 'username fullName avatar followers');
 
         if (!user) return res.status(404).json({ message: 'User not found' });
 
@@ -230,7 +230,7 @@ const getUserFollowers = async (req, res) => {
 const getUserFollowing = async (req, res) => {
     try {
         const user = await User.findById(req.params.id)
-            .populate('following', 'username fullName avatar followers'); 
+            .populate('following', 'username fullName avatar followers');
 
         if (!user) return res.status(404).json({ message: 'User not found' });
 
@@ -250,14 +250,14 @@ const getUserFollowing = async (req, res) => {
     }
 };
 
-module.exports = { 
-    getUserProfile, 
-    updateUserProfile, 
+module.exports = {
+    getUserProfile,
+    updateUserProfile,
     getUserById,
     followUser,
     addToSearchHistory,
     removeFromSearchHistory,
     clearSearchHistory,
-    getUserFollowers, 
+    getUserFollowers,
     getUserFollowing
 };

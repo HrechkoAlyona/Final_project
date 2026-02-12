@@ -7,7 +7,7 @@ const likePost = async (req, res) => {
         const post = await Post.findById(req.params.id);
         if (!post) return res.status(404).json({ message: 'Пост не найден' });
 
-        // 1. Надежная проверка, лайкнул ли пользователь уже пост
+        // 1. проверка, лайкнул ли пользователь уже пост
         // Превращаем оба ID в строки перед сравнением
         const isLiked = post.likes.some(
             (id) => id.toString() === req.user._id.toString()
@@ -24,11 +24,11 @@ const likePost = async (req, res) => {
         }
 
         await post.save();
-        
+
         // Возвращаем обновленный пост
         res.json(post);
     } catch (error) {
-        console.error(error); // Полезно видеть ошибку в консоли сервера
+        console.error(error); // ошибка в консоли сервера
         res.status(500).json({ message: 'Ошибка лайка' });
     }
 };

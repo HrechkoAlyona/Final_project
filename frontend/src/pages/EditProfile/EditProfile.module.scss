@@ -69,7 +69,10 @@
   font-size: 14px;
   font-weight: 600;
   cursor: pointer;
-  &:hover { background-color: #1877f2; }
+
+  &:hover {
+    background-color: #1877f2;
+  }
 }
 
 .inputGroup {
@@ -97,16 +100,22 @@
   position: relative;
   display: flex;
   align-items: center;
+
   .linkIcon {
     position: absolute;
     left: 12px;
     font-size: 12px;
   }
-  input { padding-left: 35px; color: #00376b; }
+
+  input {
+    padding-left: 35px;
+    color: #00376b;
+  }
 }
 
 .textareaWrapper {
   position: relative;
+
   textarea {
     width: 100%;
     min-height: 80px;
@@ -116,6 +125,7 @@
     font-size: 14px;
     resize: none;
   }
+
   .charCount {
     position: absolute;
     bottom: 8px;

@@ -6,7 +6,6 @@ const {
     getUserProfile, 
     updateUserProfile, 
     getUserById,
-    followUser,
     addToSearchHistory,
     removeFromSearchHistory,
     clearSearchHistory,
@@ -15,6 +14,7 @@ const {
 } = require('../controllers/userController');
 
 // 1. СТАТИЧЕСКИЕ РОУТЫ (Всегда сверху)
+// Получить свой профиль и обновить его
 router.get('/profile', protect, getUserProfile); 
 router.put('/profile', protect, updateUserProfile); 
 
@@ -23,15 +23,11 @@ router.put('/search', protect, addToSearchHistory);
 router.put('/search/remove', protect, removeFromSearchHistory);
 router.delete('/search', protect, clearSearchHistory);
 
-// 3. ПОДПИСКА / ОТПИСКА
-//  Метод POST и путь /follow (соответствует api.js)
-router.post('/follow', protect, followUser); 
-
-// 4. СПИСКИ (ПОДПИСЧИКИ И ПОДПИСКИ)
+// 3. СПИСКИ (ПОДПИСЧИКИ И ПОДПИСКИ)
 router.get('/:id/followers', protect, getUserFollowers); 
 router.get('/:id/following', protect, getUserFollowing);
 
-// 5. ПОЛУЧЕНИЕ ПРОФИЛЯ ПО ID
+// 4. ПОЛУЧЕНИЕ ПРОФИЛЯ ПО ID
 // Всегда в самом низу, чтобы не перехватывать другие GET запросы
 router.get('/:id', protect, getUserById); 
 

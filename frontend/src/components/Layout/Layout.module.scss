@@ -2,8 +2,8 @@
 
 .layoutWrapper {
   display: flex;
-  flex-direction: column; /* Элементы всегда идут сверху вниз */
-  min-height: 100vh;      /* Растягиваем на весь экран */
+  flex-direction: column; 
+  min-height: 100vh;    
   position: relative;
   background-color: var(--main);
   padding-left: var(--sideBarW); 
@@ -15,10 +15,7 @@
   justify-content: center;
   align-items: flex-start;
   width: 100%;
-  
-
-  flex: 1; // заставляет контент занять всё свободное место. Если контента мало, этот блок растянется и толкнет футер в самый низ.
-  
+  flex: 1; // заставляет контент занять всё свободное место.
   z-index: 1;
   padding: 30px 20px;
 }
@@ -48,7 +45,7 @@
   max-height: 90%;
 }
 
-/* --- АДАПТИВНОСТЬ --- */
+/*  АДАПТИВНОСТЬ */
 
 @media screen and (max-width: 1263px) {
   .layoutWrapper {

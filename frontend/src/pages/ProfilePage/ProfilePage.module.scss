@@ -76,7 +76,8 @@
   gap: 20px;
 
   h2 {
-    font-size: 28px; /* На десктопе ник покрупнее */
+    font-size: 28px;
+    /* На десктопе ник покрупнее */
     font-weight: 300;
     color: var(--textColor);
     margin: 0;
@@ -85,13 +86,13 @@
 
   // Контейнер кнопок
   .actionsRow {
-      display: flex;
-      align-items: center;
-      gap: 12px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
   }
 
   // Стили для обычных серых кнопок (Edit Profile, Message)
-  .editButton, 
+  .editButton,
   .messageButton {
     background-color: var(--postLightGrey, #efefef);
     color: var(--textColor, #262626);
@@ -102,13 +103,13 @@
     font-size: 14px;
     cursor: pointer;
     transition: background 0.2s;
-    
+
     display: flex;
     align-items: center;
     justify-content: center;
-    
-    &:hover { 
-      background-color: var(--formStroke, #dbdbdb); 
+
+    &:hover {
+      background-color: var(--formStroke, #dbdbdb);
     }
   }
 
@@ -122,15 +123,16 @@
     align-items: center;
     justify-content: center;
     color: var(--textColor, #262626);
-    margin-left: 5px; 
+    margin-left: 5px;
 
     svg {
-        transition: transform 0.3s ease;
+      transition: transform 0.3s ease;
     }
 
     &:hover svg {
-        transform: rotate(30deg); /* Легкий поворот при наведении */
-        color: #555;
+      transform: rotate(30deg);
+      /* Легкий поворот при наведении */
+      color: #555;
     }
   }
 }
@@ -144,7 +146,7 @@
   list-style: none;
   padding: 0;
   margin: 0;
-  
+
   strong {
     font-weight: 600;
   }
@@ -155,20 +157,25 @@
   font-size: 14px;
   line-height: 1.5;
   color: var(--textColor);
-  max-width: 400px; /* Ограничим ширину текста, чтобы было красиво */
-  
+  max-width: 400px;
+  /* Ограничим ширину текста, чтобы было красиво */
+
   .bioText {
-    white-space: pre-wrap; /* Сохраняет переносы строк (Enter) */
-    word-break: break-word; /* Переносит длинные слова */
+    white-space: pre-wrap;
+    /* Сохраняет переносы строк (Enter) */
+    word-break: break-word;
+    /* Переносит длинные слова */
   }
 
   // СТИЛЬ ДЛЯ КНОПКИ "more"
   .moreLink {
-    color: #8e8e8e; /* Серый цвет, как в Инстаграм */
+    color: #8e8e8e;
+    /* Серый цвет, как в Инстаграм */
     cursor: pointer;
-    font-weight: 600; /* Чуть жирнее */
+    font-weight: 600;
+    /* Чуть жирнее */
     margin-left: 4px;
-    
+
     &:hover {
       opacity: 0.7;
     }
@@ -176,22 +183,26 @@
 
   .websiteLink {
     display: block;
-    color: #00376b; 
+    color: #00376b;
     font-weight: 600;
     text-decoration: none;
     margin-top: 5px;
 
-    &:hover { text-decoration: underline; }
+    &:hover {
+      text-decoration: underline;
+    }
   }
 
   .websiteLink {
     display: block;
-    color: #00376b; 
+    color: #00376b;
     font-weight: 600;
     text-decoration: none;
     margin-top: 5px;
 
-    &:hover { text-decoration: underline; }
+    &:hover {
+      text-decoration: underline;
+    }
   }
 }
 
@@ -199,7 +210,8 @@
 .gallery {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 4px; /* Узкий отступ */
+  gap: 4px;
+  /* Узкий отступ */
   border-top: 1px solid var(--formStroke, #dbdbdb);
   padding-top: 50px;
   width: 100%;
@@ -221,7 +233,9 @@
     transition: opacity 0.2s;
   }
 
-  &:hover { opacity: 0.85; }
+  &:hover {
+    opacity: 0.85;
+  }
 }
 
 .gridTitleOverlay {
@@ -231,8 +245,9 @@
   right: 10px;
   color: #fff;
   font-weight: 600;
-  font-size: 16px; /* Чуть уменьшил шрифт для превью */
-  text-shadow: 0 1px 4px rgba(0,0,0,0.8);
+  font-size: 16px;
+  /* Чуть уменьшил шрифт для превью */
+  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.8);
   pointer-events: none;
   z-index: 5;
   font-family: 'Montserrat', sans-serif;
@@ -241,10 +256,10 @@
   /* СТИЛИ ДЛЯ ПРЕВЬЮ В ПРОФИЛЕ */
   white-space: pre-wrap;
   word-wrap: break-word;
-  
+
   /* Ограничиваем текст */
   display: -webkit-box;
-  -webkit-line-clamp: 4; 
+  -webkit-line-clamp: 4;
   line-clamp: 4;
   -webkit-box-orient: vertical;
   overflow: hidden;
@@ -255,7 +270,7 @@
   padding: 60px 0;
   color: var(--darkGrey);
   border-top: 1px solid var(--formStroke);
-  
+
   h3 {
     font-size: 24px;
     margin-bottom: 10px;
@@ -280,7 +295,10 @@
     width: 80px;
     height: 80px;
 
-    svg { width: 90px; height: 90px; }
+    svg {
+      width: 90px;
+      height: 90px;
+    }
   }
 
   .avatarImg {
@@ -288,14 +306,17 @@
     height: 77px;
   }
 
-  .details { width: calc(100% - 100px); }
+  .details {
+    width: calc(100% - 100px);
+  }
 
   // Адаптация верхней строки для мобильных
   .topRow {
     gap: 10px;
 
     h2 {
-      font-size: 20px; /* Уменьшаем ник на телефоне */
+      font-size: 20px;
+      /* Уменьшаем ник на телефоне */
     }
   }
 
@@ -304,6 +325,8 @@
     padding-top: 0;
     border-top: none;
   }
-  
-  .stats { display: none; }
+
+  .stats {
+    display: none;
+  }
 }

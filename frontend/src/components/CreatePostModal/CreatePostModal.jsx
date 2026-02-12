@@ -96,7 +96,7 @@ const CreatePostModal = ({ onClose }) => {
                 <span>{userName}</span>
             </div>
 
-            {/* --- 1. ЗАГОЛОВОК (Теперь textarea!) --- */}
+            {/*  1. ЗАГОЛОВОК */}
             <div className={s.inputGroup}>
                 <textarea 
                     placeholder="Add a headline..." 
@@ -137,7 +137,7 @@ const CreatePostModal = ({ onClose }) => {
                 )}
             </div>
 
-            {/* --- 2. ОПИСАНИЕ --- */}
+            {/*  2. ОПИСАНИЕ */}
             <div className={s.inputGroup} style={{ flex: 1 }}>
                 <textarea 
                   className={s.captionInput}

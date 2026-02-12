@@ -24,9 +24,6 @@ const Notifications = ({ isOpen, onClose }) => {
 
   return (
     <>
-      {/* Прозрачная подложка на весь экран. 
-         Клик по ней вызывает onClose (закрывает панель).
-      */}
       <div className={s.backdrop} onClick={onClose} />
 
       <div className={s.drawerContainer}>

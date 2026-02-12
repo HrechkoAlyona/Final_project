@@ -30,9 +30,9 @@ export const api = createApi({
     },
   }),
 
-  // 🔥 Все теги для синхронизации данных
+  //   теги для синхронизации данных
   tagTypes: [
-    'AuthCheck', 'Post', 'User', 'Profile', 'Message', 
+    'AuthCheck', 'Post', 'User', 'Profile', 'Message',
     'Conversation', 'Notification', 'Following', 'Followers'
   ],
 
@@ -55,7 +55,7 @@ export const api = createApi({
         body: userData,
       }),
     }),
-    
+
     resetPassword: builder.mutation({
       query: (data) => ({
         url: '/auth/reset-password',
@@ -73,7 +73,7 @@ export const api = createApi({
     }),
 
     // === ПОЛЬЗОВАТЕЛИ ===
-    
+
     // Получение данных о себе
     getMe: builder.query({
       query: () => '/users/profile',
@@ -98,12 +98,12 @@ export const api = createApi({
     // Мутация подписки (Синхронизировано с бэкендом)
     followUser: builder.mutation({
       query: (userId) => ({
-        url: '/users/follow', // Исправленный путь
+        url: '/follows', // Исправленный путь
         method: 'POST',
         body: { followingId: userId },
       }),
       // Инвалидируем теги, чтобы всё обновилось мгновенно
-      invalidatesTags: ['User', 'Profile', 'Followers', 'Following', 'Post'], 
+      invalidatesTags: ['User', 'Profile', 'Followers', 'Following', 'Post'],
     }),
 
     // Списки для модалки
@@ -122,29 +122,29 @@ export const api = createApi({
       query: (searchTerm) => `/search?q=${searchTerm}`,
       keepUnusedDataFor: 5,
     }),
-    
+
     addToSearchHistory: builder.mutation({
       query: (targetUserId) => ({
-          url: '/users/search',
-          method: 'PUT',
-          body: { targetUserId },
+        url: '/users/search',
+        method: 'PUT',
+        body: { targetUserId },
       }),
       invalidatesTags: ['User'],
     }),
 
     removeFromSearchHistory: builder.mutation({
       query: (targetUserId) => ({
-          url: '/users/search/remove',
-          method: 'PUT',
-          body: { targetUserId },
+        url: '/users/search/remove',
+        method: 'PUT',
+        body: { targetUserId },
       }),
       invalidatesTags: ['User'],
     }),
 
     clearSearchHistory: builder.mutation({
       query: () => ({
-          url: '/users/search',
-          method: 'DELETE',
+        url: '/users/search',
+        method: 'DELETE',
       }),
       invalidatesTags: ['User'],
     }),
@@ -152,7 +152,7 @@ export const api = createApi({
     // === ПОСТЫ ===
     getFollowedPosts: builder.query({
       query: (page = 1) => `/posts/followed?page=${page}`,
-      providesTags: ['Post'], 
+      providesTags: ['Post'],
     }),
 
     getExplorePosts: builder.query({
@@ -169,13 +169,13 @@ export const api = createApi({
         if (userId) url += `&userId=${userId}`;
         return url;
       },
-      providesTags: (result, error, arg) => 
+      providesTags: (result, error, arg) =>
         result
           ? [
-              ...result.map(({ _id }) => ({ type: 'Post', id: _id })),
-              'Post',
-              { type: 'Profile', id: arg?.userId } 
-            ]
+            ...result.map(({ _id }) => ({ type: 'Post', id: _id })),
+            'Post',
+            { type: 'Profile', id: arg?.userId }
+          ]
           : ['Post'],
     }),
 
@@ -213,9 +213,9 @@ export const api = createApi({
         body: body,
       }),
       invalidatesTags: (result, error, { id }) => [
-        { type: 'Post', id }, 
-        'Post', 
-        'Profile', 
+        { type: 'Post', id },
+        'Post',
+        'Profile',
         'User'
       ],
     }),
@@ -256,32 +256,32 @@ export const api = createApi({
   }),
 });
 
-export const { 
-  useLoginMutation, 
+export const {
+  useLoginMutation,
   useRegisterUserMutation,
-  useResetPasswordMutation,      
+  useResetPasswordMutation,
   useResetPasswordStep2Mutation,
   useGetUserByIdQuery,
-  useGetMeQuery, 
+  useGetMeQuery,
   useUpdateProfileMutation,
   useFollowUserMutation,
   useGetFollowersQuery,
   useGetFollowingQuery,
-  useSearchUsersQuery, 
-  useAddToSearchHistoryMutation, 
-  useRemoveFromSearchHistoryMutation, 
-  useClearSearchHistoryMutation, 
+  useSearchUsersQuery,
+  useAddToSearchHistoryMutation,
+  useRemoveFromSearchHistoryMutation,
+  useClearSearchHistoryMutation,
   useGetFollowedPostsQuery,
-  useLazyGetFollowedPostsQuery, 
+  useLazyGetFollowedPostsQuery,
   useGetPostsQuery,
   useGetExplorePostsQuery,
   useGetMyPostsQuery,
-  useGetPostByIdQuery, 
+  useGetPostByIdQuery,
   useCreatePostMutation,
   useDeletePostMutation,
   useUpdatePostMutation,
   useToggleLikeMutation,
   useAddCommentMutation,
-  useDeleteCommentMutation, 
+  useDeleteCommentMutation,
   useToggleCommentLikeMutation
 } = api;

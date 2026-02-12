@@ -1,102 +1,110 @@
 // frontend/src/pages/Home/Home.module.scss
 
 .pageWrapper {
-  width: 100%;
-  max-width: 935px;
-  margin: 0 auto;
-  padding: 30px 20px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
+    width: 100%;
+    max-width: 935px;
+    margin: 0 auto;
+    padding: 30px 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
 }
 
 /* --- ГЛАВНАЯ СЕТКА ПОСТОВ --- */
 .feedGrid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 28px;
-  width: 100%;
-  margin-bottom: 20px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 28px;
+    width: 100%;
+    margin-bottom: 20px;
 
-  @media (max-width: 768px) {
-    grid-template-columns: 1fr;
-    gap: 15px;
-    max-width: 470px;
-  }
+    @media (max-width: 768px) {
+        grid-template-columns: 1fr;
+        gap: 15px;
+        max-width: 470px;
+    }
 }
 
 .gridItem {
-  width: 100%;
-  display: flex;
-  justify-content: center;
+    width: 100%;
+    display: flex;
+    justify-content: center;
 }
 
 /* --- СТАТУСЫ И ЛОАДЕРЫ ВНИЗУ --- */
 .statusContainer {
-  width: 100%;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  padding-bottom: 50px;
-  min-height: 50px;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding-bottom: 50px;
+    min-height: 50px;
 }
 
-.loader, .loaderSmall {
-  color: #8e8e8e;
-  font-weight: 500;
-  margin: 20px 0;
-  display: flex;
-  align-items: center;
-  gap: 10px;
+.loader,
+.loaderSmall {
+    color: #8e8e8e;
+    font-weight: 500;
+    margin: 20px 0;
+    display: flex;
+    align-items: center;
+    gap: 10px;
 }
 
 /* Блок "Всё просмотрено" */
 .allCaughtUp {
-  text-align: center;
-  color: #262626;
-  border-top: 1px solid #dbdbdb;
-  padding-top: 30px;
-  width: 100%;
-  max-width: 400px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  margin-top: 10px;
-  animation: fadeIn 0.5s ease-in-out;
-
-  .checkIcon {
-    margin-bottom: 12px;
+    text-align: center;
+    color: #262626;
+    border-top: 1px solid #dbdbdb;
+    padding-top: 30px;
+    width: 100%;
+    max-width: 400px;
     display: flex;
-    justify-content: center;
+    flex-direction: column;
     align-items: center;
-  }
+    margin-top: 10px;
+    animation: fadeIn 0.5s ease-in-out;
 
-  h2 {
-    font-size: 20px;
-    font-weight: 600;
-    margin-bottom: 8px;
-  }
+    .checkIcon {
+        margin-bottom: 12px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
 
-  p {
-    color: #8e8e8e;
-    font-size: 14px;
-    line-height: 18px;
-  }
+    h2 {
+        font-size: 20px;
+        font-weight: 600;
+        margin-bottom: 8px;
+    }
+
+    p {
+        color: #8e8e8e;
+        font-size: 14px;
+        line-height: 18px;
+    }
 }
 
 .emptyState {
-  text-align: center;
-  margin-top: 40px;
-  color: #8e8e8e;
-  
-  h2 {
-    color: #262626;
-    margin-bottom: 10px;
-    font-size: 24px;
-  }
+    text-align: center;
+    margin-top: 40px;
+    color: #8e8e8e;
+
+    h2 {
+        color: #262626;
+        margin-bottom: 10px;
+        font-size: 24px;
+    }
 }
 
 @keyframes fadeIn {
-  from { opacity: 0; transform: translateY(10px); }
-  to { opacity: 1; transform: translateY(0); }
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }

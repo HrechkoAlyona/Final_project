@@ -8,7 +8,7 @@ const { protect } = require('../middlewares/authMiddleware');
 router.post('/', protect, addComment);
 
 // Лайк комментария: /api/comments/:id/like
-router.put('/:id/like', protect, toggleLikeComment); 
+router.put('/:id/like', protect, toggleLikeComment);
 
 // 2. УДАЛЕНИЕ КОММЕНТАРИЯ
 router.delete('/:commentId', protect, deleteComment);

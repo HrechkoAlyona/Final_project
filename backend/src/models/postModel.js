@@ -17,13 +17,13 @@ const postSchema = mongoose.Schema({
     },
     description: {
         type: String,
-        default: "" 
+        default: ""
     },
     likes: [{
         type: mongoose.Schema.Types.ObjectId,
         ref: 'User'
     }],
-   comments: [{
+    comments: [{
         user: {
             type: mongoose.Schema.Types.ObjectId,
             required: true,

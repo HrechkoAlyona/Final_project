@@ -1,4 +1,5 @@
 // backend\src\controllers\messageController.js
+
 const Message = require('../models/messageModel');
 const User = require('../models/userModel');
 
@@ -24,11 +25,9 @@ const sendMessage = async (req, res) => {
         // Socket.io 
         const io = req.app.get('io');
         if (io) {
-
-            // 1. Отправляем получателю (чтобы он увидел сразу)
+            // 1. Отправляем получателю
             io.to(recipientId.toString()).emit('newMessage', message);
-            
-            // 2. Отправляем себе (чтобы у нас тоже появилось сразу)
+            // 2. Отправляем себе
             io.to(senderId.toString()).emit('newMessage', message);
         }
 
@@ -51,8 +50,8 @@ const getMessages = async (req, res) => {
                 { sender: userToChatId, receiver: myId }
             ]
         })
-        .sort({ createdAt: 1 })
-        .populate('sender', 'username avatar');
+            .sort({ createdAt: 1 })
+            .populate('sender', 'username avatar');
 
         res.json(messages);
     } catch (error) {
@@ -61,32 +60,27 @@ const getMessages = async (req, res) => {
     }
 };
 
-//  3. ПОЛУЧИТЬ СПИСОК ДИАЛОГОВ (Conversations) 
+// 3. ПОЛУЧИТЬ СПИСОК ДИАЛОГОВ (Conversations) 
 const getConversations = async (req, res) => {
     try {
         const currentUserId = req.user._id;
         const messages = await Message.find({
             $or: [{ sender: currentUserId }, { receiver: currentUserId }]
         })
-        .sort({ createdAt: -1 }) // Сначала новые
-        .populate('sender', 'username avatar')
-        .populate('receiver', 'username avatar');
+            .sort({ createdAt: -1 }) // Сначала новые
+            .populate('sender', 'username avatar')
+            .populate('receiver', 'username avatar');
 
         const conversationsMap = new Map();
 
         messages.forEach(msg => {
-            if (!msg.sender || !msg.receiver) {
-                return; 
-            }
+            if (!msg.sender || !msg.receiver) return;
 
             // Кто собеседник?
             const isSender = msg.sender._id.toString() === currentUserId.toString();
             const otherUser = isSender ? msg.receiver : msg.sender;
 
-            // Еще одна проверка на всякий случай
-            if (!otherUser || !otherUser._id) {
-                return;
-            }
+            if (!otherUser || !otherUser._id) return;
 
             const otherUserId = otherUser._id.toString();
 
@@ -97,7 +91,8 @@ const getConversations = async (req, res) => {
                     username: otherUser.username,
                     avatar: otherUser.avatar,
                     lastMessage: msg.text,
-                    isSender: isSender
+                    isSender: isSender,
+                    unreadCount: 0 
                 });
             }
         });
@@ -130,9 +125,42 @@ const markMessagesAsRead = async (req, res) => {
     }
 };
 
-module.exports = { 
-    sendMessage, 
-    getMessages, 
-    getConversations, 
-    markMessagesAsRead
+// 5. УДАЛИТЬ СООБЩЕНИЕ 
+const deleteMessage = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const message = await Message.findById(id);
+
+        if (!message) {
+            return res.status(404).json({ error: "Сообщение не найдено" });
+        }
+
+        // Проверка прав: удалять может только отправитель
+        if (message.sender.toString() !== req.user._id.toString()) {
+            return res.status(403).json({ error: "Вы не можете удалить чужое сообщение" });
+        }
+
+        await message.deleteOne();
+
+        // --- SOCKET.IO: Уведомляем обоих участников ---
+        const io = req.app.get("io");
+        if (io) {
+            io.to(message.receiver.toString()).emit("message_deleted", id);
+            io.to(message.sender.toString()).emit("message_deleted", id);
+        }
+
+        res.status(200).json({ message: "Сообщение удалено" });
+
+    } catch (error) {
+        console.error("Delete Message Error:", error);
+        res.status(500).json({ error: "Ошибка удаления сообщения" });
+    }
+};
+
+module.exports = {
+    sendMessage,
+    getMessages,
+    getConversations,
+    markMessagesAsRead,
+    deleteMessage 
 };

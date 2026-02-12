@@ -20,7 +20,7 @@ const ResetForm = () => {
     reset 
   } = useForm({ mode: 'onBlur' });
 
-  // --- ШАГ 1: Отправка Email или Username ---
+  //  ШАГ 1: Отправка Email или Username 
   const onStep1Submit = async (data) => {
     try {
       // 1. Отправляем запрос
@@ -45,7 +45,7 @@ const ResetForm = () => {
     }
   };
 
-  // --- ШАГ 2: Смена пароля ---
+  //  ШАГ 2: Смена пароля 
   const onStep2Submit = async (data) => {
     try {
       console.log("Отправляем на Шаг 2:", {

@@ -10,12 +10,12 @@ import { NavigationContext } from '../context/NavigationContext';
 export const useCreatePostForm = (onClose) => {
   const { setIsDrawerOpen } = useContext(NavigationContext);
   const navigate = useNavigate();
-  
+
   const [showEmoji, setShowEmoji] = useState(false);
   const [preview, setPreview] = useState(null);
-  
+
   // не активное поле
-const [activeField, setActiveField] = useState(null); 
+  const [activeField, setActiveField] = useState(null);
 
   const [createPost, { isLoading }] = useCreatePostMutation();
 
@@ -28,8 +28,8 @@ const [activeField, setActiveField] = useState(null);
     reset,
   } = useForm({
     defaultValues: {
-      title: '',       
-      content: '',     
+      title: '',
+      content: '',
       image: null
     }
   });
@@ -53,15 +53,15 @@ const [activeField, setActiveField] = useState(null);
     const targetField = specificField || activeField;
 
     const currentValue = getValues(targetField) || "";
-    setValue(targetField, currentValue + emojiData.emoji, { 
-        shouldValidate: true, 
-        shouldDirty: true 
+    setValue(targetField, currentValue + emojiData.emoji, {
+      shouldValidate: true,
+      shouldDirty: true
     });
   };
 
   const submitPost = async (data) => {
     const toastId = toast.loading("Sharing post...");
-    
+
     try {
       if (!data.image) {
         toast.error("Please select an image", { id: toastId });
@@ -70,12 +70,12 @@ const [activeField, setActiveField] = useState(null);
 
       const formData = new FormData();
       formData.append("image", data.image);
-      formData.append("description", data.content || ""); 
-      formData.append("title", data.title || ""); 
+      formData.append("description", data.content || "");
+      formData.append("title", data.title || "");
 
       await createPost(formData).unwrap();
       toast.success("Post shared!", { id: toastId });
-      
+
       const token = localStorage.getItem('token');
       if (token) {
         try {
@@ -88,7 +88,7 @@ const [activeField, setActiveField] = useState(null);
       reset();
       setPreview(null);
       if (onClose) onClose();
-      setIsDrawerOpen(false); 
+      setIsDrawerOpen(false);
     } catch (error) {
       console.error("Failed to create post:", error);
       toast.error("Failed to share post", { id: toastId });
@@ -114,13 +114,13 @@ const [activeField, setActiveField] = useState(null);
     preview,
     captionValue,
     titleValue,
-    showEmoji,     
+    showEmoji,
     setShowEmoji,
     handleFileSelect,
     onEmojiClick,
     submitPost,
     resetForm,
     activeField,
-    setActiveField 
+    setActiveField
   };
 };

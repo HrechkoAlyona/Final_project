@@ -96,7 +96,7 @@ const PostModal = ({ post: initialPost, onClose }) => {
       <div className={s.modalCard} onClick={(e) => e.stopPropagation()}>
         
         {/* ЛЕВАЯ ЧАСТЬ (Картинка) */}
-        {/* Мы убрали отсюда editTitle и setEditTitle, так как они теперь справа */}
+    
         <PostImage 
           post={post} 
           isEditing={isEditing} 
@@ -132,7 +132,7 @@ const PostModal = ({ post: initialPost, onClose }) => {
              <div className={s.editFooter}>
                 <label className={s.inputLabel}>Title</label>
                 <textarea 
-                  className={s.editTitleInput} // Новый класс для этого поля
+                  className={s.editTitleInput} 
                   value={editTitle}
                   onChange={(e) => setEditTitle(e.target.value)}
                   placeholder="Add a title..."

@@ -15,15 +15,12 @@
     display: grid;
     grid-template-columns: repeat(3, 1fr);
     /* 3 колонки */
-
-    grid-auto-rows: minmax(100px, auto); //чтобы высота подстраивалась под ширину 
-
+    grid-auto-rows: minmax(100px, auto);
     gap: 4px;
     /* для тонкой сетки */
 
     @media (max-width: 768px) {
         gap: 1px;
-        /* На телефоне делаем совсем тонкую линию */
     }
 }
 
@@ -50,9 +47,7 @@
         grid-column: 3;
         grid-row: span 2;
         aspect-ratio: auto;
-        /* Сбрасываем квадрат, чтобы он мог растянуться вниз */
         height: 100%;
-        /* Занимаем всю высоту двух рядов */
     }
 
     /* Высокий слева */

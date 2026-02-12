@@ -7,7 +7,7 @@ const messageSchema = new mongoose.Schema({
         ref: 'User',
         required: true
     },
-  
+
     receiver: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'User',
@@ -18,7 +18,7 @@ const messageSchema = new mongoose.Schema({
         required: true,
         trim: true
     },
-    
+
     isRead: {
         type: Boolean,
         default: false

@@ -1,33 +1,33 @@
 // frontend\src\pages\EditProfile\EditProfile.jsx
 
-import React, { useEffect } from 'react';
-import { useForm, useWatch } from 'react-hook-form';
-import { toast } from 'react-hot-toast';
-import { useGetUserByIdQuery, useUpdateProfileMutation } from '../../services/api';
-import s from './EditProfile.module.scss';
+import React, { useEffect } from "react";
+import { useForm, useWatch } from "react-hook-form";
+import { toast } from "react-hot-toast";
+import {
+  useGetUserByIdQuery,
+  useUpdateProfileMutation,
+} from "../../services/api";
+import s from "./EditProfile.module.scss";
 
 const EditProfile = () => {
-  const userId = localStorage.getItem('userId');
-  
-  // 1. Получаем данные пользователя
+  const userId = localStorage.getItem("userId");
+
   const { data: user, isLoading } = useGetUserByIdQuery(userId, {
-    refetchOnMountOrArgChange: true, 
+    refetchOnMountOrArgChange: true,
   });
-  
+
   const [updateProfile, { isLoading: isUpdating }] = useUpdateProfileMutation();
 
-  // 2. Настраиваем форму
+  //  Настраиваем форму
   const { register, handleSubmit, setValue, control, reset } = useForm({
     defaultValues: {
-      username: '',
-      website: '',
-      bio: '',
-      avatar: ''
-    }
+      username: "",
+      website: "",
+      bio: "",
+      avatar: "",
+    },
   });
 
-  // 3. Следим за изменениями полей (Аватарка и Био)
-  // Это заставит компонент перерисоваться, когда меняется фото или текст
   const watchedValues = useWatch({
     control,
     name: ["avatar", "bio"],
@@ -39,10 +39,10 @@ const EditProfile = () => {
   useEffect(() => {
     if (user) {
       reset({
-        username: user.username || '',
-        website: user.website || '',
-        bio: user.bio || '',
-        avatar: user.avatar || '',
+        username: user.username || "",
+        website: user.website || "",
+        bio: user.bio || "",
+        avatar: user.avatar || "",
       });
     }
   }, [user, reset]);
@@ -54,7 +54,7 @@ const EditProfile = () => {
       const reader = new FileReader();
       reader.onloadend = () => {
         // Устанавливаем Base64 строку в поле формы
-        setValue('avatar', reader.result, { shouldDirty: true });
+        setValue("avatar", reader.result, { shouldDirty: true });
       };
       reader.readAsDataURL(file);
     }
@@ -64,14 +64,13 @@ const EditProfile = () => {
     try {
       await updateProfile({
         ...data,
-        _id: userId 
+        _id: userId,
       }).unwrap();
-      
-      toast.success('Profile updated!');
+
+      toast.success("Profile updated!");
     } catch (err) {
       console.error("Ошибка при обновлении:", err);
-      // Пытаемся достать сообщение об ошибке (например, "Entity too large")
-      const errorMessage = err.data?.message || err.error || 'Update failed';
+      const errorMessage = err.data?.message || err.error || "Update failed";
       toast.error(errorMessage);
     }
   };
@@ -86,9 +85,13 @@ const EditProfile = () => {
         {/* КАРТОЧКА С АВАТАРКОЙ */}
         <div className={s.avatarCard}>
           <div className={s.avatarInfo}>
-            <img 
-              src={avatarPreview || user?.avatar || "https://cdn-icons-png.flaticon.com/512/149/149071.png"} 
-              alt="avatar" 
+            <img
+              src={
+                avatarPreview ||
+                user?.avatar ||
+                "https://cdn-icons-png.flaticon.com/512/149/149071.png"
+              }
+              alt="avatar"
               className={s.avatarImg}
             />
             <div className={s.avatarTexts}>
@@ -98,31 +101,35 @@ const EditProfile = () => {
           </div>
           <label className={s.newPhotoBtn}>
             New photo
-            <input type="file" onChange={handleImageChange} accept="image/*" hidden />
+            <input
+              type="file"
+              onChange={handleImageChange}
+              accept="image/*"
+              hidden
+            />
           </label>
         </div>
 
         {/* ФОРМА */}
         <form onSubmit={handleSubmit(onSubmit)} className={s.form}>
-          
           <div className={s.inputGroup}>
             <label>Username</label>
-            <input {...register('username')} placeholder="Username" />
+            <input {...register("username")} placeholder="Username" />
           </div>
 
           <div className={s.inputGroup}>
             <label>Website</label>
             <div className={s.linkInputWrapper}>
               <span className={s.linkIcon}>🔗</span>
-              <input {...register('website')} placeholder="bit.ly/yourlink" />
+              <input {...register("website")} placeholder="bit.ly/yourlink" />
             </div>
           </div>
 
           <div className={s.inputGroup}>
             <label>About</label>
             <div className={s.textareaWrapper}>
-              <textarea 
-                {...register('bio')} 
+              <textarea
+                {...register("bio")}
                 maxLength={150}
                 placeholder="Write something about yourself..."
               />
@@ -134,7 +141,7 @@ const EditProfile = () => {
           </div>
 
           <button type="submit" className={s.saveBtn} disabled={isUpdating}>
-            {isUpdating ? 'Saving...' : 'Save'}
+            {isUpdating ? "Saving..." : "Save"}
           </button>
         </form>
       </div>

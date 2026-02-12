@@ -3,18 +3,14 @@ import { useNavigate } from 'react-router-dom';
 import { useGetFollowersQuery, useGetFollowingQuery, useGetMeQuery } from '../../services/api';
 import FollowButton from '../FollowButton/FollowButton'; 
 import s from './UserListModal.module.scss';
-
-// Иконки
 import { AiOutlineClose, AiOutlineMessage } from 'react-icons/ai'; 
 
 const UserListModal = ({ userId, type, onClose, title }) => {
   const navigate = useNavigate();
 
-  // 1. Получаем данные о себе
-  const { data: myUser } = useGetMeQuery();
+  const { data: myUser } = useGetMeQuery();  // 1. Получаем данные о себе
 
-  // 2. Выбираем нужный хук
-  const hook = type === 'followers' ? useGetFollowersQuery : useGetFollowingQuery;
+  const hook = type === 'followers' ? useGetFollowersQuery : useGetFollowingQuery; // 2. Выбираем нужный хук
 
   const { data: users = [], isLoading } = hook(userId, {
     refetchOnMountOrArgChange: true, // Перезапрашивать при открытии
@@ -30,7 +26,7 @@ const UserListModal = ({ userId, type, onClose, title }) => {
   const handleMessageClick = (e, userToChat) => {
     e.stopPropagation(); 
     onClose();
-    navigate('/direct/inbox', { state: { userToChat } });
+    navigate('/messages', { state: { userToChat } });
   };
 
   return (

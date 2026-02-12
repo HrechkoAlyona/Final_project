@@ -92,7 +92,7 @@ const PostComments = ({ post, authorData, isEditing, editContent, setEditContent
       {!isEditing && post.comments && post.comments.map((comment, index) => {
         const isCommentLiked = comment.likes?.some(id => String(id) === String(userId));
         
-        // Получаем ID автора комментария (учитываем, что user может быть объектом или строкой)
+        // Получаем ID автора комментария 
         const commentAuthorId = comment.user?._id || comment.user;
         const commentUsername = comment.user?.username || "User";
         const commentAvatar = comment.user?.avatar || "https://cdn-icons-png.flaticon.com/512/149/149071.png";

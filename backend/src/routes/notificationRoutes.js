@@ -2,9 +2,9 @@
 const express = require('express');
 const router = express.Router();
 const { protect } = require('../middlewares/authMiddleware');
-const { 
-    getNotifications, 
-    markNotificationsAsRead 
+const {
+    getNotifications,
+    markNotificationsAsRead
 } = require('../controllers/notificationController');
 
 // Получить список уведомлений

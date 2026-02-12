@@ -16,7 +16,6 @@ const Explore = () => {
   return (
     <div className={s.exploreContainer}>
       <div className={s.grid}>
-        {/* Просто выводим posts, они уже перемешаны сервером */}
         {posts.map((post) => (
           <div
             key={post._id}

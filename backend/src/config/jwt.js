@@ -1,3 +1,5 @@
+// backend\src\config\jwt.js
+
 const jwt = require('jsonwebtoken');
 
 const generateToken = (id) => {

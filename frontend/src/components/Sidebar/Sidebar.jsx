@@ -78,7 +78,7 @@ const Sidebar = ({ onCreateClick, isCreateOpen }) => {
     }
   };
 
-  const isMessagesActive = location.pathname.startsWith("/direct");
+  const isMessagesActive = location.pathname.startsWith("/messages");
 
   const navItems = [
     {
@@ -103,7 +103,7 @@ const Sidebar = ({ onCreateClick, isCreateOpen }) => {
         active ? <PiCompassFill size={26} /> : <PiCompass size={26} />,
     },
     {
-      path: "/direct/inbox",
+      path: "/messages",
       label: "Messages",
       getIcon: (active) =>
         active ? (

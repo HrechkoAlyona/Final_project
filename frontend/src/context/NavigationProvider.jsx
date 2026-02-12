@@ -1,7 +1,7 @@
 // frontend\src\context\NavigationProvider.jsx
 
 import React, { useState } from 'react';
-import { NavigationContext } from './NavigationContext'; // Импортируем контекст из соседнего файла
+import { NavigationContext } from './NavigationContext';
 
 export const NavigationProvider = ({ children }) => {
   // Состояние активной вкладки ('home', 'search', 'create' и т.д.)

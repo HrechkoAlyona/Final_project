@@ -20,7 +20,7 @@ const userSchema = new mongoose.Schema({
         type: String,
         required: [true, 'Please provide a password'],
         minlength: [6, 'Password must be at least 6 characters long'],
-        select: false 
+        select: false
     },
     fullName: {
         type: String,
@@ -48,13 +48,13 @@ const userSchema = new mongoose.Schema({
     resetPasswordExpires: { type: Date },
 
     // --- ПОДПИСКИ ---
-    followers: [{ 
-        type: mongoose.Schema.Types.ObjectId, 
-        ref: 'User' 
+    followers: [{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User'
     }],
-    following: [{ 
-        type: mongoose.Schema.Types.ObjectId, 
-        ref: 'User' 
+    following: [{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User'
     }],
 
     // ИСТОРИЯ ПОИСКА
@@ -64,7 +64,7 @@ const userSchema = new mongoose.Schema({
     }]
 
 }, {
-    timestamps: true 
+    timestamps: true
 });
 
 const User = mongoose.model('User', userSchema);

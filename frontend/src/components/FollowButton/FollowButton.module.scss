@@ -2,7 +2,7 @@
 .followButton {
   background: none;
   border: none;
-  color: #0095f6; // Фирменный синий Instagram
+  color: #0095f6; 
   font-weight: 600;
   font-size: 14px;
   cursor: pointer;
@@ -19,21 +19,16 @@
 
   // Состояние "Вы подписаны"
   &.unfollow {
-    color: #262626; // Черный текст
-    // Если хочешь сделать кнопку серой (как в приложении), 
-    // можешь раскомментировать строки ниже:
-    // background-color: #efefef;
-    // padding: 5px 15px;
-    
+    color: #262626; 
+
     &:hover {
       color: #8e8e8e;
     }
   }
 
-  // Модификатор размера
   &.small {
     font-size: 13px;
-    padding: 0; // В ленте обычно просто текст без отступов
+    padding: 0; 
   }
 
   &:disabled {

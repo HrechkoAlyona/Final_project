@@ -1,49 +1,75 @@
 # Ichgram — Social Media Full-Stack Project
+Полноценное Full-Stack приложение социальной сети, разработанное с использованием стека MERN и Socket.io для обмена сообщениями в реальном времени.
 
-Полноценное Full-Stack приложение социальной сети, разработанное с использованием стека MERN (MongoDB, Express, React, Node.js) и Socket.io для функций реального времени.
+##  Особенности
+
+###  Авторизация и Безопасность
+* **JWT Authentication:** Access & Refresh токены.
+* **Bcrypt:** Хеширование паролей.
+* **Защищенные роуты:** Middleware для проверки авторизации.
+* **Восстановление пароля:** Отправка кода на Email.
+
+###  Интерфейс (Frontend)
+* **Адаптивный дизайн:** Mobile First, корректная работа на всех устройствах.
+* **Модальные окна:** Создание постов, поиск пользователей.
+* **Профиль:** Редактирование аватарки, био, просмотр своих постов.
+
+###  Социальное взаимодействие
+* **Real-time Chat:** Мгновенные сообщения через Socket.io.
+* **Функции чата:** Удаление сообщений, история переписки, список диалогов.
+* **Лента:** Просмотр постов подписок и рекомендованных пользователей.
+* **Активность:** Лайки, комментарии, подписка/отписка (Follow/Unfollow).
+* **Поиск:** Живой поиск пользователей.
+
+---
 
 ##  Технологический стек
 
-### Frontend:
-* **Core:** React (Vite), JavaScript (ES6+).
-* **State Management:** Redux Toolkit & RTK Query.
-* **Routing:** React Router DOM v6.
-* **Styling:** SCSS Modules, Flexbox, Adaptive Design.
-* **Forms:** React Hook Form.
-* **UI:** React Hot Toast, React Icons.
+| Категория | Технологии |
 
-### Backend:
-* **Core:** Node.js, Express.
-* **Database:** MongoDB (Mongoose ODM).
-* **Auth:** JWT (Access/Refresh), Bcrypt.
-* **Real-time:** Socket.io (чаты, уведомления).
-* **Media:** Обработка и хранение изображений.
+| **Frontend** | React (Vite), Redux Toolkit & RTK Query, React Router v6, SCSS Modules |
+| **Backend** | Node.js, Express.js, Socket.io |
+| **Database** | MongoDB, Mongoose ODM |
+| **Utils** | React Hook Form, React Hot Toast, React Icons, BcryptJS, JWT |
 
 ---
 
-## Реализованный функционал
+##  Установка и запуск
 
-### Авторизация (Auth)
-* **Регистрация:** Валидация, проверка уникальности.
-* **Вход:** Email/Password.
-* **Восстановление пароля:** Email -> Код -> Новый пароль.
+### Предварительные требования
+* Node.js (v16 или выше)
+* MongoDB (Локально или Atlas)
 
-### Интерфейс (Frontend)
-* **Адаптив:** Mobile First подход, корректный скроллинг (100dvh).
-* **Layout:** Публичные страницы и приватная лента.
+2. Настройка Бэкенда
+Bash
 
-### Данные (Backend)
-* **Posts:** CRUD (Создание, Чтение, Обновление, Удаление).
-* **Feed:** Лента подписок и Рекомендации.
-* **Users:** Поиск по имени и никнейму.
-* **Interactions:** Лайки, Комментарии, Подписки.
-
----
-
-## Как запустить
-
-### 1. Установка
-
+cd backend
 npm install
-Настроить `.env` (PORT, MONGO_URI, JWT_SECRET)
-`npm run dev`
+Создайте файл .env в папке backend и добавьте переменные:
+
+Фрагмент кода
+
+PORT=5005
+MONGO_URI=ваша_ссылка_на_mongodb
+JWT_SECRET=ваш_секретный_ключ
+
+
+# Если используется отправка почты
+EMAIL_USER=ваш_email
+EMAIL_PASS=пароль_приложения
+Запуск сервера:
+
+Bash
+
+npm run dev
+3. Настройка Фронтенда
+Откройте новый терминал:
+
+
+cd frontend
+npm install
+Запуск клиента:
+
+
+npm run dev
+Приложение будет доступно по адресу: http://localhost:5173

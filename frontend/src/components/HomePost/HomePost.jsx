@@ -1,5 +1,5 @@
 // frontend\src\components\HomePost\HomePost.jsx
-import React, { useState, useRef } from 'react'; // Добавили useRef
+import React, { useState, useRef } from 'react'; 
 import { Link } from 'react-router-dom';
 import { AiOutlineHeart, AiFillHeart } from 'react-icons/ai'; 
 import { FaRegComment } from 'react-icons/fa'; 
@@ -13,7 +13,6 @@ import s from './HomePost.module.scss';
 const HomePost = ({ post, onPostClick }) => {
   const { userId } = useAuth();
   
-  // Используем хук для лайков и удаления
   const { isLiked, likesCount, handleLike } = usePostActions(post);
 
   const [isCaptionExpanded, setIsCaptionExpanded] = useState(false);

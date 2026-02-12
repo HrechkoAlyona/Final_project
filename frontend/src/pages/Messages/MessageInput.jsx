@@ -1,12 +1,12 @@
 // frontend\src\pages\Messages\MessageInput.jsx
-import React, { useState, useRef, useEffect } from 'react';
-import EmojiPicker from 'emoji-picker-react';
-import s from './Messages.module.scss'; 
+import React, { useState, useRef, useEffect } from "react";
+import EmojiPicker from "emoji-picker-react";
+import s from "./Messages.module.scss";
 
 const MessageInput = ({ onSendMessage }) => {
-  const [text, setText] = useState('');
+  const [text, setText] = useState("");
   const [showPicker, setShowPicker] = useState(false);
-  
+
   const pickerRef = useRef(null);
 
   const onEmojiClick = (emojiObject) => {
@@ -16,7 +16,7 @@ const MessageInput = ({ onSendMessage }) => {
   const handleSend = () => {
     if (text.trim()) {
       onSendMessage(text);
-      setText('');
+      setText("");
       setShowPicker(false);
     }
   };
@@ -27,15 +27,14 @@ const MessageInput = ({ onSendMessage }) => {
         setShowPicker(false);
       }
     };
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
   return (
     <div className={s.inputContainer}>
-      
-      <button 
-        type="button" 
+      <button
+        type="button"
         className={s.emojiBtn}
         onClick={() => setShowPicker(!showPicker)}
       >
@@ -44,7 +43,7 @@ const MessageInput = ({ onSendMessage }) => {
 
       {showPicker && (
         <div className={s.emojiPickerWrapper} ref={pickerRef}>
-          <EmojiPicker 
+          <EmojiPicker
             onEmojiClick={onEmojiClick}
             searchDisabled={true}
             skinTonesDisabled={true}
@@ -62,7 +61,7 @@ const MessageInput = ({ onSendMessage }) => {
         onChange={(e) => setText(e.target.value)}
         placeholder="Message..."
         className={s.inputField}
-        onKeyPress={(e) => e.key === 'Enter' && handleSend()}
+        onKeyPress={(e) => e.key === "Enter" && handleSend()}
       />
 
       {text.trim() && (

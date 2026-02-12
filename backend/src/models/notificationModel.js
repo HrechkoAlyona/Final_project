@@ -26,7 +26,7 @@ const notificationSchema = new mongoose.Schema({
         type: Boolean,
         default: false
     },
-    message: { // Опционально, если захотим хранить текст
+    message: { 
         type: String,
         default: ''
     }

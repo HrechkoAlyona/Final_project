@@ -398,14 +398,14 @@ $z-popup: 1100;
   outline: none;
   
   /* --- ЕДИНЫЙ СТИЛЬ (Как у описания) --- */
-  background: transparent;   /* Тоже прозрачный по умолчанию */
-  padding: 12px;             /* Такие же отступы */
-  border-radius: 8px;        /* Такое же скругление */
+  background: transparent;   
+  padding: 12px;             
+  border-radius: 8px;       
   transition: background 0.2s ease;
   
   font-family: inherit;
-  font-size: 16px;       /* Шрифт чуть крупнее */
-  font-weight: 600;      /* Жирный (смысловое отличие) */
+  font-size: 16px;       
+  font-weight: 600;    
   color: #262626;
   resize: none;
   
