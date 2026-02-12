@@ -1,7 +1,8 @@
 // backend/src/controllers/postController.js
+
 const Post = require('../models/postModel');
 const User = require('../models/userModel');
-const Notification = require('../models/notificationModel'); // 🔥 Импортировали
+const Notification = require('../models/notificationModel'); 
 
 // 1. Создать пост 
 const createPost = async (req, res) => {
@@ -37,26 +38,23 @@ const createPost = async (req, res) => {
     }
 };
 
-// 2. Получить посты
+// 2. Получить посты (Лента и Профиль)
 const getPosts = async (req, res) => {
     try {
-        // Достаем userId из параметров строки запроса (?userId=...)
         const { page = 1, limit = 4, userId } = req.query;
         let query = {};
 
-        //  ПРОВЕРКА 1: Если передан userId, показываем посты только этого автора
+        // ПРОВЕРКА 1: Если передан userId, показываем посты только этого автора
         if (userId) {
             query = { user: userId };
         } 
-        //  ПРОВЕРКА 2: Если мы на роуте /followed, показываем ленту подписок
+        // ПРОВЕРКА 2: Если мы на роуте /followed, показываем ленту подписок
         else if (req.path === '/followed') {
             const currentUser = await User.findById(req.user._id);
             const following = currentUser.following || [];
             // Посты подписок + свои посты
             query = { user: { $in: [...following, req.user._id] } };
         }
-
-        // Если userId нет и путь не /followed, query останется {}, и загрузятся все посты (для общей ленты)
 
         let posts = await Post.find(query)
             .populate('user', 'username fullName avatar followers following')
@@ -86,31 +84,69 @@ const getPosts = async (req, res) => {
     }
 };
 
-// 3. EXPLORE
+// 3. EXPLORE ( Случайные 10 постов от незнакомцев)
 const getExplorePosts = async (req, res) => {
     try {
-        let posts = await Post.find({ user: { $ne: req.user._id } })
-            .populate('user', 'username avatar followers following')
-            .populate('comments.user', 'username avatar')
-            .sort({ createdAt: -1 })
-            .limit(21);
+        const currentUserId = req.user._id;
 
-        const userId = req.user._id.toString();
+        // 1. Находим текущего пользователя, чтобы получить список его подписок
+        const currentUser = await User.findById(currentUserId);
+        
+        // 2. Формируем массив ID, которые нужно ИСКЛЮЧИТЬ:
+        //    (это ID самого пользователя + ID всех, на кого он уже подписан)
+        const excludeIds = [...(currentUser.following || []), currentUserId];
 
-        posts = posts.map(post => {
-            const user = post.user.toObject();
+        // 3. Используем агрегацию для случайной выборки
+        const posts = await Post.aggregate([
+            // ШАГ 1: Фильтруем посты (оставляем только от "незнакомцев")
+            { 
+                $match: { 
+                    user: { $nin: excludeIds } 
+                } 
+            },
+            
+            // ШАГ 2: Берем 10 случайных постов из оставшихся
+            { $sample: { size: 10 } },
+
+            // ШАГ 3: "Подтягиваем" данные автора (populate аналог в aggregate)
+            {
+                $lookup: {
+                    from: 'users', // Имя коллекции пользователей в MongoDB
+                    localField: 'user',
+                    foreignField: '_id',
+                    as: 'user'
+                }
+            },
+            
+            // ШАГ 4: $lookup возвращает массив, нам нужен объект -> разворачиваем его
+            { $unwind: '$user' },
+            
+            // ШАГ 5: Убираем лишние/секретные поля автора
+            {
+                $project: {
+                    'user.password': 0,
+                    'user.email': 0,
+                    'user.__v': 0
+                }
+            }
+        ]);
+
+        // Форматируем данные для фронтенда
+        const formattedPosts = posts.map(post => {
             return {
-                ...post.toObject(),
-                user: { 
-                    ...user, 
-                    isFollowed: user.followers.some(id => id.toString() === userId),
-                    followersCount: user.followers.length 
+                ...post,
+                user: {
+                    ...post.user,
+                    // Для Explore isFollowed всегда false (мы исключили подписки)
+                    isFollowed: false,
+                    followersCount: post.user.followers ? post.user.followers.length : 0
                 }
             };
         });
 
-        res.json(posts);
+        res.json(formattedPosts);
     } catch (error) {
+        console.error("EXPLORE ERROR:", error);
         res.status(500).json({ message: 'Ошибка получения рекомендаций' });
     }
 };
@@ -200,7 +236,7 @@ const updatePost = async (req, res) => {
         if (description !== undefined) post.description = description;
         if (title !== undefined) post.title = title;
 
-        // 🔥 НОВОЕ: Обработка новой картинки, если она была загружена
+        // Обработка новой картинки
         if (req.file) {
             const b64 = Buffer.from(req.file.buffer).toString('base64');
             post.image = `data:${req.file.mimetype};base64,${b64}`;
@@ -208,7 +244,6 @@ const updatePost = async (req, res) => {
 
         const updatedPost = await post.save();
         
-        // Возвращаем обновленный пост с данными пользователя
         await updatedPost.populate('user', 'username avatar followers following');
 
         const user = updatedPost.user.toObject();
@@ -226,7 +261,7 @@ const updatePost = async (req, res) => {
     }
 };
 
-// 8. Лайк (С УВЕДОМЛЕНИЕМ)
+// 8. Лайк 
 const toggleLike = async (req, res) => {
     try {
         const post = await Post.findById(req.params.id);
@@ -234,18 +269,23 @@ const toggleLike = async (req, res) => {
 
         if (!post) return res.status(404).json({ message: 'Пост не найден' });
 
-        // Проверяем, есть ли лайк (приводим к строке для надежности)
         const isLiked = post.likes.some(id => id.toString() === userId.toString());
+        let action = 'like';
 
         if (isLiked) {
-            // Убираем лайк
             post.likes = post.likes.filter(id => id.toString() !== userId.toString());
+            action = 'unlike';
         } else {
-            // Ставим лайк
             post.likes.push(userId);
+            action = 'like';
+        }
 
-            // 🔥 СОЗДАЕМ УВЕДОМЛЕНИЕ (если лайкаем не свой пост)
-            if (post.user.toString() !== userId.toString()) {
+        // 1. Сначала сохраняем лайк в базе!
+        await post.save();
+
+        // 2. Только если лайк сохранился и это лайк (не дизлайк) - шлем уведомление
+        if (action === 'like' && post.user.toString() !== userId.toString()) {
+            try {
                 const notification = await Notification.create({
                     recipient: post.user,
                     sender: userId,
@@ -254,17 +294,19 @@ const toggleLike = async (req, res) => {
                     isRead: false
                 });
 
-                // Socket.io
                 const io = req.app.get('io');
-                const fullNotif = await Notification.findById(notification._id)
-                    .populate('sender', 'username avatar')
-                    .populate('post', 'image');
-                
-                io.to(post.user.toString()).emit('new_notification', fullNotif);
+                if (io) {
+                    const fullNotif = await Notification.findById(notification._id)
+                        .populate('sender', 'username avatar')
+                        .populate('post', 'image')
+                        .lean(); // <--- 🔥 ВАЖНО: Добавили .lean()
+                    
+                    io.to(post.user.toString()).emit('new_notification', fullNotif);
+                }
+            } catch (notifError) {
+                console.error("Notification Error:", notifError);
             }
         }
-
-        await post.save();
 
         const updatedPost = await Post.findById(post._id)
             .populate('user', 'username avatar followers following')
@@ -285,8 +327,7 @@ const toggleLike = async (req, res) => {
         res.status(500).json({ message: 'Ошибка при обработке лайка' });
     }
 };
-
-// 9. ДОБАВИТЬ КОММЕНТАРИЙ (С УВЕДОМЛЕНИЕМ)
+// 9. ДОБАВИТЬ КОММЕНТАРИЙ 
 const addComment = async (req, res) => {
     try {
         const { text } = req.body;
@@ -304,26 +345,35 @@ const addComment = async (req, res) => {
         post.comments.push(newComment);
         await post.save();
 
-        //  СОЗДАЕМ УВЕДОМЛЕНИЕ (если комментируем не свой пост)
+        // --- УВЕДОМЛЕНИЕ ---
         if (post.user.toString() !== req.user._id.toString()) {
-            const notification = await Notification.create({
-                recipient: post.user,
-                sender: req.user._id,
-                type: 'comment',
-                post: post._id,
-                isRead: false
-            });
+            try {
+                // 1. Создаем
+                const notification = await Notification.create({
+                    recipient: post.user,
+                    sender: req.user._id,
+                    type: 'comment',
+                    post: post._id,
+                    message: text,
+                    isRead: false
+                });
 
-            // Socket.io
-            const io = req.app.get('io');
-            const fullNotif = await Notification.findById(notification._id)
-                .populate('sender', 'username avatar')
-                .populate('post', 'image');
-            
-            io.to(post.user.toString()).emit('new_notification', fullNotif);
+                // 2. Готовим объект для отправки (ВАЖНО: добавляем .lean())
+                const fullNotif = await Notification.findById(notification._id)
+                    .populate('sender', 'username avatar')
+                    .populate('post', 'image')
+                    .lean(); // <--- 🔥 ЭТО РЕШАЕТ ПРОБЛЕМУ 🔥
+                    // .lean() превращает Mongoose Document в обычный JSON, который Redux понимает.
+
+                const io = req.app.get('io');
+                if (io) {
+                    io.to(post.user.toString()).emit('new_notification', fullNotif);
+                }
+            } catch (notifError) {
+                console.error("Notif Error:", notifError);
+            }
         }
 
-        // Возвращаем обновленный список комментариев с аватарками
         const updatedPost = await Post.findById(req.params.id)
             .populate('comments.user', 'username avatar');
 

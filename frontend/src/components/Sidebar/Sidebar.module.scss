@@ -39,52 +39,38 @@ $active-scale: 1.08;
   }
 }
 
-/* ================= LOGO + DROPDOWN ================= */
-.logoIcon {
-  display: inline-block;
-  cursor: pointer;
-}
-
-.logoMenuWrapper {
-  position: relative;
+/* ================= LOGO SECTION ================= */
+.logoWrapper {
   margin-bottom: 30px;
   padding: 25px 12px 10px;
-  
+  display: flex;
+  justify-content: flex-start;
+
+  /* На узком сайдбаре центрируем логотип */
   @media (max-width: 1263px) {
     padding: 25px 0 10px;
+    justify-content: center;
   }
 }
 
-.logoDropdown {
-  position: absolute;
-  top: 60px;
-  left: 12px;
-  min-width: 170px;
-  background: #fff;
-  border: 1px solid $border-color;
-  border-radius: 12px;
-  box-shadow: 0 8px 24px rgba(0,0,0,0.15);
-  overflow: hidden;
-  z-index: 2000;
-  animation: fadeIn 0.15s ease-out;
+.logoLink {
+  display: flex;
+  align-items: center;
+  text-decoration: none;
 }
 
-.menuItem {
-  padding: 12px 16px;
-  font-size: 14px;
-  font-weight: 500;
-  color: $text-color;
-  cursor: pointer;
-  transition: background 0.15s ease;
-  &:hover { background: #fafafa; }
-  &:last-child { color: $danger; font-weight: 600; }
-}
+.logoImg {
 
-@keyframes fadeIn {
-  from { opacity: 0; transform: translateY(-6px); }
-  to   { opacity: 1; transform: translateY(0); }
-}
+  width: 103px; 
+  height: auto;
+  transition: all 0.3s ease; /* Плавное уменьшение */
 
+  @media (max-width: 1263px) {
+    width: 24px; // Делаем его компактным, как иконки PiHouse и другие
+    height: 24px;
+    object-fit: contain;
+  }
+}
 /* ================= NAVIGATION ================= */
 .nav {
   flex-grow: 1;
@@ -112,7 +98,6 @@ $active-scale: 1.08;
   svg {
     font-size: 24px;
     min-width: 24px;
-    transition: transform 0.15s ease;
   }
 
   span {
@@ -122,7 +107,7 @@ $active-scale: 1.08;
 }
 
 .activeItem {
-  font-weight: 600;
+  font-weight: 700; /* В Instagram активный пункт жирнее */
   svg { transform: scale($active-scale); }
 }
 

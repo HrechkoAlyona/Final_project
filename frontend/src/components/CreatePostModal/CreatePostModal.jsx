@@ -1,5 +1,3 @@
-// frontend\src\components\CreatePostModal\CreatePostModal.jsx
-
 import React, { useRef, useEffect } from 'react';
 import EmojiPicker from 'emoji-picker-react';
 import { AiOutlineClose, AiOutlineArrowLeft, AiOutlineSmile } from 'react-icons/ai';
@@ -98,14 +96,14 @@ const CreatePostModal = ({ onClose }) => {
                 <span>{userName}</span>
             </div>
 
-            {/* --- 1. ЗАГОЛОВОК --- */}
+            {/* --- 1. ЗАГОЛОВОК (Теперь textarea!) --- */}
             <div className={s.inputGroup}>
-                <input 
-                    type="text" 
+                <textarea 
                     placeholder="Add a headline..." 
                     className={s.titleInput}
                     {...register('title', { maxLength: 100 })}
                     autoComplete="off"
+                    rows={2} // Начальная высота
                     onFocus={() => {
                         setActiveField('title');
                         if (activeField !== 'title') setShowEmoji(false); 

@@ -1,26 +1,40 @@
-// frontend\src\pages\ProfilePage\ProfileHeader.jsx
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Ring from '../../components/logos/Ring';
 import FollowButton from '../../components/FollowButton/FollowButton';
-import UserListModal from '../../components/UserListModal/UserListModal'; // <--- 1. ИМПОРТ
+import UserListModal from '../../components/UserListModal/UserListModal'; 
+import { AiOutlineSetting } from "react-icons/ai"; 
 import s from './ProfilePage.module.scss';
 
 const ProfileHeader = ({ user, isMyProfile, onMessageClick }) => {
   const navigate = useNavigate();
-  const [isExpanded, setIsExpanded] = useState(false);
   
-  // 2. Стейт для управления модальным окном
-  // Может быть null, 'followers' или 'following'
+  // Состояние: развернут текст или нет
+  const [isExpanded, setIsExpanded] = useState(false);
   const [activeModal, setActiveModal] = useState(null);
 
-  const MAX_LENGTH = 107;
+  //  ЛИМИТ СИМВОЛОВ
+  const MAX_LENGTH = 108;
 
   if (!user) return null;
 
+  const handleLogout = () => {
+    if (window.confirm("Log out?")) {
+      localStorage.removeItem('token');
+      localStorage.removeItem('userId');
+      navigate('/login');
+      window.location.reload(); 
+    }
+  };
+
+  // --- ЛОГИКА ОБРЕЗКИ ТЕКСТА ---
   const bioText = user.bio || '';
+  // Показываем кнопку "more", если текст длинный и еще не развернут
   const shouldTruncate = bioText.length > MAX_LENGTH && !isExpanded;
+  
+  // Если надо обрезать — режем, иначе показываем всё
   const textToDisplay = shouldTruncate ? bioText.slice(0, MAX_LENGTH) : bioText;
+  
   const getFullUrl = (url) => (!url ? '' : url.startsWith('http') ? url : `https://${url}`);
 
   return (
@@ -40,12 +54,21 @@ const ProfileHeader = ({ user, isMyProfile, onMessageClick }) => {
             <h2>{user.username}</h2>
 
             {isMyProfile ? (
-              <button 
-                className={s.editButton}
-                onClick={() => navigate('/edit-profile')}
-              >
-                Edit profile
-              </button>
+              <div className={s.actionsRow}>
+                <button 
+                  className={s.editButton}
+                  onClick={() => navigate('/edit-profile')}
+                >
+                  Edit profile
+                </button>
+                <button 
+                  className={s.settingsButton}
+                  onClick={handleLogout}
+                  title="Settings / Logout"
+                >
+                   <AiOutlineSetting size={24} />
+                </button>
+              </div>
             ) : (
               <div className={s.actionsRow}> 
                 <FollowButton targetUser={user} size="medium" />
@@ -61,37 +84,22 @@ const ProfileHeader = ({ user, isMyProfile, onMessageClick }) => {
 
           <div className={s.stats}>
             <span><strong>{user.posts?.length || 0}</strong> posts</span>
-            
-            {/* 3. Делаем Followers кликабельным */}
-            <span 
-                style={{ cursor: 'pointer' }} 
-                onClick={() => setActiveModal('followers')}
-                title="View Followers"
-            >
+            <span style={{ cursor: 'pointer' }} onClick={() => setActiveModal('followers')}>
                 <strong>{user.followersCount || 0}</strong> followers
             </span>
-            
-            {/* 4. Делаем Following кликабельным */}
-            <span 
-                style={{ cursor: 'pointer' }}
-                onClick={() => setActiveModal('following')}
-                title="View Following"
-            >
+            <span style={{ cursor: 'pointer' }} onClick={() => setActiveModal('following')}>
                 <strong>{user.followingCount || 0}</strong> following
             </span>
           </div>
 
+          {/* СЕКЦИЯ БИОГРАФИИ */}
           <div className={s.bioSection}>
-            <div style={{ whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}>
+            <div className={s.bioText}>
               {textToDisplay}
               {shouldTruncate && (
                 <>
                   ... 
-                  <span 
-                    className={s.moreLink} 
-                    onClick={() => setIsExpanded(true)}
-                    style={{ color: '#8e8e8e', cursor: 'pointer', marginLeft: '5px' }}
-                  >
+                  <span className={s.moreLink} onClick={() => setIsExpanded(true)}>
                     more
                   </span>
                 </>
@@ -112,11 +120,10 @@ const ProfileHeader = ({ user, isMyProfile, onMessageClick }) => {
         </div>
       </header>
 
-      {/* 5. ОТРИСОВКА МОДАЛКИ (если activeModal не null) */}
       {activeModal && (
         <UserListModal 
             userId={user._id}
-            type={activeModal} // 'followers' или 'following'
+            type={activeModal}
             title={activeModal === 'followers' ? 'Followers' : 'Following'}
             onClose={() => setActiveModal(null)}
         />

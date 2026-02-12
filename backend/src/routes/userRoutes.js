@@ -14,14 +14,25 @@ const {
     getUserFollowing
 } = require('../controllers/userController');
 
-router.get('/profile', protect, getUserProfile); // 1. Получить СВОЙ профиль
-router.put('/profile', protect, updateUserProfile); // 2. Обновить СВОЙ профиль
-router.put('/search', protect, addToSearchHistory);    // 3. УПРАВЛЕНИЕ ИСТОРИЕЙ ПОИСКА      // Добавить
-router.put('/search/remove', protect, removeFromSearchHistory); // Удалить одного
-router.delete('/search', protect, clearSearchHistory);       // Очистить всё
-router.put('/:id/follow', protect, followUser); // 4. Подписаться / Отписаться
-router.get('/:id/followers', protect, getUserFollowers); // 5. ПОЛУЧИТЬ СПИСКИ (Подписчики и Подписки)
+// 1. СТАТИЧЕСКИЕ РОУТЫ (Всегда сверху)
+router.get('/profile', protect, getUserProfile); 
+router.put('/profile', protect, updateUserProfile); 
+
+// 2. ИСТОРИЯ ПОИСКА
+router.put('/search', protect, addToSearchHistory);
+router.put('/search/remove', protect, removeFromSearchHistory);
+router.delete('/search', protect, clearSearchHistory);
+
+// 3. ПОДПИСКА / ОТПИСКА
+//  Метод POST и путь /follow (соответствует api.js)
+router.post('/follow', protect, followUser); 
+
+// 4. СПИСКИ (ПОДПИСЧИКИ И ПОДПИСКИ)
+router.get('/:id/followers', protect, getUserFollowers); 
 router.get('/:id/following', protect, getUserFollowing);
-router.get('/:id', protect, getUserById); // 6. Получить ЧУЖОЙ профиль по ID (всегда в самом низу!)
+
+// 5. ПОЛУЧЕНИЕ ПРОФИЛЯ ПО ID
+// Всегда в самом низу, чтобы не перехватывать другие GET запросы
+router.get('/:id', protect, getUserById); 
 
 module.exports = router;

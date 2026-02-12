@@ -1,8 +1,8 @@
-// backend/src/controllers/userController.js
 const User = require('../models/userModel');
 const Post = require('../models/postModel'); 
+const Notification = require('../models/notificationModel'); 
 
-// Вспомогательная функция для формирования красивого ответа
+// Вспомогательная функция для формирования чистого ответа
 const formatUserResponse = (user) => {
     return {
         _id: user._id,
@@ -19,7 +19,7 @@ const formatUserResponse = (user) => {
     };
 };
 
-// 1. Получить профиль текущего пользователя
+// 1. Получить профиль текущего пользователя (Me)
 const getUserProfile = async (req, res) => {
     try {
         const user = await User.findById(req.user._id)
@@ -45,7 +45,6 @@ const updateUserProfile = async (req, res) => {
         const user = await User.findById(req.user._id);
         
         if (user) {
-            // Обновляем поля, если они пришли в запросе
             if (req.body.username) user.username = req.body.username;
             if (req.body.website !== undefined) user.website = req.body.website;
             if (req.body.bio !== undefined) user.bio = req.body.bio;
@@ -82,7 +81,7 @@ const getUserById = async (req, res) => {
             ...formatUserResponse(user),
             posts: posts,
             postsCount: posts.length,
-            // Проверка, подписан ли текущий пользователь на этого
+            // Проверка подписки для отображения кнопки в профиле
             isFollowing: req.user ? user.followers.includes(req.user._id) : false
         };
 
@@ -93,11 +92,9 @@ const getUserById = async (req, res) => {
     }
 };
 
-// 4. Подписаться / Отписаться (Toggle Follow)
-
+// 4. Подписаться / Отписаться (С УВЕДОМЛЕНИЕМ)
 const followUser = async (req, res) => {
     try {
-        // Если ID передается в body (как в api.js: followUser -> body: { followingId })
         const targetUserId = req.body.followingId || req.params.id; 
         const currentUserId = req.user._id; 
 
@@ -115,55 +112,78 @@ const followUser = async (req, res) => {
         const isFollowing = targetUser.followers.includes(currentUserId);
 
         if (isFollowing) {
-            // Отписаться
+            // ОТПИСКА
             await targetUser.updateOne({ $pull: { followers: currentUserId } });
             await currentUser.updateOne({ $pull: { following: targetUserId } });
             res.json({ message: 'User unfollowed', isFollowing: false });
         } else {
-            // Подписаться
+            // ПОДПИСКА
             await targetUser.updateOne({ $push: { followers: currentUserId } });
             await currentUser.updateOne({ $push: { following: targetUserId } });
+
+            // 🔥 СОЗДАЕМ УВЕДОМЛЕНИЕ 🔥
+            try {
+                // Проверка на дубликат (чтобы не спамить при переподписке)
+                const existingNotif = await Notification.findOne({
+                    recipient: targetUserId,
+                    sender: currentUserId,
+                    type: 'follow'
+                });
+
+                if (!existingNotif) {
+                    const notification = await Notification.create({
+                        recipient: targetUserId,
+                        sender: currentUserId,
+                        type: 'follow', // Тип 'follow'
+                        message: 'started following you.',
+                        isRead: false
+                    });
+
+                    // Готовим для сокета (добавлен .lean())
+                    const fullNotif = await Notification.findById(notification._id)
+                        .populate('sender', 'username avatar')
+                        .lean();
+
+                    const io = req.app.get('io');
+                    if (io) {
+                        io.to(targetUserId.toString()).emit('new_notification', fullNotif);
+                    }
+                }
+            } catch (notifError) {
+                console.error("Follow Notification Error:", notifError);
+            }
+
             res.json({ message: 'User followed', isFollowing: true });
         }
-
     } catch (error) {
-        console.error(error);
+        console.error("Follow Error:", error);
         res.status(500).json({ message: 'Ошибка при подписке' });
     }
 };
 
-// 5. Добавить в историю поиска
+// --- ИСТОРИЯ ПОИСКА ---
 const addToSearchHistory = async (req, res) => {
     try {
         const { targetUserId } = req.body;
         const currentUser = await User.findById(req.user._id);
-
         if (!currentUser) return res.status(404).json({ message: 'User not found' });
 
-        // Удаляем дубликаты и добавляем в начало
         currentUser.search = currentUser.search.filter(id => id.toString() !== targetUserId);
         currentUser.search.unshift(targetUserId);
-
-        if (currentUser.search.length > 10) {
-            currentUser.search.pop();
-        }
+        if (currentUser.search.length > 10) currentUser.search.pop();
 
         await currentUser.save();
         res.json({ message: 'Added to history' });
     } catch (error) {
-        console.error(error);
         res.status(500).json({ message: 'Server Error' });
     }
 };
 
-// 6. Удалить из истории
 const removeFromSearchHistory = async (req, res) => {
     try {
         const { targetUserId } = req.body;
         const currentUser = await User.findById(req.user._id);
-
         currentUser.search = currentUser.search.filter(id => id.toString() !== targetUserId);
-        
         await currentUser.save();
         res.json({ message: 'Removed from history' });
     } catch (error) {
@@ -171,7 +191,6 @@ const removeFromSearchHistory = async (req, res) => {
     }
 };
 
-// 7. Очистить историю
 const clearSearchHistory = async (req, res) => {
     try {
         const currentUser = await User.findById(req.user._id);
@@ -183,36 +202,50 @@ const clearSearchHistory = async (req, res) => {
     }
 };
 
-// Получить список ПОДПИСЧИКОВ (для модалки)
+// --- СПИСКИ ДЛЯ МОДАЛЬНОГО ОКНА ---
+
 const getUserFollowers = async (req, res) => {
     try {
         const user = await User.findById(req.params.id)
-            .populate('followers', 'username fullName avatar'); // Берем только нужные поля
+            .populate('followers', 'username fullName avatar followers'); 
 
-        if (!user) {
-            return res.status(404).json({ message: 'User not found' });
-        }
+        if (!user) return res.status(404).json({ message: 'User not found' });
 
-        res.json(user.followers);
+        const currentUserId = req.user._id.toString();
+
+        const followersWithStatus = user.followers.map(follower => {
+            const followerObj = follower.toObject();
+            return {
+                ...followerObj,
+                isFollowing: followerObj.followers ? followerObj.followers.some(id => id.toString() === currentUserId) : false
+            };
+        });
+
+        res.json(followersWithStatus);
     } catch (error) {
-        console.error(error);
         res.status(500).json({ message: 'Server Error' });
     }
 };
 
-// Получить список ПОДПИСОК (для модалки)
 const getUserFollowing = async (req, res) => {
     try {
         const user = await User.findById(req.params.id)
-            .populate('following', 'username fullName avatar'); 
+            .populate('following', 'username fullName avatar followers'); 
 
-        if (!user) {
-            return res.status(404).json({ message: 'User not found' });
-        }
+        if (!user) return res.status(404).json({ message: 'User not found' });
 
-        res.json(user.following);
+        const currentUserId = req.user._id.toString();
+
+        const followingWithStatus = user.following.map(followingUser => {
+            const followingObj = followingUser.toObject();
+            return {
+                ...followingObj,
+                isFollowing: followingObj.followers ? followingObj.followers.some(id => id.toString() === currentUserId) : false
+            };
+        });
+
+        res.json(followingWithStatus);
     } catch (error) {
-        console.error(error);
         res.status(500).json({ message: 'Server Error' });
     }
 };

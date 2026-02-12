@@ -1,6 +1,3 @@
-/* frontend/src/components/CreatePostModal/CreatePostModal.module.scss */
-/* frontend/src/components/CreatePostModal/CreatePostModal.module.scss */
-
 // =========================================
 // ОСНОВНЫЕ СТИЛИ
 // =========================================
@@ -136,7 +133,7 @@
   }
 }
 
-// --- ТЕКСТ ПОВЕРХ КАРТИНКИ (TITLE) ---
+// --- ТЕКСТ ПОВЕРХ КАРТИНКИ (TITLE PREVIEW) ---
 .previewTitleOverlay {
   position: absolute;
   bottom: 40px; 
@@ -223,18 +220,32 @@
   }
 }
 
+// 🔥 ОБНОВЛЕННЫЙ СТИЛЬ ДЛЯ ЗАГОЛОВКА (TEXTAREA)
 .titleInput {
   width: 100%;
+  background: transparent;
   border: none;
   outline: none;
+  
   font-size: 18px; 
   font-weight: 600; 
-  padding: 20px 0; 
   color: #262626;
+  
+  // Настройки для многострочного ввода
+  resize: none;       /* Убираем уголок */
+  overflow: hidden;   /* Скрываем скролл, если не нужен */
+  min-height: 60px;   /* Высота под 2-3 строки */
+  padding: 20px 0; 
+  font-family: inherit;
+  line-height: 1.4;
 
-  &::placeholder { font-weight: 400; color: #8e8e8e; }
+  &::placeholder { 
+    font-weight: 400; 
+    color: #8e8e8e; 
+  }
 }
 
+// Поле описания (Caption)
 .captionInput {
   width: 100%;
   flex: 1; 
@@ -286,12 +297,12 @@
 // --- СПЕЦИАЛЬНЫЙ КЛАСС: Открытие ВВЕРХ (для описания) ---
 .popoverUp {
   top: auto;          
-  bottom: 100%;       // Прижимаем к верху кнопки (открываем над ней)
-  left: 0;            // Выравниваем по левому краю кнопки
-  right: auto;        // Отменяем сдвиг в сторону картинки
+  bottom: 100%;       // Прижимаем к верху кнопки
+  left: 0;            
+  right: auto;        
   
   margin-right: 0; 
-  margin-bottom: 10px; // Небольшой отступ от смайлика
+  margin-bottom: 10px; // Небольшой отступ
   
   // стрелочка
   &::after {
@@ -336,8 +347,7 @@
      border-radius: 0; 
   }
   
-  // Кнопка закрытия: делаем черной (так как фон белый) и сдвигаем левее, 
-  // чтобы не перекрывать кнопку Share
+  // Кнопка закрытия
   .closeBtn { 
      color: #262626; 
      top: 10px; 

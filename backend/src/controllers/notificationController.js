@@ -6,7 +6,7 @@ const getNotifications = async (req, res) => {
     try {
         const notifications = await Notification.find({ recipient: req.user._id })
             .populate('sender', 'username avatar') // Кто подписался/лайкнул
-            .populate('post', 'image') // 🔥 ВАЖНО: Добавили это, чтобы видеть миниатюру поста
+            .populate('post', 'image') // чтобы видеть миниатюру поста
             .sort({ createdAt: -1 }); // Сначала новые
 
         res.json(notifications);

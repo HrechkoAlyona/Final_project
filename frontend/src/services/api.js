@@ -1,3 +1,4 @@
+// frontend\src\services\api.js
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
 import { io } from 'socket.io-client';
 
@@ -29,7 +30,11 @@ export const api = createApi({
     },
   }),
 
-  tagTypes: ['AuthCheck', 'Post', 'User', 'Profile', 'Message', 'Conversation', 'Notification', 'Following', 'Followers'],
+  // 🔥 Все теги для синхронизации данных
+  tagTypes: [
+    'AuthCheck', 'Post', 'User', 'Profile', 'Message', 
+    'Conversation', 'Notification', 'Following', 'Followers'
+  ],
 
   endpoints: (builder) => ({
 
@@ -68,6 +73,8 @@ export const api = createApi({
     }),
 
     // === ПОЛЬЗОВАТЕЛИ ===
+    
+    // Получение данных о себе
     getMe: builder.query({
       query: () => '/users/profile',
       keepUnusedDataFor: 0,
@@ -88,15 +95,18 @@ export const api = createApi({
       invalidatesTags: ['User', 'Profile'],
     }),
 
+    // Мутация подписки (Синхронизировано с бэкендом)
     followUser: builder.mutation({
       query: (userId) => ({
-        url: '/follows',
+        url: '/users/follow', // Исправленный путь
         method: 'POST',
         body: { followingId: userId },
       }),
-      invalidatesTags: ['User', 'Post', 'Following', 'Profile', 'Followers'], 
+      // Инвалидируем теги, чтобы всё обновилось мгновенно
+      invalidatesTags: ['User', 'Profile', 'Followers', 'Following', 'Post'], 
     }),
 
+    // Списки для модалки
     getFollowers: builder.query({
       query: (userId) => `/users/${userId}/followers`,
       providesTags: ['Followers'],
@@ -140,7 +150,6 @@ export const api = createApi({
     }),
 
     // === ПОСТЫ ===
-
     getFollowedPosts: builder.query({
       query: (page = 1) => `/posts/followed?page=${page}`,
       providesTags: ['Post'], 
@@ -180,7 +189,6 @@ export const api = createApi({
       providesTags: (result, error, id) => [{ type: 'Post', id }],
     }),
 
-    // 1. СОЗДАНИЕ ПОСТА
     createPost: builder.mutation({
       query: (postData) => ({
         url: '/posts',
@@ -190,7 +198,6 @@ export const api = createApi({
       invalidatesTags: ['Post', 'Profile', 'User'],
     }),
 
-    // 2. УДАЛЕНИЕ ПОСТА
     deletePost: builder.mutation({
       query: (postId) => ({
         url: `/posts/${postId}`,
@@ -199,14 +206,12 @@ export const api = createApi({
       invalidatesTags: ['Post', 'Profile', 'User'],
     }),
 
-    // 🔥 3. ОБНОВЛЕНИЕ ПОСТА (ИСПРАВЛЕНО НА АГРЕССИВНОЕ)
     updatePost: builder.mutation({
       query: ({ id, body }) => ({
         url: `/posts/${id}`,
         method: 'PUT',
         body: body,
       }),
-      // Обновляем всё, чтобы наверняка перерисовалось
       invalidatesTags: (result, error, { id }) => [
         { type: 'Post', id }, 
         'Post', 
@@ -216,7 +221,6 @@ export const api = createApi({
     }),
 
     // === ЛАЙКИ И КОММЕНТАРИИ ===
-
     toggleLike: builder.mutation({
       query: (postId) => ({
         url: `/posts/${postId}/like`,
@@ -249,7 +253,6 @@ export const api = createApi({
       }),
       invalidatesTags: ['Post'],
     }),
-
   }),
 });
 
