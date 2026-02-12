@@ -1,4 +1,15 @@
 /* frontend/src/components/Notifications/Notifications.module.scss */
+/* --- ПОДЛОЖКА (Для закрытия по клику вне) --- */
+.backdrop {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    z-index: 9; /* Меньше чем у drawerContainer (10), но больше чем у контента */
+   background-color: rgba(0, 0, 0, 0.4);
+    cursor: default;
+}
 /* --- КОНТЕЙНЕР (ВЫЕЗЖАЮЩАЯ ПАНЕЛЬ) --- */
 .drawerContainer {
     position: fixed;

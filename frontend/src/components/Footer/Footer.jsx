@@ -1,59 +1,54 @@
-// frontend\src\components\Footer\Footer.jsx
-
 import React, { useContext } from 'react';
-import { Link } from 'react-router-dom';
-//  Импортируем контекст (проверь, чтобы путь был верным)
+import { Link, useLocation } from 'react-router-dom';
 import { NavigationContext } from '../../context/NavigationContext'; 
 import s from './Footer.module.scss';
 
 export const Footer = () => {
-  //  Используем переменные: setActiveTab 
   const { setActiveTab } = useContext(NavigationContext);
+  const location = useLocation();
 
-  // Вспомогательная функция, чтобы менять активную вкладку
   const handleNavClick = (tabName) => {
-    if (setActiveTab) {
-      setActiveTab(tabName);
-    }
+    setActiveTab(tabName);
   };
 
   return (
     <footer className={s.footerWrapper}>
       <div className={s.linksRow}>
-        {/* Home */}
-        <Link to="/" onClick={() => handleNavClick("home")}>
+        {/* ССЫЛКИ НА СТРАНИЦЫ с проверкой activeLink */}
+        <Link 
+          to="/" 
+          className={location.pathname === '/' ? s.activeLink : ''}
+          onClick={() => handleNavClick("home")}
+        >
           Home
         </Link>
-        
-        {/* Search */}
-        <span className={s.textLink} onClick={() => handleNavClick("search")}>
-          Search
-        </span>
-        
-        {/* Explore */}
-        <Link to="/explore" onClick={() => handleNavClick("explore")}>
+        <Link 
+          to="/explore" 
+          className={location.pathname === '/explore' ? s.activeLink : ''}
+          onClick={() => handleNavClick("explore")}
+        >
           Explore
         </Link>
-        
-        {/* Messages */}
-        <Link to="/messages" onClick={() => handleNavClick("messages")}>
+        <Link 
+          to="/direct/inbox" 
+          className={location.pathname.startsWith('/direct') ? s.activeLink : ''}
+          onClick={() => handleNavClick("messages")}
+        >
           Messages
         </Link>
 
-        {/* Notifications */}
+        {/* МОДАЛЬНЫЕ ОКНА: работают через глобальный контекст */}
+        <span className={s.textLink} onClick={() => handleNavClick("search")}>
+          Search
+        </span>
         <span className={s.textLink} onClick={() => handleNavClick("notifications")}>
           Notifications
         </span>
-        
-        {/* Create */}
         <span className={s.textLink} onClick={() => handleNavClick("create")}>
           Create
         </span>
       </div>
-
-      <div className={s.copyright}>
-        <span>© 2026 ICHgram</span>
-      </div>
+      <div className={s.copyright}><span>© 2026 ICHgram</span></div>
     </footer>
   );
 };

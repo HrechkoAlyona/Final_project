@@ -1,7 +1,6 @@
 // frontend\src\components\PostModal\PostHeader.jsx
 import React from 'react';
 import { Link } from 'react-router-dom'; 
-/* 🔥 МЕНЯЕМ ИМПОРТ: используем вертикальные точки */
 import { BsThreeDotsVertical } from 'react-icons/bs'; 
 import s from './PostModal.module.scss';
 

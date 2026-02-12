@@ -1,5 +1,4 @@
 // frontend\src\services\notificationsApi.js
-
 import { api, getSocket } from './api';
 
 export const notificationsApi = api.injectEndpoints({
@@ -10,15 +9,11 @@ export const notificationsApi = api.injectEndpoints({
 
       async onCacheEntryAdded(arg, { updateCachedData, cacheDataLoaded, cacheEntryRemoved }) {
         const socket = getSocket();
-        let listener; // Объявляем ЗА пределами блока try
-
         try {
           await cacheDataLoaded;
 
-          listener = (newNotif) => {
-            //  ЛОГ 1: Проверяем, прилетело ли что-то по сокету
-            console.log("🔥 СОКЕТ СРАБОТАЛ! Пришло уведомление:", newNotif);
-            
+          const listener = (newNotif) => {
+            console.log("🔔 Socket Notification received:", newNotif); // лог для проверки
             updateCachedData((draft) => {
               const exists = draft.find(n => n._id === newNotif._id);
               if (!exists) {
@@ -28,15 +23,11 @@ export const notificationsApi = api.injectEndpoints({
           };
 
           socket.on('new_notification', listener);
-          console.log("🎧 Подписка на уведомления активирована!"); //  ЛОГ 2
 
-        } catch (err) {
-          console.error("Ошибка в onCacheEntryAdded:", err);
-        }
-
-        await cacheEntryRemoved;
-        if (listener) {
+          await cacheEntryRemoved;
           socket.off('new_notification', listener);
+        } catch (err) {
+          console.error("Socket error in notifications:", err);
         }
       },
     }),

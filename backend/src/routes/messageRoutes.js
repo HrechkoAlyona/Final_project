@@ -1,16 +1,25 @@
-// backend\src\router\messageRoutes.js
+// backend\src\routes\messageRoutes.js
 const express = require('express');
 const router = express.Router();
 const { protect } = require('../middlewares/authMiddleware');
-const { sendMessage, getMessages, getConversations } = require('../controllers/messageController');
+const { 
+    sendMessage, 
+    getMessages, 
+    getConversations, 
+    markMessagesAsRead // Импортируем новую функцию
+} = require('../controllers/messageController');
 
-// 1. Список диалогов (СТРОГО ВВЕРХУ)
+// 1. Список диалогов
 router.get('/conversations', protect, getConversations);
 
 // 2. Отправка сообщения
 router.post('/', protect, sendMessage);
 
-// 3. Получение переписки (СТРОГО ВНИЗУ, так как :id перехватывает всё)
+// 3. Пометить как прочитанное (СТАВИМ ПЕРЕД /:id)
+// Этот маршрут будет ловить запросы вида /api/messages/read/USER_ID
+router.put('/read/:id', protect, markMessagesAsRead); 
+
+// 4. Получение переписки (ЭТОТ ДОЛЖЕН БЫТЬ ПОСЛЕДНИМ для GET запросов с ID)
 router.get('/:id', protect, getMessages);
 
 module.exports = router;

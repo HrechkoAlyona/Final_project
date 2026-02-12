@@ -1,3 +1,5 @@
+// frontend\src\pages\Messages\ChatWindow.jsx
+
 import React, { useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useGetChatHistoryQuery, useSendMessageMutation } from '../../services/chatApi';
@@ -60,7 +62,7 @@ const ChatWindow = ({ targetUser, myUser }) => {
            <div className={s.bigUsername} onClick={() => goToProfile(targetUser._id)}>
                {targetUser.username}
            </div>
-           <div className={s.subText}>{targetUser.fullName || targetUser.username} · Instagram</div>
+           <div className={s.subText}>{targetUser.fullName || targetUser.username} · ICHgram</div>
            <button className={s.viewProfileBtn} onClick={() => goToProfile(targetUser._id)}>
                View profile
            </button>

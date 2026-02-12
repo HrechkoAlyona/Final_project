@@ -17,7 +17,7 @@ const getNotifications = async (req, res) => {
 };
 
 // Отметить уведомления как прочитанные
-// 🔥 Переименовали функцию, чтобы имя совпадало с экспортом и роутером
+
 const markNotificationsAsRead = async (req, res) => {
     try {
         await Notification.updateMany(

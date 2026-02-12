@@ -1,4 +1,5 @@
 // frontend/src/components/PostModal/PostModal.jsx
+
 import React, { useState } from 'react'; 
 import { AiOutlineClose } from 'react-icons/ai';
 import toast from 'react-hot-toast';
@@ -22,7 +23,7 @@ const PostModal = ({ post: initialPost, onClose }) => {
   const [editContent, setEditContent] = useState("");
   const [editTitle, setEditTitle] = useState("");
   
-  //  ДЛЯ КАРТИНКИ
+  // ДЛЯ КАРТИНКИ
   const [selectedFile, setSelectedFile] = useState(null);
   const [previewUrl, setPreviewUrl] = useState(null);
 
@@ -42,13 +43,12 @@ const PostModal = ({ post: initialPost, onClose }) => {
   const handleEditMode = () => {
     setEditContent(post.description || post.content || "");
     setEditTitle(post.title || "");
-    setPreviewUrl(null); // Сбрасываем превью при входе в режим
+    setPreviewUrl(null);
     setSelectedFile(null);
     setIsEditing(true);
     setShowOptions(false);
   };
 
-  //  Обработчик выбора файла
   const handleFileChange = (e) => {
     const file = e.target.files[0];
     if (file) {
@@ -59,7 +59,6 @@ const PostModal = ({ post: initialPost, onClose }) => {
 
   const handleSaveEdit = async () => {
     try {
-      //  Используем FormData, чтобы можно было отправить картинку
       const formData = new FormData();
       formData.append('description', editContent);
       formData.append('title', editTitle);
@@ -68,7 +67,6 @@ const PostModal = ({ post: initialPost, onClose }) => {
         formData.append('image', selectedFile);
       }
 
-      // Отправляем body: formData
       await updatePost({ id: post._id, body: formData }).unwrap();
       
       toast.success("Post updated!");
@@ -97,17 +95,16 @@ const PostModal = ({ post: initialPost, onClose }) => {
 
       <div className={s.modalCard} onClick={(e) => e.stopPropagation()}>
         
-        {/* ЛЕВАЯ ЧАСТЬ: Передаем новые пропсы в PostImage */}
+        {/* ЛЕВАЯ ЧАСТЬ (Картинка) */}
+        {/* Мы убрали отсюда editTitle и setEditTitle, так как они теперь справа */}
         <PostImage 
           post={post} 
           isEditing={isEditing} 
-          editTitle={editTitle} 
-          setEditTitle={setEditTitle}
-          //  Передаем функции для картинки
-          previewUrl={previewUrl}
+          previewUrl={previewUrl} 
           onFileChange={handleFileChange}
         />
 
+        {/* ПРАВАЯ ЧАСТЬ (Контент) */}
         <div className={s.contentSection}>
           <PostHeader 
             authorData={authorData}
@@ -119,6 +116,7 @@ const PostModal = ({ post: initialPost, onClose }) => {
             onClose={onClose}
           />
 
+          {/* ВЕРХНЯЯ ЧАСТЬ СПРАВА: Комментарии / Редактирование описания */}
           <PostComments 
             post={post}
             authorData={authorData}
@@ -128,8 +126,22 @@ const PostModal = ({ post: initialPost, onClose }) => {
             onClose={onClose} 
           />
 
-          {!isEditing && (
-            <PostActions post={post} />
+          {/* НИЖНЯЯ ЧАСТЬ СПРАВА: */}
+          {isEditing ? (
+             // --- БЛОК РЕДАКТИРОВАНИЯ ЗАГОЛОВКА ---
+             <div className={s.editFooter}>
+                <label className={s.inputLabel}>Title</label>
+                <textarea 
+                  className={s.editTitleInput} // Новый класс для этого поля
+                  value={editTitle}
+                  onChange={(e) => setEditTitle(e.target.value)}
+                  placeholder="Add a title..."
+                  rows={2} 
+                />
+             </div>
+          ) : (
+             // --- ОБЫЧНЫЕ ДЕЙСТВИЯ (Лайки и т.д.) ---
+             <PostActions post={post} />
           )}
         </div>
       </div>

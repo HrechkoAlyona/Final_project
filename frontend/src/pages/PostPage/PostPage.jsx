@@ -1,3 +1,5 @@
+// frontend\src\pages\PostPage\PostPage.jsx
+
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { AiOutlineClose } from 'react-icons/ai'; 

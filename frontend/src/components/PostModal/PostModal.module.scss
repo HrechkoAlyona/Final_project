@@ -1,15 +1,15 @@
-/* ===================== Z-INDEX SYSTEM ===================== */
+/* ===================== СИСТЕМА Z-INDEX ===================== */
 $z-modal: 1000;
 $z-ui: 1010;
 $z-popup: 1100;
 
-/* ===================== OVERLAY ===================== */
+/* ===================== ОВЕРЛЕЙ (ФОН) ===================== */
 .overlay {
   position: fixed;
   top: 0;
   right: 0;
   bottom: 0;
-  left: var(--sideBarW); 
+  left: var(--sideBarW); /* Отступ слева, если есть сайдбар */
   background: rgba(0, 0, 0, 0.65);
   z-index: $z-modal; 
   display: flex;
@@ -17,6 +17,7 @@ $z-popup: 1100;
   align-items: center;
 }
 
+/* Кнопка закрытия (Крестик) */
 .closeBtn {
   position: absolute;
   top: 20px;
@@ -30,7 +31,7 @@ $z-popup: 1100;
   svg { width: 30px; height: 30px; }
 }
 
-/* Кнопка "три точки" */
+/* Кнопка "три точки" (Меню опций) */
 .moreBtn {
   background: transparent;
   border: none;
@@ -52,16 +53,16 @@ $z-popup: 1100;
   &:hover { opacity: 0.6; }
 }
 
-/* ===================== MODAL CARD ===================== */
+/* ===================== КАРТОЧКА МОДАЛЬНОГО ОКНА ===================== */
 .modalCard {
   background: #fff;
   width: 100%;
   max-width: 1100px;
-  height: min(85vh, 800px);
+  height: min(85vh, 800px); /* Адаптивная высота */
   border-radius: 6px;
   overflow: hidden;
   display: flex;
-  animation: appear 0.2s ease-out;
+  animation: appear 0.2s ease-out; /* Плавное появление */
 }
 
 @keyframes appear {
@@ -69,9 +70,9 @@ $z-popup: 1100;
   to { transform: scale(1); opacity: 1; }
 }
 
-/* ===================== LEFT SIDE (MEDIA) ===================== */
+/* ===================== ЛЕВАЯ ЧАСТЬ (МЕДИА/ФОТО) ===================== */
 .mediaSection {
-  flex: 1.5;
+  flex: 1.5; /* Занимает 1.5 части ширины */
   background: #fafafa;
   display: flex;
   justify-content: center;
@@ -87,6 +88,7 @@ $z-popup: 1100;
   }
 }
 
+/* Кнопка загрузки нового фото (появляется при редактировании) */
 .uploadOverlay {
   position: absolute;
   top: 50%; left: 50%;
@@ -106,6 +108,7 @@ $z-popup: 1100;
   }
 }
 
+/* Заголовок поверх картинки (Только просмотр) */
 .imageOverlayTitle {
   position: absolute; bottom: 40px; left: 20px; right: 20px;
   color: #fff; font-family: 'Montserrat', sans-serif;
@@ -114,6 +117,7 @@ $z-popup: 1100;
   white-space: pre-wrap; word-wrap: break-word; overflow: visible;
 }
 
+/* Поле ввода поверх картинки (Старая логика / Резерв) */
 .overlayInput {
   width: 100%; background: transparent; border: none; outline: none; padding: 0;
   color: #fff; font-family: 'Montserrat', sans-serif;
@@ -121,9 +125,16 @@ $z-popup: 1100;
   text-shadow: 0 2px 8px rgba(0, 0, 0, 0.8);
   resize: none; overflow-y: auto;
   &::placeholder { color: rgba(255, 255, 255, 0.7); text-shadow: none; }
+
+  /* Скрываем скроллбар */
+  scrollbar-width: none;       /* Для Firefox */
+  -ms-overflow-style: none;    /* Для IE и Edge */
+  &::-webkit-scrollbar {
+    display: none;             /* Для Chrome, Safari и Opera */
+  }
 }
 
-/* ===================== RIGHT SIDE (CONTENT) ===================== */
+/* ===================== ПРАВАЯ ЧАСТЬ (КОНТЕНТ) ===================== */
 .contentSection {
   flex: 1;
   min-width: 350px;
@@ -131,11 +142,12 @@ $z-popup: 1100;
   display: flex;
   flex-direction: column;
   background: #fff;
-  border-left: 1px solid #efefef;
+  border-left: 1px solid #efefef; /* Разделительная линия */
   position: relative;
   z-index: $z-ui;
 }
 
+/* Шапка поста (Аватар + Имя) */
 .header {
   padding: 14px 16px;
   border-bottom: 1px solid #efefef;
@@ -145,16 +157,16 @@ $z-popup: 1100;
   .username { font-weight: 600; font-size: 14px; color: #262626; cursor: pointer; }
 }
 
-/* ===================== COMMENTS LIST LOGIC ===================== */
+/* ===================== ЛОГИКА СПИСКА КОММЕНТАРИЕВ ===================== */
 .commentsList {
   flex: 1;
-  overflow-y: auto;
+  overflow-y: auto; /* Прокрутка списка */
   padding: 16px;
   display: flex;
   flex-direction: column;
   gap: 16px;
 
-  /* Если идет редактирование, скрываем остальные комменты */
+  /* Если идет редактирование (есть .editInput), скрываем остальные комменты */
   &:has(.editInput) {
     .commentItem:not(:has(.editInput)) {
       display: none;
@@ -170,7 +182,7 @@ $z-popup: 1100;
   align-items: flex-start;
   gap: 12px;
 
-  /* При редактировании растягиваем на всю высоту */
+  /* При редактировании растягиваем этот элемент на всю высоту */
   &:has(.editInput) {
     flex: 1;
     height: 100%;
@@ -187,9 +199,14 @@ $z-popup: 1100;
   flex: 1;
   font-size: 14px;
   display: flex;
-  flex-direction: column; /* Текст сверху, мета снизу */
-  justify-content: center; /* Центруем по вертикали, если текст короткий */
-  min-height: 32px; 
+  flex-direction: column;
+  justify-content: center;
+  min-height: 32px;
+
+  /* Растягиваем контент на 100%, если внутри есть поле редактирования */
+  &:has(.editInput) {
+    height: 100%;
+  }
 
   .commentUsername { 
     font-weight: 600; margin-right: 5px; color: #262626; 
@@ -197,6 +214,31 @@ $z-popup: 1100;
   
   .commentText { 
     color: #262626; line-height: 1.4; word-break: break-word; 
+  }
+}
+
+/* Кнопка удаления комментария */
+.deleteCommentBtn {
+  background: none;
+  border: none;
+  color: #8e8e8e;
+  cursor: pointer;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  margin-left: 4px;
+  opacity: 0; /* Скрыта по умолчанию */
+  transition: opacity 0.2s;
+
+  &:hover {
+    color: #ed4956;
+  }
+}
+
+/* Показываем кнопку удаления при наведении на комментарий */
+.commentItem:hover {
+  .deleteCommentBtn {
+    opacity: 1;
   }
 }
 
@@ -215,13 +257,12 @@ $z-popup: 1100;
   color: #8e8e8e;
 }
 
-/* Кнопка лайка справа */
+/* Кнопка лайка справа от комментария */
 .commentLikeBtn {
   background: transparent;
   border: none;
   cursor: pointer;
   padding: 0; 
-  /* Выравниваем сердечко по первой строке текста (примерно) */
   margin-top: 8px; 
   display: flex;
   align-items: center;
@@ -235,30 +276,43 @@ $z-popup: 1100;
   }
 }
 
-/* EDIT INPUT */
+/* ===================== ПОЛЕ РЕДАКТИРОВАНИЯ ОПИСАНИЯ ===================== */
 .editInput {
   display: block;
   width: 100%;
   flex: 1;
   height: 100%;
   border: none;
-  background: transparent;
   outline: none;
-  padding: 0;
+  
+  /* --- ЕДИНЫЙ СТИЛЬ --- */
+  background: transparent;   /* Прозрачный по умолчанию */
+  padding: 12px;             /* Отступы как у заголовка */
+  border-radius: 8px;        /* Скругления */
+  transition: background 0.2s ease;
+  
   margin-top: 8px; 
-  font-family: inherit; font-size: 14px; line-height: 1.5; color: #262626;
+  font-family: inherit; 
+  font-size: 14px; 
+  line-height: 1.5; 
+  color: #262626;
   resize: none;
 
-  &:focus { border: none; box-shadow: none; }
+  /* Скрываем скроллбар */
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  &::-webkit-scrollbar { display: none; }
+
   &::placeholder { color: #8e8e8e; }
 }
 
-/* Footer & Actions */
+/* ===================== ФУТЕР И ДЕЙСТВИЯ ===================== */
 .footer { border-top: 1px solid #efefef; background: #fff; display: flex; flex-direction: column; }
 .actionIcons { padding: 12px 16px 8px; display: flex; gap: 16px; }
 .likesCount { padding: 0 16px; font-weight: 600; font-size: 14px; margin-bottom: 8px; }
 .postDate { padding: 0 16px 12px; font-size: 10px; text-transform: uppercase; color: #8e8e8e; }
 
+/* Блок добавления комментария (снизу) */
 .addCommentBox {
   border-top: 1px solid #efefef;
   padding: 12px 16px;
@@ -267,6 +321,7 @@ $z-popup: 1100;
   button { background: none; border: none; color: #0095f6; font-weight: 600; cursor: pointer; }
 }
 
+/* ===================== МЕНЮ ОПЦИЙ (ТРИ ТОЧКИ) ===================== */
 .optionsOverlay {
   position: fixed; inset: 0; left: var(--sideBarW); 
   background: rgba(0, 0, 0, 0.65); z-index: $z-popup;
@@ -285,12 +340,13 @@ $z-popup: 1100;
 }
 .dangerBtn { color: #ed4956; font-weight: 700; }
 
-/* ===================== RESPONSIVE ===================== */
+/* ===================== АДАПТИВ (RESPONSIVE) ===================== */
 @media (max-width: 1024px) {
   .overlay, .optionsOverlay { left: var(--sideBarSmallW); }
 }
 
 @media (max-width: 850px) {
+  /* На планшетах перестраиваем в колонку */
   .modalCard { flex-direction: column; height: 100%; width: 100%; border-radius: 0; }
   .mediaSection { height: 50vh; flex: none; }
   .contentSection { flex: 1; border-left: none; }
@@ -300,7 +356,7 @@ $z-popup: 1100;
   .overlay, .optionsOverlay { left: 0; }
 }
 
-/* Emoji Picker */
+/* ===================== EMOJI PICKER ===================== */
 .emojiPickerPopover {
   position: absolute; bottom: 35px; left: 0;
   z-index: 1000; border-radius: 8px; overflow: hidden;
@@ -311,4 +367,57 @@ $z-popup: 1100;
 @keyframes popUp {
   from { opacity: 0; transform: translateY(10px); }
   to { opacity: 1; transform: translateY(0); }
+}
+
+/* ===================== РЕДАКТИРОВАНИЕ ЗАГОЛОВКА (НИЖНЯЯ ЧАСТЬ) ===================== */
+
+.editFooter {
+  border-top: 1px solid #efefef;
+  padding: 16px;
+  background: #fff;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  animation: appear 0.2s ease-out;
+}
+
+/* Лейбл "TITLE" (маленький серый текст) */
+.inputLabel {
+  font-size: 11px;
+  font-weight: 700;
+  color: #8e8e8e;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-left: 4px; /* Чуть сдвинем, чтобы ровно над текстом */
+}
+
+/* Поле ввода заголовка */
+.editTitleInput {
+  width: 100%;
+  border: none;
+  outline: none;
+  
+  /* --- ЕДИНЫЙ СТИЛЬ (Как у описания) --- */
+  background: transparent;   /* Тоже прозрачный по умолчанию */
+  padding: 12px;             /* Такие же отступы */
+  border-radius: 8px;        /* Такое же скругление */
+  transition: background 0.2s ease;
+  
+  font-family: inherit;
+  font-size: 16px;       /* Шрифт чуть крупнее */
+  font-weight: 600;      /* Жирный (смысловое отличие) */
+  color: #262626;
+  resize: none;
+  
+  min-height: 100px;     /* Высота поля */
+
+  /* Скрываем скроллбар */
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  &::-webkit-scrollbar { display: none; }
+
+  &::placeholder {
+    color: #dbdbdb;
+    font-weight: 400;
+  }
 }

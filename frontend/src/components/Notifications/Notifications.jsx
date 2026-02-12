@@ -1,5 +1,5 @@
+// frontend/src/components/Notifications/Notifications.jsx
 import React, { useEffect } from 'react';
-/* 🔥 Меняем импорт на специализированный сервис */
 import { useGetNotificationsQuery, useMarkNotificationsReadMutation } from '../../services/notificationsApi';
 import NotificationItem from './NotificationItem';
 import s from './Notifications.module.scss';
@@ -11,7 +11,6 @@ const Notifications = ({ isOpen, onClose }) => {
 
   const [markRead] = useMarkNotificationsReadMutation();
 
-  // Когда панель открыта, помечаем всё как прочитанное
   useEffect(() => {
     if (isOpen && notifications.length > 0) {
        const hasUnread = notifications.some(n => !n.isRead);
@@ -24,7 +23,13 @@ const Notifications = ({ isOpen, onClose }) => {
   if (!isOpen) return null;
 
   return (
-    <div className={s.drawerContainer}>
+    <>
+      {/* Прозрачная подложка на весь экран. 
+         Клик по ней вызывает onClose (закрывает панель).
+      */}
+      <div className={s.backdrop} onClick={onClose} />
+
+      <div className={s.drawerContainer}>
         <div className={s.header}>
             <h2>Notifications</h2>
         </div>
@@ -44,7 +49,8 @@ const Notifications = ({ isOpen, onClose }) => {
                 />
             ))}
         </div>
-    </div>
+      </div>
+    </>
   );
 };
 

@@ -1,29 +1,74 @@
 /* frontend/src/components/Layout/Layout.module.scss */
 
 .layoutWrapper {
-  min-height: 100vh;
+  display: flex;
+  flex-direction: column; /* Элементы всегда идут сверху вниз */
+  min-height: 100vh;      /* Растягиваем на весь экран */
+  position: relative;
+  background-color: var(--main);
   padding-left: var(--sideBarW); 
+  transition: padding-left 0.3s ease;
 }
 
 .mainContent {
   display: flex;
   justify-content: center;
   align-items: flex-start;
-  min-height: 100vh;
+  width: 100%;
+  
+
+  flex: 1; // заставляет контент занять всё свободное место. Если контента мало, этот блок растянется и толкнет футер в самый низ.
+  
+  z-index: 1;
+  padding: 30px 20px;
 }
 
-/* --- АДАПТИВ --- */
+/* Оверлей для модалок (Search/Notifications/Create) */
+.modalOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: rgba(0, 0, 0, 0.65); 
+  backdrop-filter: blur(2px);
+  z-index: 1000; 
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  animation: fadeIn 0.2s ease-out;
+}
 
-/* 1. Ноутбук/Планшет -> Узкий сайдбар */
-@media (max-width: 1263px) {
+.modalContent {
+  background: white;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  max-width: 90%;
+  max-height: 90%;
+}
+
+/* --- АДАПТИВНОСТЬ --- */
+
+@media screen and (max-width: 1263px) {
   .layoutWrapper {
-    padding-left: var(--sideBarSmallW); /* 72px из переменных */
+    padding-left: var(--sideBarSmallW); /* 72px */
   }
 }
 
-/* 2. Мобильные -> Сайдбара нет (он снизу) */
-@media (max-width: 767px) {
+@media screen and (max-width: 768px) {
   .layoutWrapper {
-    padding-left: 0;
+    padding-left: 0; /* Убираем отступ слева */
+
+    padding-bottom: var(--footerH); 
   }
+
+  .mainContent {
+    padding: 10px 0;
+  }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
 }

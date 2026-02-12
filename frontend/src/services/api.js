@@ -1,20 +1,25 @@
-// frontend\src\services\api.js
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
-import { io } from 'socket.io-client'; 
+import { io } from 'socket.io-client';
 
-// Функция получения сокета
 let socket;
+
+// --- НАСТРОЙКА СОКЕТА ---
 export function getSocket() {
   if (!socket) {
-    socket = io('http://localhost:5005'); 
+    socket = io('http://127.0.0.1:5005', {
+      transports: ['websocket'],
+      reconnectionAttempts: 5,
+      reconnectionDelay: 1000,
+    });
   }
   return socket;
 }
 
+// --- ОСНОВНОЙ API ---
 export const api = createApi({
   reducerPath: 'api',
   baseQuery: fetchBaseQuery({
-    baseUrl: 'http://localhost:5005/api', 
+    baseUrl: 'http://127.0.0.1:5005/api',
     prepareHeaders: (headers) => {
       const token = localStorage.getItem('token');
       if (token) {
@@ -23,11 +28,12 @@ export const api = createApi({
       return headers;
     },
   }),
-  
-  tagTypes: ['AuthCheck', 'Post', 'User', 'Profile', 'Message', 'Conversation', 'Notification'], 
+
+  tagTypes: ['AuthCheck', 'Post', 'User', 'Profile', 'Message', 'Conversation', 'Notification', 'Following', 'Followers'],
 
   endpoints: (builder) => ({
-    // --- АВТОРИЗАЦИЯ ---
+
+    // === АВТОРИЗАЦИЯ ===
     login: builder.mutation({
       query: (credentials) => ({
         url: '/auth/login',
@@ -44,7 +50,7 @@ export const api = createApi({
         body: userData,
       }),
     }),
-
+    
     resetPassword: builder.mutation({
       query: (data) => ({
         url: '/auth/reset-password',
@@ -61,7 +67,7 @@ export const api = createApi({
       }),
     }),
 
-    // --- ПОЛЬЗОВАТЕЛИ ---
+    // === ПОЛЬЗОВАТЕЛИ ===
     getMe: builder.query({
       query: () => '/users/profile',
       keepUnusedDataFor: 0,
@@ -70,7 +76,7 @@ export const api = createApi({
 
     getUserById: builder.query({
       query: (id) => `users/${id}`,
-      providesTags: (result, error, id) => [{ type: 'Profile', id }],
+      providesTags: (result, error, id) => [{ type: 'Profile', id }, 'Profile'],
     }),
 
     updateProfile: builder.mutation({
@@ -79,20 +85,16 @@ export const api = createApi({
         method: 'PUT',
         body: userData,
       }),
-      invalidatesTags: ['User'],
+      invalidatesTags: ['User', 'Profile'],
     }),
 
     followUser: builder.mutation({
       query: (userId) => ({
-        url: '/follows', 
-        method: 'POST',  
-        body: { followingId: userId }, 
+        url: '/follows',
+        method: 'POST',
+        body: { followingId: userId },
       }),
-      invalidatesTags: (result, error, userId) => [
-        'User', 
-        'Post', 
-        { type: 'Profile', id: userId }
-      ], 
+      invalidatesTags: ['User', 'Post', 'Following', 'Profile', 'Followers'], 
     }),
 
     getFollowers: builder.query({
@@ -105,150 +107,147 @@ export const api = createApi({
       providesTags: ['Following'],
     }),
 
-    // --- ПОИСК ---
+    // === ПОИСК ===
     searchUsers: builder.query({
       query: (searchTerm) => `/search?q=${searchTerm}`,
       keepUnusedDataFor: 5,
     }),
-
+    
     addToSearchHistory: builder.mutation({
       query: (targetUserId) => ({
-        url: '/users/search',
-        method: 'PUT',
-        body: { targetUserId },
+          url: '/users/search',
+          method: 'PUT',
+          body: { targetUserId },
       }),
       invalidatesTags: ['User'],
     }),
 
     removeFromSearchHistory: builder.mutation({
       query: (targetUserId) => ({
-        url: '/users/search/remove',
-        method: 'PUT',
-        body: { targetUserId },
+          url: '/users/search/remove',
+          method: 'PUT',
+          body: { targetUserId },
       }),
       invalidatesTags: ['User'],
     }),
 
     clearSearchHistory: builder.mutation({
       query: () => ({
-        url: '/users/search',
-        method: 'DELETE',
+          url: '/users/search',
+          method: 'DELETE',
       }),
       invalidatesTags: ['User'],
     }),
 
-// --- ПОСТЫ ---
-    
-    // Получение постов подписок
+    // === ПОСТЫ ===
+
     getFollowedPosts: builder.query({
       query: (page = 1) => `/posts/followed?page=${page}`,
-      providesTags: ['Post'],
+      providesTags: ['Post'], 
     }),
 
-    // Рекомендации (Explore)
     getExplorePosts: builder.query({
       query: () => '/posts/explore',
       providesTags: ['Post'],
     }),
 
-    // Умный поиск постов (умеет фильтровать по userId для блока "More posts")
     getPosts: builder.query({
       query: (params) => {
-        // params может быть объектом: { userId: '...', page: 1, limit: 10 }
         const userId = params?.userId;
         const page = params?.page || 1;
         const limit = params?.limit || 10;
-
         let url = `/posts?page=${page}&limit=${limit}`;
         if (userId) url += `&userId=${userId}`;
-        
         return url;
       },
-      providesTags: ['Post'],
+      providesTags: (result, error, arg) => 
+        result
+          ? [
+              ...result.map(({ _id }) => ({ type: 'Post', id: _id })),
+              'Post',
+              { type: 'Profile', id: arg?.userId } 
+            ]
+          : ['Post'],
     }),
 
-    // Посты текущего пользователя
     getMyPosts: builder.query({
       query: () => '/posts/my',
       providesTags: ['Post'],
     }),
 
-    // Получение одного поста по ID
     getPostById: builder.query({
       query: (postId) => `/posts/${postId}`,
       providesTags: (result, error, id) => [{ type: 'Post', id }],
     }),
 
-    // Создание поста
+    // 1. СОЗДАНИЕ ПОСТА
     createPost: builder.mutation({
       query: (postData) => ({
         url: '/posts',
         method: 'POST',
         body: postData,
       }),
-      invalidatesTags: ['Post', 'User'],
+      invalidatesTags: ['Post', 'Profile', 'User'],
     }),
 
-    // Удаление поста
+    // 2. УДАЛЕНИЕ ПОСТА
     deletePost: builder.mutation({
       query: (postId) => ({
         url: `/posts/${postId}`,
         method: 'DELETE',
       }),
-      invalidatesTags: ['User', 'Post'],
+      invalidatesTags: ['Post', 'Profile', 'User'],
     }),
 
-    // Обновление поста (поддерживает FormData для смены картинки)
+    // 🔥 3. ОБНОВЛЕНИЕ ПОСТА (ИСПРАВЛЕНО НА АГРЕССИВНОЕ)
     updatePost: builder.mutation({
-      query: ({ id, body }) => ({ 
+      query: ({ id, body }) => ({
         url: `/posts/${id}`,
         method: 'PUT',
-        body: body, 
+        body: body,
       }),
-      invalidatesTags: (result, error, { id }) => [{ type: 'Post', id }, 'Post'], 
+      // Обновляем всё, чтобы наверняка перерисовалось
+      invalidatesTags: (result, error, { id }) => [
+        { type: 'Post', id }, 
+        'Post', 
+        'Profile', 
+        'User'
+      ],
     }),
 
-// --- ЛАЙКИ И КОММЕНТАРИИ ---
+    // === ЛАЙКИ И КОММЕНТАРИИ ===
+
     toggleLike: builder.mutation({
       query: (postId) => ({
         url: `/posts/${postId}/like`,
         method: 'PUT',
       }),
-      invalidatesTags: (result, error, id) => [{ type: 'Post', id }, 'Post'],
+      invalidatesTags: (result, error, id) => [{ type: 'Post', id }],
     }),
 
     addComment: builder.mutation({
       query: ({ postId, text }) => ({
-        url: `/comments`,  
+        url: `/comments`,
         method: 'POST',
-        body: { postId, text }, // Передаем postId в теле запроса
+        body: { postId, text },
       }),
-      invalidatesTags: (result, error, { postId }) => [{ type: 'Post', id: postId }, 'Post'],
+      invalidatesTags: (result, error, { postId }) => [{ type: 'Post', id: postId }],
     }),
 
-    //  ЭНДПОИНТ ДЛЯ ЛАЙКА КОММЕНТАРИЯ
+    deleteComment: builder.mutation({
+      query: (commentId) => ({
+        url: `/comments/${commentId}`,
+        method: 'DELETE',
+      }),
+      invalidatesTags: ['Post'],
+    }),
+
     toggleCommentLike: builder.mutation({
       query: (commentId) => ({
-        // Убедись, что путь совпадает с тем, что мы сделаем на бэкенде!
-        url: `/comments/${commentId}/like`, 
+        url: `/comments/${commentId}/like`,
         method: 'PUT',
       }),
-      // Инвалидируем посты, чтобы комменты внутри них обновились и показали новое сердечко
-      invalidatesTags: ['Post'], 
-    }),
-
-    // --- УВЕДОМЛЕНИЯ (НОВОЕ) ---
-    getNotifications: builder.query({
-      query: () => '/notifications',
-      providesTags: ['Notification'], 
-    }),
-
-    markNotificationsRead: builder.mutation({
-      query: () => ({
-        url: '/notifications/read',
-        method: 'PUT',
-      }),
-      invalidatesTags: ['Notification'],
+      invalidatesTags: ['Post'],
     }),
 
   }),
@@ -280,7 +279,6 @@ export const {
   useUpdatePostMutation,
   useToggleLikeMutation,
   useAddCommentMutation,
-  useToggleCommentLikeMutation,
-  useGetNotificationsQuery,
-  useMarkNotificationsReadMutation
+  useDeleteCommentMutation, 
+  useToggleCommentLikeMutation
 } = api;

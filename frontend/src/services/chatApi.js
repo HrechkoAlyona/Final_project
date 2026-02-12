@@ -1,109 +1,143 @@
-// frontend\src\services\chatApi.js
-
+// frontend/src/services/chatApi.js
 import { api, getSocket } from './api';
 
 export const chatApi = api.injectEndpoints({
   endpoints: (builder) => ({
     
-    // 1. Получить список диалогов
+    // 1. ПОЛУЧИТЬ СПИСОК ДИАЛОГОВ (Sidebar)
     getMyConversations: builder.query({
       query: () => '/messages/conversations',
       providesTags: ['Conversation'],
+
       async onCacheEntryAdded(arg, { updateCachedData, cacheDataLoaded, cacheEntryRemoved }) {
+        const socket = getSocket();
         try {
-          const socket = getSocket(); 
           await cacheDataLoaded;
 
           const listener = (newMessage) => {
+            const currentUserId = localStorage.getItem('userId');
+
             updateCachedData((draft) => {
-              const senderId = typeof newMessage.sender === 'object' ? newMessage.sender._id : newMessage.sender;
-              const receiverId = typeof newMessage.receiver === 'object' ? newMessage.receiver._id : newMessage.receiver;
-              const currentUserId = localStorage.getItem('userId');
+              const sId = String(newMessage.sender?._id || newMessage.sender);
+              const rId = String(newMessage.receiver?._id || newMessage.receiver);
+              const myId = String(currentUserId);
 
-              // Ищем нужный диалог в списке
-              const conversation = draft.find(c => c._id === senderId || c._id === receiverId);
+              const isMeSender = sId === myId;
+              const partnerId = isMeSender ? rId : sId;
 
-              if (conversation) {
-                // Обновляем последнее сообщение
+              const index = draft.findIndex(c => String(c._id) === partnerId);
+
+              if (index !== -1) {
+                const conversation = draft[index];
                 conversation.lastMessage = newMessage.text;
-                
-                // 🔥 ЛОГИКА СЧЕТЧИКА: если сообщение пришло нам, +1
-                if (String(senderId) !== String(currentUserId)) {
+                conversation.updatedAt = newMessage.createdAt || new Date().toISOString();
+                conversation.isSender = isMeSender;
+
+                // Увеличиваем счетчик, ТОЛЬКО если это входящее сообщение
+                if (!isMeSender) {
                   conversation.unreadCount = (conversation.unreadCount || 0) + 1;
                 }
 
-                // Перемещаем диалог в начало списка
-                const index = draft.indexOf(conversation);
-                if (index > -1) {
-                  draft.splice(index, 1);
-                  draft.unshift(conversation);
+                draft.splice(index, 1);
+                draft.unshift(conversation);
+
+              } else {
+                // Новый диалог
+                const partnerData = isMeSender ? newMessage.receiver : newMessage.sender;
+                if (typeof partnerData === 'object') {
+                    draft.unshift({
+                        _id: partnerData._id,
+                        username: partnerData.username,
+                        avatar: partnerData.avatar,
+                        fullName: partnerData.fullName || '',
+                        lastMessage: newMessage.text,
+                        isSender: isMeSender,
+                        updatedAt: newMessage.createdAt || new Date().toISOString(),
+                        unreadCount: isMeSender ? 0 : 1
+                    });
                 }
               }
             });
           };
 
           socket.on('newMessage', listener);
-
           await cacheEntryRemoved;
           socket.off('newMessage', listener);
-        } catch {
-          // ignore
-        }
+        } catch (err) { console.error(err); }
       }
     }),
 
-    // 2. Получить историю переписки
+    // 2. ИСТОРИЯ ЧАТА
     getChatHistory: builder.query({
       query: (targetUserId) => `/messages/${targetUserId}`,
       providesTags: (result, error, id) => [{ type: 'Message', id }],
       
       async onCacheEntryAdded(targetUserId, { updateCachedData, cacheDataLoaded, cacheEntryRemoved }) {
+        const socket = getSocket();
         try {
-          const socket = getSocket();
           await cacheDataLoaded;
-
           const listener = (newMessage) => {
-            const senderId = typeof newMessage.sender === 'object' ? newMessage.sender._id : newMessage.sender;
-            const receiverId = typeof newMessage.receiver === 'object' ? newMessage.receiver._id : newMessage.receiver;
+            const sId = String(newMessage.sender?._id || newMessage.sender);
+            const rId = String(newMessage.receiver?._id || newMessage.receiver);
+            const tId = String(targetUserId);
 
-            const isRelevant = 
-              (String(senderId) === String(targetUserId)) || 
-              (String(receiverId) === String(targetUserId));
-
-            if (!isRelevant) return;
-
-            updateCachedData((draft) => {
-              const exists = draft.find(m => m._id === newMessage._id);
-              if (!exists) {
-                draft.push(newMessage);
-              }
-            });
+            if (sId === tId || rId === tId) {
+              updateCachedData((draft) => {
+                if (!draft.find(m => m._id === newMessage._id)) {
+                  draft.push(newMessage);
+                }
+              });
+            }
           };
-
           socket.on('newMessage', listener);
-
           await cacheEntryRemoved;
           socket.off('newMessage', listener);
-        } catch {
-          // ignore
-        }
+        } catch (err) { console.error(err); }
       },
     }),
 
-    // 3. Отправить сообщение
+    // 3. ОТПРАВИТЬ СООБЩЕНИЕ 
     sendMessage: builder.mutation({
       query: ({ recipientId, text }) => ({
         url: '/messages',
         method: 'POST',
         body: { recipientId, text },
       }),
-      invalidatesTags: ['Conversation', 'Message'],
+      // УБРАЛИ invalidatesTags, чтобы не сбивать сокет
     }),
+
+    // 4. СБРОСИТЬ СЧЕТЧИК (Новое!)
+    markConversationAsRead: builder.mutation({
+      // Если на бэкенде есть роут для пометки прочитанным, укажи его тут.
+      // Если нет, можно оставить фиктивный query, нам главное обновить кэш.
+      query: (partnerId) => ({
+        url: `/messages/read/${partnerId}`, // Предполагаемый роут (или сделай заглушку)
+        method: 'PUT', 
+      }),
+      // Оптимистичное обновление кэша (мгновенно на клиенте)
+      async onQueryStarted(partnerId, { dispatch, queryFulfilled }) {
+        const patchResult = dispatch(
+          chatApi.util.updateQueryData('getMyConversations', undefined, (draft) => {
+            const conversation = draft.find(c => String(c._id) === String(partnerId));
+            if (conversation) {
+              conversation.unreadCount = 0; // СБРАСЫВАЕМ В НОЛЬ
+            }
+          })
+        );
+        try {
+          await queryFulfilled;
+        } catch {
+          patchResult.undo(); // Если сервер вернул ошибку, откатываем
+        }
+      },
+    }),
+
   }),
 });
 
 export const {
   useGetMyConversationsQuery,
   useGetChatHistoryQuery,
-  useSendMessageMutation
+  useSendMessageMutation,
+  useMarkConversationAsReadMutation // Экспортируем
 } = chatApi;

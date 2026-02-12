@@ -1,15 +1,29 @@
 // frontend/src/components/PostModal/PostComments.jsx
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
+import toast from 'react-hot-toast';
 import s from './PostModal.module.scss';
-import { AiOutlineHeart, AiFillHeart } from 'react-icons/ai'; 
-import { useToggleCommentLikeMutation } from '../../services/api'; 
+import { AiOutlineHeart, AiFillHeart, AiOutlineDelete } from 'react-icons/ai'; 
+import { useToggleCommentLikeMutation, useDeleteCommentMutation } from '../../services/api'; 
 import { useAuth } from '../../hooks/useAuth';
-import { formatShortTime } from '../../utils/dateUtils'; // Импорт утилиты
+import { formatShortTime } from '../../utils/dateUtils';
 
-const PostComments = ({ post, authorData, isEditing, editContent, setEditContent }) => {
-  const { userId } = useAuth(); 
+const PostComments = ({ post, authorData, isEditing, editContent, setEditContent, onClose }) => {
+  const { userId } = useAuth();
+  const navigate = useNavigate(); 
+  
   const [toggleCommentLike] = useToggleCommentLikeMutation();
+  const [deleteComment] = useDeleteCommentMutation(); // Хук для удаления
 
+  // --- 1. ПЕРЕХОД В ПРОФИЛЬ ---
+  const handleUserClick = (targetUserId) => {
+    if (targetUserId) {
+      navigate(`/profile/${targetUserId}`);
+      if (onClose) onClose(); // Закрываем модалку, чтобы увидеть профиль
+    }
+  };
+
+  // --- 2. ЛАЙК КОММЕНТАРИЯ ---
   const handleLikeClick = async (commentId) => {
     try {
       await toggleCommentLike(commentId).unwrap();
@@ -18,19 +32,40 @@ const PostComments = ({ post, authorData, isEditing, editContent, setEditContent
     }
   };
 
+  // --- 3. УДАЛЕНИЕ КОММЕНТАРИЯ ---
+  const handleDeleteComment = async (commentId) => {
+    if (window.confirm("Are you sure you want to delete this comment?")) {
+      try {
+        await deleteComment(commentId).unwrap();
+        toast.success("Comment deleted");
+      } catch (error) {
+        console.error("Failed to delete", error);
+        toast.error("Failed to delete comment");
+      }
+    }
+  };
+
   return (
     <div className={s.commentsList}>
       
-      {/* --- 1. ОПИСАНИЕ ПОСТА (Как первый комментарий) --- */}
+      {/* 1. ОПИСАНИЕ ПОСТА (Автор поста) */}
       {(post.description || isEditing) && (
         <div className={s.commentItem}>
           <img 
             src={authorData?.avatar || "https://cdn-icons-png.flaticon.com/512/149/149071.png"} 
             className={s.commentAvatar} 
-            alt="avatar" 
+            alt="avatar"
+            style={{ cursor: 'pointer' }}
+            onClick={() => handleUserClick(authorData?._id)} 
           />
           <div className={s.commentContent}>
-            <span className={s.commentUsername}>{authorData?.username}</span>
+            <span 
+              className={s.commentUsername} 
+              style={{ cursor: 'pointer' }}
+              onClick={() => handleUserClick(authorData?._id)}
+            >
+              {authorData?.username}
+            </span>
             
             {isEditing ? (
               <textarea 
@@ -39,11 +74,11 @@ const PostComments = ({ post, authorData, isEditing, editContent, setEditContent
                 onChange={(e) => setEditContent(e.target.value)}
                 placeholder="Write a caption..." 
                 autoFocus
+                rows={20}
               />
             ) : (
               <>
                 <span className={s.commentText}>{post.description}</span>
-                {/* Дата создания самого поста */}
                 <div className={s.commentMeta}>
                    <span className={s.commentTime}>{formatShortTime(post.createdAt)}</span>
                 </div>
@@ -53,43 +88,62 @@ const PostComments = ({ post, authorData, isEditing, editContent, setEditContent
         </div>
       )}
 
-      {/* --- 2. СПИСОК КОММЕНТАРИЕВ --- */}
+      {/* 2. СПИСОК КОММЕНТАРИЕВ */}
       {!isEditing && post.comments && post.comments.map((comment, index) => {
-        // Проверка лайка
         const isCommentLiked = comment.likes?.some(id => String(id) === String(userId));
+        
+        // Получаем ID автора комментария (учитываем, что user может быть объектом или строкой)
+        const commentAuthorId = comment.user?._id || comment.user;
+        const commentUsername = comment.user?.username || "User";
+        const commentAvatar = comment.user?.avatar || "https://cdn-icons-png.flaticon.com/512/149/149071.png";
+
+        // Проверяем, мой ли это комментарий
+        const isMyComment = String(commentAuthorId) === String(userId);
 
         return (
           <div key={comment._id || index} className={s.commentItem}>
             <img 
-              src={comment.user?.avatar || "https://cdn-icons-png.flaticon.com/512/149/149071.png"} 
+              src={commentAvatar} 
               className={s.commentAvatar} 
-              alt="avatar" 
+              alt="avatar"
+              style={{ cursor: 'pointer' }}
+              onClick={() => handleUserClick(commentAuthorId)} 
             />
             
             <div className={s.commentContent}>
-              {/* Верхняя часть: Имя + Текст */}
               <div>
-                <span className={s.commentUsername}>{comment.user?.username || "User"}</span>
+                <span 
+                  className={s.commentUsername}
+                  style={{ cursor: 'pointer' }}
+                  onClick={() => handleUserClick(commentAuthorId)}
+                >
+                  {commentUsername}
+                </span>
                 <span className={s.commentText}>{comment.text}</span>
               </div>
               
-              {/* Нижняя часть: Время + Лайки */}
               <div className={s.commentMeta}>
-                {/* Время */}
                 <span className={s.commentTime}>
                   {formatShortTime(comment.createdAt)}
                 </span>
-
-                {/* Количество лайков (если > 0) */}
+                
                 {comment.likes?.length > 0 && (
                   <span className={s.commentLikesCount}>{comment.likes.length} likes</span>
                 )}
-                
-                {/* Кнопку "Reply" можно добавить сюда же в будущем */}
+
+                {/* КНОПКА УДАЛЕНИЯ (Только для автора) */}
+                {isMyComment && (
+                  <button 
+                    className={s.deleteCommentBtn} 
+                    onClick={() => handleDeleteComment(comment._id)}
+                    title="Delete comment"
+                  >
+                    <AiOutlineDelete size={14} />
+                  </button>
+                )}
               </div>
             </div>
 
-            {/* КНОПКА ЛАЙКА (СЕРДЕЧКО) */}
             <button 
               className={s.commentLikeBtn} 
               onClick={() => handleLikeClick(comment._id)}

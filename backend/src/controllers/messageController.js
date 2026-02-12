@@ -24,12 +24,12 @@ const sendMessage = async (req, res) => {
         // Socket.io 
         const io = req.app.get('io');
         if (io) {
-         
+
             // 1. Отправляем получателю (чтобы он увидел сразу)
-            io.to(recipientId).emit('newMessage', message);
+            io.to(recipientId.toString()).emit('newMessage', message);
             
             // 2. Отправляем себе (чтобы у нас тоже появилось сразу)
-            io.to(senderId).emit('newMessage', message);
+            io.to(senderId.toString()).emit('newMessage', message);
         }
 
         res.status(201).json(message);
@@ -111,4 +111,28 @@ const getConversations = async (req, res) => {
     }
 };
 
-module.exports = { sendMessage, getMessages, getConversations };
+// 4. ПОМЕТИТЬ СООБЩЕНИЯ КАК ПРОЧИТАННЫЕ
+const markMessagesAsRead = async (req, res) => {
+    try {
+        const { id: senderId } = req.params; // ID того, кто нам писал
+        const myId = req.user._id;           // Наш ID
+
+        // Обновляем все сообщения, где отправитель = senderId, а получатель = мы
+        await Message.updateMany(
+            { sender: senderId, receiver: myId, isRead: false },
+            { $set: { isRead: true } }
+        );
+
+        res.status(200).json({ message: 'Сообщения помечены прочитанными' });
+    } catch (error) {
+        console.error("Mark Read Error:", error);
+        res.status(500).json({ message: "Ошибка обновления статуса" });
+    }
+};
+
+module.exports = { 
+    sendMessage, 
+    getMessages, 
+    getConversations, 
+    markMessagesAsRead
+};

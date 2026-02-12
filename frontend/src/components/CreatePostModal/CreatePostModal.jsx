@@ -1,3 +1,5 @@
+// frontend\src\components\CreatePostModal\CreatePostModal.jsx
+
 import React, { useRef, useEffect } from 'react';
 import EmojiPicker from 'emoji-picker-react';
 import { AiOutlineClose, AiOutlineArrowLeft, AiOutlineSmile } from 'react-icons/ai';

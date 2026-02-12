@@ -1,70 +1,56 @@
-// frontend\src\pages\Home\Home.module.scss
+// frontend/src/pages/Home/Home.module.scss
 
 .pageWrapper {
   width: 100%;
-  max-width: 935px; /* Ограничиваем ширину контейнера */
-  margin: 0 auto;   /* Центрируем страницу */
+  max-width: 935px;
+  margin: 0 auto;
   padding: 30px 20px;
   display: flex;
   flex-direction: column;
   align-items: center;
 }
 
-/* 🔥 ГЛАВНАЯ СЕТКА ПОСТОВ */
-/* В Home.jsx это <div className={s.feedGrid}> */
+/* --- ГЛАВНАЯ СЕТКА ПОСТОВ --- */
 .feedGrid {
   display: grid;
-  grid-template-columns: 1fr 1fr; /* ДВЕ РАВНЫЕ КОЛОНКИ */
-  gap: 28px; /* Расстояние между постами */
+  grid-template-columns: 1fr 1fr;
+  gap: 28px;
   width: 100%;
-  margin-bottom: 40px;
+  margin-bottom: 20px;
 
-  /* Адаптив: на телефонах (меньше 768px) делаем 1 колонку */
   @media (max-width: 768px) {
     grid-template-columns: 1fr;
     gap: 15px;
-    max-width: 470px; /* Чтобы посты на телефоне не были гигантскими */
+    max-width: 470px;
   }
 }
 
 .gridItem {
   width: 100%;
-  /* Пост внутри растянется на всю ширину ячейки сетки */
   display: flex;
   justify-content: center;
 }
 
-/* --- КНОПКИ И СТАТУСЫ ВНИЗУ --- */
+/* --- СТАТУСЫ И ЛОАДЕРЫ ВНИЗУ --- */
 .statusContainer {
   width: 100%;
   display: flex;
   flex-direction: column;
   align-items: center;
   padding-bottom: 50px;
-}
-
-.loadMoreBtn {
-  background-color: #0095f6;
-  color: white;
-  border: none;
-  padding: 8px 20px;
-  border-radius: 4px;
-  font-weight: 600;
-  cursor: pointer;
-  font-size: 14px;
-  transition: background 0.2s;
-
-  &:hover {
-    background-color: #1877f2;
-  }
+  min-height: 50px;
 }
 
 .loader, .loaderSmall {
   color: #8e8e8e;
   font-weight: 500;
   margin: 20px 0;
+  display: flex;
+  align-items: center;
+  gap: 10px;
 }
 
+/* Блок "Всё просмотрено" */
 .allCaughtUp {
   text-align: center;
   color: #262626;
@@ -75,12 +61,14 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  margin-top: 20px;
+  margin-top: 10px;
+  animation: fadeIn 0.5s ease-in-out;
 
   .checkIcon {
-    font-size: 48px;
-    color: #0095f6; /* Или радужный градиент */
     margin-bottom: 12px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
   }
 
   h2 {
@@ -92,6 +80,7 @@
   p {
     color: #8e8e8e;
     font-size: 14px;
+    line-height: 18px;
   }
 }
 
@@ -103,5 +92,11 @@
   h2 {
     color: #262626;
     margin-bottom: 10px;
+    font-size: 24px;
   }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
 }

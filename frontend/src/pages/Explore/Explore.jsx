@@ -1,10 +1,9 @@
 // frontend/src/pages/Explore/Explore.jsx
-// frontend/src/pages/Explore/Explore.jsx
 
 import React, { useState } from 'react';
 import { AiFillHeart } from 'react-icons/ai'; 
 import { FaComment } from 'react-icons/fa';   
-import { useGetExplorePostsQuery } from '../../services/api'; // 🔥 Теперь хук точно есть
+import { useGetExplorePostsQuery } from '../../services/api'; 
 import PostModal from '../../components/PostModal/PostModal'; 
 import s from './Explore.module.scss';
 
