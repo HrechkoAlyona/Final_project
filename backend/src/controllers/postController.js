@@ -105,7 +105,7 @@ const getExplorePosts = async (req, res) => {
         const currentUserId = new mongoose.Types.ObjectId(req.user._id);
         const currentUser = await User.findById(currentUserId);
 
-        // Список ID: мои подписки + я сам
+        // Список ID: мои подписки + я 
         const followingIds = (currentUser.following || []).map(id => new mongoose.Types.ObjectId(id));
         const excludeIds = [...followingIds, currentUserId];
 
@@ -118,10 +118,9 @@ const getExplorePosts = async (req, res) => {
             },
 
             // 2. Берем 50 случайных постов (а не 10).
-            // Это гарантия! Даже если 40 постов "битые", у нас останется 10 нормальных.
             { $sample: { size: 50 } },
 
-            // 3. ПОДТЯГИВАЕМ АВТОРА
+            // 3. АВТОР?
             {
                 $lookup: {
                     from: 'users',
@@ -142,7 +141,7 @@ const getExplorePosts = async (req, res) => {
             // 5. Разворачиваем массив
             { $unwind: '$user' },
 
-            // 6. Берем ровно 10 из тех, что выжили после чистки
+            // 6. Берем ровно 10 
             { $limit: 10 },
 
             // 7. Убираем лишние поля (пароли и т.д.)
