@@ -1,5 +1,7 @@
 // frontend/src/components/Notifications/Notifications.jsx
+
 import React, { useEffect } from 'react';
+import { AiOutlineClose } from 'react-icons/ai'; 
 import { useGetNotificationsQuery, useMarkNotificationsReadMutation } from '../../services/notificationsApi';
 import NotificationItem from './NotificationItem';
 import s from './Notifications.module.scss';
@@ -29,6 +31,9 @@ const Notifications = ({ isOpen, onClose }) => {
       <div className={s.drawerContainer}>
         <div className={s.header}>
             <h2>Notifications</h2>
+            <button className={s.closeBtn} onClick={onClose}>
+                <AiOutlineClose />
+            </button>
         </div>
 
         <div className={s.list}>

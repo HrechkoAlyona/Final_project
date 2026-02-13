@@ -4,7 +4,7 @@ import React, { useEffect } from "react";
 import { Routes, Route, Navigate, useLocation } from "react-router-dom";
 import { Toaster } from "react-hot-toast";
 
-// API и Сервисы
+// API
 import { getSocket } from "./services/api";
 
 // Страницы
@@ -31,40 +31,32 @@ function App() {
   const { userId, isLoading } = useAuth();
   const location = useLocation();
 
-  // Логика для модальных окон (если вы планируете открывать посты поверх ленты)
   const background = location.state?.backgroundLocation;
 
-  // Хук для прослушивания чатов (входящие сообщения)
   useChatSocket();
 
   // --- ЛОГИКА СОКЕТОВ (JOIN ROOM) ---
   useEffect(() => {
-    // Если пользователя нет, ничего не делаем
     if (!userId) return;
 
     const socket = getSocket();
 
-    // Функция входа в комнату
     const handleJoin = () => {
-      console.log("📡 Emitting join for user:", userId);
       socket.emit("join", userId);
     };
 
-    // 1. Если сокет уже подключен — входим сразу
     if (socket.connected) {
       handleJoin();
     }
 
-    // 2. Слушаем событие переподключения (если интернет моргнул)
     socket.on("connect", handleJoin);
 
-    // 3. CLEANUP: Обязательно удаляем слушатель при размонтировании
     return () => {
       socket.off("connect", handleJoin);
     };
   }, [userId]);
 
-  if (isLoading) return null; // Или красивый спиннер
+  if (isLoading) return null; // Или <LoadingSpinner />
 
   const isAuthenticated = !!localStorage.getItem("token");
 
@@ -72,12 +64,8 @@ function App() {
     <NavigationProvider>
       <Toaster position="top-center" reverseOrder={false} />
 
-      {/* background || location — это хитрость Router v6.
-          Если есть background, роутер думает, что мы всё еще на старой странице (Home),
-          но URL в браузере сменится. Это нужно для модалок.
-      */}
       <Routes location={background || location}>
-        {/* --- ПУБЛИЧНЫЕ --- */}
+        {/* --- ПУБЛИЧНЫЕ МАРШРУТЫ --- */}
         <Route
           path="/login"
           element={!isAuthenticated ? <Login /> : <Navigate to="/" />}
@@ -87,24 +75,23 @@ function App() {
           element={!isAuthenticated ? <Register /> : <Navigate to="/" />}
         />
         <Route path="/reset" element={<Reset />} />
-        <Route path="/reset-password/:username" element={<Reset />} />
+        <Route path="/reset-password/:token" element={<Reset />} />
 
-        {/* --- ПРИВАТНЫЕ (С ЛЕЙАУТОМ) --- */}
+        {/* --- ПРИВАТНЫЕ МАРШРУТЫ (ВНУТРИ LAYOUT) --- */}
         {isAuthenticated ? (
           <Route element={<Layout />}>
             <Route path="/" element={<Home />} />
+            <Route path="/explore" element={<Explore />} />
+            <Route path="/messages" element={<MessagesPage />} />
             <Route path="/profile/:id" element={<ProfilePage />} />
             <Route path="/edit-profile" element={<EditProfile />} />
-            <Route path="/explore" element={<Explore />} />
-
-            {/* Страница поста (откроется как отдельная страница, если обновить) */}
             <Route path="/post/:id" element={<PostPage />} />
-
-            <Route path="/messages" element={<MessagesPage />} />
-
+            
+            {/* 404 внутри приложения */}
             <Route path="*" element={<NotFound />} />
           </Route>
         ) : (
+          // Если не авторизован -> на логин
           <Route path="*" element={<Navigate to="/login" replace />} />
         )}
       </Routes>

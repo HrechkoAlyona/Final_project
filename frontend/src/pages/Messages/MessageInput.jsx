@@ -1,16 +1,19 @@
 // frontend\src\pages\Messages\MessageInput.jsx
+
 import React, { useState, useRef, useEffect } from "react";
 import EmojiPicker from "emoji-picker-react";
+import { BiSmile } from "react-icons/bi"; 
 import s from "./Messages.module.scss";
 
 const MessageInput = ({ onSendMessage }) => {
   const [text, setText] = useState("");
   const [showPicker, setShowPicker] = useState(false);
-
   const pickerRef = useRef(null);
+  const buttonRef = useRef(null); // Реф для кнопки смайлика
 
   const onEmojiClick = (emojiObject) => {
     setText((prev) => prev + emojiObject.emoji);
+    // Не закрываем пикер, чтобы можно было выбрать несколько смайлов
   };
 
   const handleSend = () => {
@@ -21,9 +24,20 @@ const MessageInput = ({ onSendMessage }) => {
     }
   };
 
+  const handleKeyDown = (e) => {
+    if (e.key === "Enter") {
+      handleSend();
+    }
+  };
+
+  // Закрытие смайликов при клике вне
   useEffect(() => {
     const handleClickOutside = (event) => {
-      if (pickerRef.current && !pickerRef.current.contains(event.target)) {
+      if (
+        pickerRef.current && 
+        !pickerRef.current.contains(event.target) &&
+        !buttonRef.current.contains(event.target) // Игнорируем клик по самой кнопке смайла
+      ) {
         setShowPicker(false);
       }
     };
@@ -33,14 +47,17 @@ const MessageInput = ({ onSendMessage }) => {
 
   return (
     <div className={s.inputContainer}>
+      {/* Кнопка смайликов */}
       <button
+        ref={buttonRef}
         type="button"
         className={s.emojiBtn}
         onClick={() => setShowPicker(!showPicker)}
       >
-        😀
+        <BiSmile /> 
       </button>
 
+      {/* Окно с эмодзи */}
       {showPicker && (
         <div className={s.emojiPickerWrapper} ref={pickerRef}>
           <EmojiPicker
@@ -48,23 +65,25 @@ const MessageInput = ({ onSendMessage }) => {
             searchDisabled={true}
             skinTonesDisabled={true}
             previewConfig={{ showPreview: false }}
-            height={300}
-            width={280}
+            height={350}
+            width={300}
             emojiStyle="native"
           />
         </div>
       )}
 
+      {/* Поле ввода */}
       <input
         type="text"
         value={text}
         onChange={(e) => setText(e.target.value)}
         placeholder="Message..."
         className={s.inputField}
-        onKeyPress={(e) => e.key === "Enter" && handleSend()}
+        onKeyDown={handleKeyDown} 
       />
 
-      {text.trim() && (
+      {/* Кнопка "Send" появляется ТОЛЬКО когда есть текст */}
+      {text.trim().length > 0 && (
         <button onClick={handleSend} className={s.sendBtn}>
           Send
         </button>
@@ -73,4 +92,4 @@ const MessageInput = ({ onSendMessage }) => {
   );
 };
 
-export default MessageInput;
+export default MessageInput;                    

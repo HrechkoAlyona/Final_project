@@ -1,8 +1,7 @@
-// frontend\src\pages\EditProfile\EditProfile.jsx
-
 import React, { useEffect } from "react";
 import { useForm, useWatch } from "react-hook-form";
 import { toast } from "react-hot-toast";
+import { useNavigate } from "react-router-dom"; 
 import {
   useGetUserByIdQuery,
   useUpdateProfileMutation,
@@ -11,6 +10,7 @@ import s from "./EditProfile.module.scss";
 
 const EditProfile = () => {
   const userId = localStorage.getItem("userId");
+  const navigate = useNavigate(); 
 
   const { data: user, isLoading } = useGetUserByIdQuery(userId, {
     refetchOnMountOrArgChange: true,
@@ -18,7 +18,6 @@ const EditProfile = () => {
 
   const [updateProfile, { isLoading: isUpdating }] = useUpdateProfileMutation();
 
-  //  Настраиваем форму
   const { register, handleSubmit, setValue, control, reset } = useForm({
     defaultValues: {
       username: "",
@@ -35,7 +34,6 @@ const EditProfile = () => {
   const avatarPreview = watchedValues[0];
   const bioValue = watchedValues[1] || "";
 
-  // 4. Синхронизируем форму с данными с сервера
   useEffect(() => {
     if (user) {
       reset({
@@ -47,13 +45,11 @@ const EditProfile = () => {
     }
   }, [user, reset]);
 
-  // 5. Обработка загрузки картинки (Base64)
   const handleImageChange = (e) => {
     const file = e.target.files[0];
     if (file) {
       const reader = new FileReader();
       reader.onloadend = () => {
-        // Устанавливаем Base64 строку в поле формы
         setValue("avatar", reader.result, { shouldDirty: true });
       };
       reader.readAsDataURL(file);
@@ -62,12 +58,19 @@ const EditProfile = () => {
 
   const onSubmit = async (data) => {
     try {
+      // Отправляем данные на сервер
       await updateProfile({
         ...data,
         _id: userId,
       }).unwrap();
 
       toast.success("Profile updated!");
+      
+      // Используем setTimeout, чтобы пользователь успел увидеть уведомление toast
+      setTimeout(() => {
+        navigate(`/profile/${userId}`);
+      }, 1000); 
+
     } catch (err) {
       console.error("Ошибка при обновлении:", err);
       const errorMessage = err.data?.message || err.error || "Update failed";
@@ -82,7 +85,7 @@ const EditProfile = () => {
       <div className={s.container}>
         <h1 className={s.mainTitle}>Edit profile</h1>
 
-        {/* КАРТОЧКА С АВАТАРКОЙ */}
+        {/* Аватарка */}
         <div className={s.avatarCard}>
           <div className={s.avatarInfo}>
             <img
@@ -110,7 +113,7 @@ const EditProfile = () => {
           </label>
         </div>
 
-        {/* ФОРМА */}
+        {/* Форма */}
         <form onSubmit={handleSubmit(onSubmit)} className={s.form}>
           <div className={s.inputGroup}>
             <label>Username</label>
@@ -134,7 +137,6 @@ const EditProfile = () => {
                 placeholder="Write something about yourself..."
               />
               <span className={s.charCount}>
-                {/* 🔥 Теперь счетчик работает плавно */}
                 {bioValue.length} / 150
               </span>
             </div>

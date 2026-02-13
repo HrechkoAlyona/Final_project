@@ -1,6 +1,9 @@
-import React, { useEffect, useRef } from "react";
+// frontend\src\pages\Messages\ChatWindow.jsx
+// frontend/src/pages/Messages/ChatWindow.jsx
+
+import React, { useRef, useLayoutEffect } from 'react';
 import { useNavigate } from "react-router-dom";
-import { BiTrash } from "react-icons/bi";
+import { BiTrash, BiArrowBack } from "react-icons/bi"; // 🔥 Импорт стрелки назад
 import {
   useGetChatHistoryQuery,
   useSendMessageMutation,
@@ -9,23 +12,18 @@ import {
 import s from "./Messages.module.scss";
 import MessageInput from "./MessageInput";
 
-const ChatWindow = ({ targetUser, myUser }) => {
+// 🔥 Принимаем prop onBack
+const ChatWindow = ({ targetUser, myUser, onBack }) => {
   const navigate = useNavigate();
-  const { data: messages = [], isLoading } = useGetChatHistoryQuery(
-    targetUser._id,
-  );
+  const { data: messages = [], isLoading } = useGetChatHistoryQuery(targetUser._id);
 
   const [sendMessage] = useSendMessageMutation();
   const [deleteMessage] = useDeleteMessageMutation();
 
   const messagesEndRef = useRef(null);
 
-  const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  };
-
-  useEffect(() => {
-    scrollToBottom();
+  useLayoutEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "auto" });
   }, [messages]);
 
   const handleSend = async (messageText) => {
@@ -39,10 +37,8 @@ const ChatWindow = ({ targetUser, myUser }) => {
     }
   };
 
-  // 4. Функция удаления
   const handleDelete = async (msgId) => {
     if (window.confirm("Delete this message?")) {
-      // Спрашиваем подтверждение
       try {
         await deleteMessage(msgId).unwrap();
       } catch (error) {
@@ -60,6 +56,11 @@ const ChatWindow = ({ targetUser, myUser }) => {
   return (
     <>
       <header className={s.chatHeader}>
+        {/* 🔥 КНОПКА НАЗАД (Видна только на мобильном через CSS) */}
+        <button className={s.backBtn} onClick={onBack}>
+             <BiArrowBack />
+        </button>
+
         <div
           className={s.headerUserInfo}
           onClick={() => goToProfile(targetUser._id)}
@@ -108,7 +109,6 @@ const ChatWindow = ({ targetUser, myUser }) => {
           const senderId =
             typeof msg.sender === "object" ? msg.sender._id : msg.sender;
           const myId = myUser?._id || myUser;
-          // Приводим к строке для надежного сравнения
           const isMe = String(senderId) === String(myId);
 
           return (
@@ -128,7 +128,6 @@ const ChatWindow = ({ targetUser, myUser }) => {
                 />
               )}
 
-              {/* Обертка для позиционирования кнопки */}
               <div className={s.bubbleContent}>
                 <div className={s.bubble}>
                   {msg.text}
@@ -141,7 +140,6 @@ const ChatWindow = ({ targetUser, myUser }) => {
                   </div>
                 </div>
 
-                {/* 5. Кнопка удаления (Только для моих сообщений) */}
                 {isMe && (
                   <button
                     className={s.deleteBtn}

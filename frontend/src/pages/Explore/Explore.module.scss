@@ -1,156 +1,123 @@
-/* frontend/src/pages/Explore/Explore.module.scss */
 .exploreContainer {
-    max-width: 935px;
-    margin: 0 auto;
-    padding: 30px 20px;
-    width: 100%;
-    box-sizing: border-box;
+  max-width: 935px;
+  margin: 0 auto;
+  padding: 30px 20px;
+  width: 100%;
+  box-sizing: border-box;
 
-    @media (max-width: 768px) {
-        padding: 0;
-    }
+  @media (max-width: 768px) {
+    padding: 0;
+  }
 }
 
 .grid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    /* 3 колонки */
-    grid-auto-rows: minmax(100px, auto);
-    gap: 4px;
-    /* для тонкой сетки */
+  display: grid;
+  /* ДЕСКТОП: 3 колонки */
+  grid-template-columns: repeat(3, 1fr);
+  /* Фиксируем высоту строки на десктопе */
+  grid-auto-rows: 310px;
+  gap: 4px;
+  /* Добавляем плавность изменения свойств сетки */
+  transition: all 0.3s ease-in-out;
 
-    @media (max-width: 768px) {
-        gap: 1px;
-    }
+  /* МОБИЛЬНЫЙ: Перестраиваем в 1 колонку */
+  @media (max-width: 768px) {
+    /*  Одна колонка во всю ширину */
+    grid-template-columns: 1fr;
+    /* Высота определяется контентом (или aspect-ratio ниже) */
+    grid-auto-rows: auto;
+    /* Отступ между постами в ленте делаем побольше */
+    gap: 15px;
+    /* Добавляем немного отступов по бокам на мобиле, чтобы не прилипало */
+    padding: 10px;
+  }
 }
 
 .gridItem {
-    position: relative;
-    cursor: pointer;
-    overflow: hidden;
-    background-color: #efefef;
+  position: relative;
+  cursor: pointer;
+  overflow: hidden;
+  background-color: #efefef;
+  width: 100%;
+  height: 100%;
+  /* Плавность изменения размеров самого блока и картинок внутри */
+  transition: all 0.3s ease-in-out;
 
-    /* Делаем элементы квадратными по умолчанию */
-    aspect-ratio: 1 / 1;
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    transition: all 0.3s ease-in-out;
+  }
 
-    img {
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-        display: block;
-    }
+  /* --- ЛОГИКА СЕТКИ ДЛЯ ДЕСКТОПА (БОЛЬШИЕ БЛОКИ) --- */
 
-    /* --- Сетка Masonry (10n паттерн) --- */
-
-    /* Высокий справа */
+  @media (min-width: 769px) {
+    /* 1. БОЛЬШОЙ БЛОК СПРАВА (каждый 3-й в десятке) */
     &:nth-child(10n + 3) {
-        grid-column: 3;
-        grid-row: span 2;
-        aspect-ratio: auto;
-        height: 100%;
+      grid-column: 3;
+      grid-row: span 2;
     }
 
-    /* Высокий слева */
+    /* 2. БОЛЬШОЙ БЛОК СЛЕВА (каждый 6-й в десятке) */
     &:nth-child(10n + 6) {
-        grid-column: 1;
-        grid-row: span 2;
-        aspect-ratio: auto;
-        height: 100%;
+      grid-column: 1;
+      grid-row: span 2;
     }
+  }
 
-    &:hover {
-        .overlay {
-            display: flex;
-        }
+  /* --- ЛОГИКА ДЛЯ МОБИЛЬНОГО (СБРОС) --- */
+  @media (max-width: 768px) {
+    /* На мобильном делаем посты квадратными (как в обычной ленте инсты) */
+    aspect-ratio: 1 / 1;
+    height: auto; /* Высота подстроится под ширину */
+    border-radius: 8px; /* Немного скруглим углы в ленте */
+
+    grid-column: auto !important;
+    grid-row: auto !important;
+  }
+
+  &:hover {
+    .overlay {
+      display: flex;
     }
+  }
 }
 
 .overlay {
-    display: none;
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background-color: rgba(0, 0, 0, 0.3);
-    justify-content: center;
+  display: none;
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.3);
+  justify-content: center;
+  align-items: center;
+  gap: 20px;
+  color: #fff;
+  font-weight: 700;
+  font-size: 18px;
+  pointer-events: none;
+
+  .statItem {
+    display: flex;
     align-items: center;
-    gap: 20px;
-    color: #fff;
-    font-weight: 700;
-    font-size: 18px;
-    pointer-events: none;
+    gap: 7px;
 
-    .statItem {
-        display: flex;
-        align-items: center;
-        gap: 7px;
-
-        svg {
-            width: 24px;
-            height: 24px;
-            fill: white;
-        }
+    svg {
+      width: 24px;
+      height: 24px;
+      fill: white;
     }
+  }
 }
 
 .loader,
 .emptyState {
-    text-align: center;
-    padding: 40px;
-    color: #8e8e8e;
-}
-
-/* галочка и скрол */
-
-.statusContainer {
-    width: 100%;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    padding: 40px 0;
-}
-
-.loaderSmall {
-    color: #8e8e8e;
-    font-weight: 500;
-    margin-bottom: 20px;
-}
-
-.allCaughtUp {
-    text-align: center;
-    padding-top: 20px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    animation: fadeIn 0.6s ease-out;
-
-    .checkIcon {
-        margin-bottom: 15px;
-        transform: scale(0.8);
-    }
-
-    h2 {
-        font-size: 18px;
-        font-weight: 600;
-        color: #262626;
-        margin-bottom: 4px;
-    }
-
-    p {
-        font-size: 14px;
-        color: #8e8e8e;
-    }
-}
-
-@keyframes fadeIn {
-    from {
-        opacity: 0;
-        transform: translateY(10px);
-    }
-
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
+  text-align: center;
+  padding: 40px;
+  color: #8e8e8e;
+  font-size: 16px;
 }

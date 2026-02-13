@@ -1,3 +1,5 @@
+// backend\src\controllers\userController.js
+
 const User = require('../models/userModel');
 const Post = require('../models/postModel');
 const Notification = require('../models/notificationModel');

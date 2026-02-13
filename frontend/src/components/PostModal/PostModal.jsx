@@ -13,22 +13,30 @@ import PostActions from './PostActions';
 import PostOptions from './PostOptions';
 
 const PostModal = ({ post: initialPost, onClose }) => {
-  const { data: freshPost, isSuccess } = useGetPostByIdQuery(initialPost?._id, { skip: !initialPost?._id });
-  const post = isSuccess && freshPost ? freshPost : initialPost;
+  // 1. Очищаем ID
+  const rawId = initialPost?._id || "";
+  const validId = typeof rawId === 'string' ? rawId.split(':')[0].trim() : rawId;
+
+  // 2. Получаем статус удаления (isSuccess переименовали в isDeleted)
+  const [deletePost, { isLoading: isDeleting, isSuccess: isDeleted }] = useDeletePostMutation();
+  const [updatePost, { isLoading: isUpdating }] = useUpdatePostMutation();
+
+  // Если ID нет, ИЛИ мы удаляем, ИЛИ уже удалили — НЕ ДЕЛАТЬ ЗАПРОС (skip: true)
+  const shouldSkip = !validId || isDeleting || isDeleted;
+
+  const { data: freshPost, isSuccess: isFetchSuccess } = useGetPostByIdQuery(validId, { 
+    skip: shouldSkip 
+  });
+
+  // Если пост удален, не пытаемся его показать, используем старые данные пока окно не закроется
+  const post = (isFetchSuccess && freshPost && !isDeleted) ? freshPost : initialPost;
 
   const [showOptions, setShowOptions] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
-  
-  // Стейты для редактирования
   const [editContent, setEditContent] = useState("");
   const [editTitle, setEditTitle] = useState("");
-  
-  // ДЛЯ КАРТИНКИ
   const [selectedFile, setSelectedFile] = useState(null);
   const [previewUrl, setPreviewUrl] = useState(null);
-
-  const [deletePost, { isLoading: isDeleting }] = useDeletePostMutation();
-  const [updatePost, { isLoading: isUpdating }] = useUpdatePostMutation();
 
   if (!post) return null;
 
@@ -67,8 +75,7 @@ const PostModal = ({ post: initialPost, onClose }) => {
         formData.append('image', selectedFile);
       }
 
-      await updatePost({ id: post._id, body: formData }).unwrap();
-      
+      await updatePost({ id: validId, body: formData }).unwrap();
       toast.success("Post updated!");
       setIsEditing(false);
     } catch (error) {
@@ -80,10 +87,11 @@ const PostModal = ({ post: initialPost, onClose }) => {
   const handleDelete = async () => {
     if (window.confirm("Are you sure?")) {
       try {
-        await deletePost(post._id).unwrap();
+        await deletePost(validId).unwrap();
         toast.success("Post deleted");
-        onClose();
-      } catch {
+        onClose(); 
+      } catch (error) {
+        console.error("Delete error:", error);
         toast.error("Error deleting post");
       }
     }
@@ -95,8 +103,6 @@ const PostModal = ({ post: initialPost, onClose }) => {
 
       <div className={s.modalCard} onClick={(e) => e.stopPropagation()}>
         
-        {/* ЛЕВАЯ ЧАСТЬ (Картинка) */}
-    
         <PostImage 
           post={post} 
           isEditing={isEditing} 
@@ -104,7 +110,6 @@ const PostModal = ({ post: initialPost, onClose }) => {
           onFileChange={handleFileChange}
         />
 
-        {/* ПРАВАЯ ЧАСТЬ (Контент) */}
         <div className={s.contentSection}>
           <PostHeader 
             authorData={authorData}
@@ -116,7 +121,6 @@ const PostModal = ({ post: initialPost, onClose }) => {
             onClose={onClose}
           />
 
-          {/* ВЕРХНЯЯ ЧАСТЬ СПРАВА: Комментарии / Редактирование описания */}
           <PostComments 
             post={post}
             authorData={authorData}
@@ -126,9 +130,7 @@ const PostModal = ({ post: initialPost, onClose }) => {
             onClose={onClose} 
           />
 
-          {/* НИЖНЯЯ ЧАСТЬ СПРАВА: */}
           {isEditing ? (
-             // --- БЛОК РЕДАКТИРОВАНИЯ ЗАГОЛОВКА ---
              <div className={s.editFooter}>
                 <label className={s.inputLabel}>Title</label>
                 <textarea 
@@ -140,7 +142,6 @@ const PostModal = ({ post: initialPost, onClose }) => {
                 />
              </div>
           ) : (
-             // --- ОБЫЧНЫЕ ДЕЙСТВИЯ (Лайки и т.д.) ---
              <PostActions post={post} />
           )}
         </div>
@@ -153,7 +154,7 @@ const PostModal = ({ post: initialPost, onClose }) => {
           onDelete={handleDelete}
           onEdit={handleEditMode}
           onClose={() => setShowOptions(false)}
-          postId={post._id}
+          postId={validId} 
         />
       )}
     </div>

@@ -1,3 +1,5 @@
+// frontend/src/components/Footer/Footer.jsx
+
 import React, { useContext } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { NavigationContext } from '../../context/NavigationContext'; 
@@ -14,7 +16,9 @@ export const Footer = () => {
   return (
     <footer className={s.footerWrapper}>
       <div className={s.linksRow}>
-        {/* ССЫЛКИ НА СТРАНИЦЫ с проверкой activeLink */}
+        {/* ССЫЛКИ НА СТРАНИЦЫ */}
+        
+        {/* HOME */}
         <Link 
           to="/" 
           className={location.pathname === '/' ? s.activeLink : ''}
@@ -22,6 +26,8 @@ export const Footer = () => {
         >
           Home
         </Link>
+
+        {/* EXPLORE */}
         <Link 
           to="/explore" 
           className={location.pathname === '/explore' ? s.activeLink : ''}
@@ -29,15 +35,17 @@ export const Footer = () => {
         >
           Explore
         </Link>
+
+        {/* MESSAGES (с проверкой startsWith) */}
         <Link 
-          to="/direct/inbox" 
-          className={location.pathname.startsWith('/direct') ? s.activeLink : ''}
+          to="/messages" 
+          className={location.pathname.startsWith('/messages') ? s.activeLink : ''}
           onClick={() => handleNavClick("messages")}
         >
           Messages
         </Link>
 
-        {/* МОДАЛЬНЫЕ ОКНА: работают через глобальный контекст */}
+        {/* МОДАЛЬНЫЕ ОКНА */}
         <span className={s.textLink} onClick={() => handleNavClick("search")}>
           Search
         </span>
@@ -46,7 +54,7 @@ export const Footer = () => {
         </span>
         <span className={s.textLink} onClick={() => handleNavClick("create")}>
           Create
-        </span>
+        </span >
       </div>
       <div className={s.copyright}><span>© 2026 ICHgram</span></div>
     </footer>

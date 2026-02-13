@@ -1,4 +1,4 @@
-// frontend\src\pages\Messages\MessagesPage.jsx
+// frontend/src/pages/Messages/MessagesPage.jsx
 import React, { useState, useEffect } from "react";
 import { useLocation } from "react-router-dom";
 import s from "./Messages.module.scss";
@@ -31,11 +31,9 @@ const MessagesPage = () => {
   useEffect(() => {
     if (myUser?._id) {
       const socket = getSocket();
-      // Подключаемся к комнате, чтобы получать уведомления
       socket.emit("join", myUser._id);
     }
   }, [myUser]);
-  // ----------------------------------
 
   const location = useLocation();
   const [selectedUser, setSelectedUser] = useState(
@@ -48,29 +46,30 @@ const MessagesPage = () => {
     skip: searchTerm.length < 2,
   });
 
-  // 1. Обработчик клика из МОДАЛЬНОГО ОКНА (Поиск)
   const handleSelectUserFromSearch = (user) => {
     setSelectedUser(user);
     setIsModalOpen(false);
     setSearchTerm("");
-
-    // Сбрасываем счетчик, если открыли диалог
     if (user?._id) markAsRead(user._id);
   };
 
-  // 2. Обработчик клика из САЙДБАРА (Список диалогов)
   const handleChatClick = (chat) => {
     setSelectedUser(chat);
-
-    // Сбрасываем счетчик, если открыли диалог
     if (chat?._id) markAsRead(chat._id);
+  };
+
+  // 🔥 НОВАЯ ФУНКЦИЯ ДЛЯ КНОПКИ НАЗАД
+  const handleBack = () => {
+      setSelectedUser(null);
   };
 
   if (isChatsLoading)
     return <div className={s.messagesPageContainer}>Loading...</div>;
 
   return (
-    <div className={s.messagesPageContainer}>
+    // 🔥 ДОБАВЛЯЕМ КЛАСС ЕСЛИ ЧАТ ОТКРЫТ (ДЛЯ CSS АДАПТИВА)
+    <div className={`${s.messagesPageContainer} ${selectedUser ? s.mobileChatOpen : ''}`}>
+      
       {/* ЛЕВАЯ КОЛОНКА */}
       <div className={s.conversationsList}>
         <div className={s.header}>
@@ -109,7 +108,6 @@ const MessagesPage = () => {
               />
 
               <div className={s.info}>
-                {/* Верхняя строка: Имя + Счетчик */}
                 <div className={s.userRow}>
                   <span className={s.username}>{chat.username}</span>
                   {chat.unreadCount > 0 && (
@@ -117,7 +115,6 @@ const MessagesPage = () => {
                   )}
                 </div>
 
-                {/* Нижняя строка: Сообщение + Время */}
                 <div className={s.messageRow}>
                   <span className={s.lastMessage}>
                     {chat.isSender && "You: "} {chat.lastMessage}
@@ -136,7 +133,12 @@ const MessagesPage = () => {
       {/* ПРАВАЯ КОЛОНКА */}
       <div className={s.chatWindow}>
         {selectedUser ? (
-          <ChatWindow targetUser={selectedUser} myUser={myUser} />
+          // 🔥 ПЕРЕДАЕМ handleBack
+          <ChatWindow 
+             targetUser={selectedUser} 
+             myUser={myUser} 
+             onBack={handleBack} 
+          />
         ) : (
           <div className={s.emptyState}>
             <div style={{ fontSize: "50px", marginBottom: "20px" }}>💬</div>
@@ -152,7 +154,7 @@ const MessagesPage = () => {
         )}
       </div>
 
-      {/* МОДАЛЬНОЕ ОКНО ПОИСКА */}
+      {/* МОДАЛЬНОЕ ОКНО */}
       {isModalOpen && (
         <div className={s.modalOverlay} onClick={() => setIsModalOpen(false)}>
           <div className={s.modalContent} onClick={(e) => e.stopPropagation()}>

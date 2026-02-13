@@ -1,4 +1,5 @@
 // backend/src/controllers/postController.js
+const mongoose = require('mongoose');
 const Post = require('../models/postModel');
 const User = require('../models/userModel');
 const Notification = require('../models/notificationModel');
@@ -98,17 +99,29 @@ const getPosts = async (req, res) => {
 };
 
 // 3. EXPLORE (Рандомные посты)
+
 const getExplorePosts = async (req, res) => {
     try {
-        const currentUserId = req.user._id;
+        const currentUserId = new mongoose.Types.ObjectId(req.user._id);
         const currentUser = await User.findById(currentUserId);
 
-        // Исключаем посты тех, на кого мы уже подписаны, и свои собственные
-        const excludeIds = [...(currentUser.following || []), currentUserId];
+        // Список ID: мои подписки + я сам
+        const followingIds = (currentUser.following || []).map(id => new mongoose.Types.ObjectId(id));
+        const excludeIds = [...followingIds, currentUserId];
 
         const posts = await Post.aggregate([
-            { $match: { user: { $nin: excludeIds } } },
-            { $sample: { size: 10 } }, // Берем 10 случайных
+            // 1. ФИЛЬТР: Исключаем посты подписок и свои
+            {
+                $match: {
+                    user: { $nin: excludeIds }
+                }
+            },
+
+            // 2. Берем 50 случайных постов (а не 10).
+            // Это гарантия! Даже если 40 постов "битые", у нас останется 10 нормальных.
+            { $sample: { size: 50 } },
+
+            // 3. ПОДТЯГИВАЕМ АВТОРА
             {
                 $lookup: {
                     from: 'users',
@@ -117,7 +130,22 @@ const getExplorePosts = async (req, res) => {
                     as: 'user'
                 }
             },
+
+            // 4. Оставляем только те, где автор нашелся
+            // (массив user не пустой)
+            {
+                $match: {
+                    user: { $exists: true, $not: { $size: 0 } }
+                }
+            },
+
+            // 5. Разворачиваем массив
             { $unwind: '$user' },
+
+            // 6. Берем ровно 10 из тех, что выжили после чистки
+            { $limit: 10 },
+
+            // 7. Убираем лишние поля (пароли и т.д.)
             {
                 $project: {
                     'user.password': 0,
@@ -132,13 +160,14 @@ const getExplorePosts = async (req, res) => {
                 ...post,
                 user: {
                     ...post.user,
-                    isFollowed: false, // В Explore мы ни на кого не подписаны по определению
+                    isFollowed: false,
                     followersCount: post.user.followers ? post.user.followers.length : 0
                 }
             };
         });
 
         res.json(formattedPosts);
+
     } catch (error) {
         console.error("Explore Error:", error);
         res.status(500).json({ message: 'Ошибка получения рекомендаций' });

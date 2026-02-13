@@ -66,18 +66,16 @@
   max-width: 600px;
 }
 
-// --------------------------------------------------------
-// 🔥 ВЕРХНЯЯ СТРОКА (НИК + КНОПКИ) - ГЛОБАЛЬНЫЕ СТИЛИ
-// --------------------------------------------------------
+// ВЕРХНЯЯ СТРОКА (НИК + КНОПКИ) - ГЛОБАЛЬНЫЕ СТИЛИ
+
 .topRow {
   display: flex;
   align-items: center;
-  flex-wrap: wrap;
+  flex-wrap: wrap; 
   gap: 20px;
 
   h2 {
     font-size: 28px;
-    /* На десктопе ник покрупнее */
     font-weight: 300;
     color: var(--textColor);
     margin: 0;
@@ -113,7 +111,7 @@
     }
   }
 
-  // 🔥 СТИЛЬ ДЛЯ ШЕСТЕРЕНКИ (SETTINGS/LOGOUT)
+  // СТИЛЬ ДЛЯ ШЕСТЕРЕНКИ (SETTINGS/LOGOUT)
   .settingsButton {
     background: transparent;
     border: none;
@@ -131,7 +129,6 @@
 
     &:hover svg {
       transform: rotate(30deg);
-      /* Легкий поворот при наведении */
       color: #555;
     }
   }
@@ -158,38 +155,21 @@
   line-height: 1.5;
   color: var(--textColor);
   max-width: 400px;
-  /* Ограничим ширину текста, чтобы было красиво */
 
   .bioText {
     white-space: pre-wrap;
-    /* Сохраняет переносы строк (Enter) */
     word-break: break-word;
-    /* Переносит длинные слова */
   }
 
   // СТИЛЬ ДЛЯ КНОПКИ "more"
   .moreLink {
     color: #8e8e8e;
-    /* Серый цвет, как в Инстаграм */
     cursor: pointer;
     font-weight: 600;
-    /* Чуть жирнее */
     margin-left: 4px;
 
     &:hover {
       opacity: 0.7;
-    }
-  }
-
-  .websiteLink {
-    display: block;
-    color: #00376b;
-    font-weight: 600;
-    text-decoration: none;
-    margin-top: 5px;
-
-    &:hover {
-      text-decoration: underline;
     }
   }
 
@@ -209,9 +189,9 @@
 // === ГАЛЕРЕЯ ===
 .gallery {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  // Сетка всегда 3 колонки (как в инстаграм)
+  grid-template-columns: repeat(3, 1fr); 
   gap: 4px;
-  /* Узкий отступ */
   border-top: 1px solid var(--formStroke, #dbdbdb);
   padding-top: 50px;
   width: 100%;
@@ -221,7 +201,7 @@
 .galleryItem {
   position: relative;
   width: 100%;
-  aspect-ratio: 1 / 1;
+  aspect-ratio: 1 / 1; // Квадратные фото
   cursor: pointer;
   overflow: hidden;
   background-color: var(--postLightGrey);
@@ -245,19 +225,15 @@
   right: 10px;
   color: #fff;
   font-weight: 600;
-  font-size: 16px;
-  /* Чуть уменьшил шрифт для превью */
-  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.8);
+  font-size: 24px;
+  text-shadow: 0 1px 4px rgba(0, 0, 0, 2);
   pointer-events: none;
   z-index: 5;
   font-family: 'Montserrat', sans-serif;
   line-height: 1.2;
 
-  /* СТИЛИ ДЛЯ ПРЕВЬЮ В ПРОФИЛЕ */
   white-space: pre-wrap;
   word-wrap: break-word;
-
-  /* Ограничиваем текст */
   display: -webkit-box;
   -webkit-line-clamp: 4;
   line-clamp: 4;
@@ -307,7 +283,9 @@
   }
 
   .details {
-    width: calc(100% - 100px);
+    // 🔥 ИСПРАВЛЕНИЕ: Используем flex, чтобы занять всё оставшееся место
+    // вместо жесткого вычитания пикселей
+    flex: 1; 
   }
 
   // Адаптация верхней строки для мобильных
@@ -316,16 +294,16 @@
 
     h2 {
       font-size: 20px;
-      /* Уменьшаем ник на телефоне */
     }
   }
 
   .gallery {
-    gap: 3px;
+    gap: 3px; // Чуть меньше отступы на телефоне
     padding-top: 0;
     border-top: none;
   }
 
+  // Скрываем статистику на мобильном (упрощенный вариант)
   .stats {
     display: none;
   }

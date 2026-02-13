@@ -1,4 +1,4 @@
-// frontend\src\components\Sidebar\SearchSidebar.jsx
+// frontend/src/components/Sidebar/SearchSidebar.jsx
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { AiOutlineClose, AiOutlineSearch } from "react-icons/ai";
@@ -84,7 +84,13 @@ const SearchSidebar = ({ isOpen, onClose }) => {
       <div className={s.overlay} onClick={onClose}></div>
       <div className={s.searchDrawer}>
         <div className={s.searchHeader}>
-          <h2>Search</h2>
+          <div className={s.headerTop}>
+            <h2>Search</h2>
+            <button className={s.closeDrawerBtn} onClick={onClose}>
+                <AiOutlineClose />
+            </button>
+          </div>
+
           <div className={s.searchInputWrapper}>
             <AiOutlineSearch className={s.searchIcon} />
             <input
